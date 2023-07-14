@@ -51,7 +51,6 @@ void setup() {
   // Ultrasonic
   pinMode(PIN_ULTRASONIC_TRIG, OUTPUT);
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
-
 }
 
 void loop() {
@@ -60,34 +59,34 @@ void loop() {
     IrReceiver.resume();
     switch (IrReceiver.decodedIRData.command) {
       case IR_BUTTON_OK: {
-        Serial.println("OK");
-        Serial.println(measureDistance(), DECIMALS);
-        break;
-      }
+          Serial.println("OK");
+          Serial.println(measureDistance(), DECIMALS);
+          break;
+        }
       case IR_BUTTON_UP: {
-        Serial.println("UP");
-        break;
-      }
+          Serial.println("UP");
+          break;
+        }
       case IR_BUTTON_DOWN: {
-        Serial.println("DOWN");
-        break;
-      }
+          Serial.println("DOWN");
+          break;
+        }
       case IR_BUTTON_RIGHT: {
-        Serial.println("RIGHT");
-        break;
-      }
+          Serial.println("RIGHT");
+          break;
+        }
       case IR_BUTTON_LEFT: {
-        Serial.println("LEFT");
-        break;
-      }
+          Serial.println("LEFT");
+          break;
+        }
       default: {
-        Serial.println("NO");
-      }
+          Serial.println("NO");
+        }
     }
   }
 }
 
-double measureDistance(){
+double measureDistance() {
   long tripTime;
   double distance;
 
