@@ -1,3 +1,6 @@
+#include "IRremote.hpp"
+
+// Digital Pins
 #define PIN_ESP_TX 2
 #define PIN_ESP_RX 3
 #define PIN_ULTRASONIC_ECHO 4
@@ -11,8 +14,30 @@
 #define PIN_MOTOR_IN2 12
 #define PIN_MOTOR_IN1 13
 
+//IR Button-Command
+#define IR_BUTTON_1 0x45
+#define IR_BUTTON_2 0x46
+#define IR_BUTTON_3 0x47
+#define IR_BUTTON_4 0x44
+#define IR_BUTTON_5 0x40
+#define IR_BUTTON_6 0x43
+#define IR_BUTTON_7 0x7
+#define IR_BUTTON_8 0x15
+#define IR_BUTTON_9 0x9
+#define IR_BUTTON_AST 0x16
+#define IR_BUTTON_0 0x19
+#define IR_BUTTON_HASH 0xD
+#define IR_BUTTON_UP 0x18
+#define IR_BUTTON_DOWN 0x52
+#define IR_BUTTON_RIGHT 0x5A
+#define IR_BUTTON_LEFT 0x8
+#define IR_BUTTON_OK 0x1C
+
+
 void setup() {
-  // put your setup code here, to run once:
+  Serial.begin(9600);
+  
+  IrReceiver.begin(PIN_IR_RECV, 0);
 
 }
 
