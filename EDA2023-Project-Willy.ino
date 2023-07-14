@@ -42,6 +42,7 @@ byte state = STATE_SETUP;
 
 // Ultrasonic
 #define DECIMALS 4
+
 void setup() {
   Serial.begin(9600);
 
