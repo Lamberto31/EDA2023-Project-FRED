@@ -42,6 +42,33 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
 
+  if (IrReceiver.decode()) {
+    IrReceiver.resume();
+    switch (IrReceiver.decodedIRData.command) {
+      case IR_BUTTON_OK: {
+        Serial.println("OK");
+        break;
+      }
+      case IR_BUTTON_UP: {
+        Serial.println("UP");
+        break;
+      }
+      case IR_BUTTON_DOWN: {
+        Serial.println("DOWN");
+        break;
+      }
+      case IR_BUTTON_RIGHT: {
+        Serial.println("RIGHT");
+        break;
+      }
+      case IR_BUTTON_LEFT: {
+        Serial.println("LEFT");
+        break;
+      }
+      default: {
+        Serial.println("NO");
+      }
+    }
+  }
 }
