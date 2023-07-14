@@ -14,6 +14,13 @@
 #define PIN_MOTOR_IN2 12
 #define PIN_MOTOR_IN1 13
 
+// States
+#define STATE_SETUP 0
+#define STATE_FREE 1
+#define STATE_SEARCH 2
+#define STATE_MEASURE 3 
+byte state = STATE_SETUP;
+
 //IR Button-Command
 #define IR_BUTTON_1 0x45
 #define IR_BUTTON_2 0x46
