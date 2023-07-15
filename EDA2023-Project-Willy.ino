@@ -1,5 +1,7 @@
 #include "IRremote.hpp"
 #include <Servo.h>
+#include "WiFiEsp.h"
+#include "SoftwareSerial.h"
 
 // Digital Pins
 #define PIN_ESP_TX 2
@@ -48,7 +50,17 @@ byte state = STATE_SETUP;
 #define SERVO_HORIZ_CENTER 90
 Servo servoH;
 
+// WiFi
+#define WIFI_SSID "Fastweb - Preite - Ospiti"
+#define WIFI_PWD "Grp3mTYLFaf1NhJo"
+#define SERVER "api.thingspeak.com"
+#define RET "\r\n"    //NL & CR characters
+SoftwareSerial WifiSerial(PIN_ESP_TX, PIN_ESP_RX);
+int wifiStatus = WL_IDLE_STATUS;
+WiFiEspClient client;
+
 void setup() {
+  // Debug serial communication
   Serial.begin(9600);
 
   // IR Receiver
@@ -60,7 +72,11 @@ void setup() {
 
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
-  servoH.write(SERVO_HORIZ_CENTER); 
+  servoH.write(SERVO_HORIZ_CENTER);
+
+  // WiFi
+  //TODO: Capire perchè quando si esegue questa funzione il servo si muove a occhio
+  wifiInitializeConnect();
 }
 
 void loop() {
@@ -112,4 +128,49 @@ double measureDistance() {
   distance = 0.0343 * tripTime / 2.0;
 
   return distance;
+}
+
+void wifiInitializeConnect() {
+  WifiSerial.begin(9600);
+
+  // ESP module initialization
+  WiFi.init(&WifiSerial);
+  
+  // Check if module is connected
+  //TODO: Capire come gestire questa situazione (avvisare tramite feedback)
+  if (WiFi.status() == WL_NO_SHIELD) {
+    Serial.println("WiFi shield not present");
+    // don't continue
+    while (true);
+  }
+
+  // Connect to WiFi network
+  // TODO: Capire anche questa situazione
+  while ( wifiStatus != WL_CONNECTED) {
+    Serial.print("Attempting to connect to WPA SSID: ");
+    Serial.println(WIFI_SSID);
+    // Connect to WPA/WPA2 network
+    wifiStatus = WiFi.begin(WIFI_SSID, WIFI_PWD);
+  }
+
+  // you're connected now, so print out the data
+  Serial.println("You're connected to the network");
+  printWifiStatus();
+}
+
+void printWifiStatus(){
+  // print the SSID of the network you're attached to
+  Serial.print("SSID: ");
+  Serial.println(WiFi.SSID());
+
+  // print your WiFi shield's IP address
+  IPAddress ip = WiFi.localIP();
+  Serial.print("IP Address: ");
+  Serial.println(ip);
+
+  // print the received signal strength
+  long rssi = WiFi.RSSI();
+  Serial.print("Signal strength (RSSI):");
+  Serial.print(rssi);
+  Serial.println(" dBm");
 }
