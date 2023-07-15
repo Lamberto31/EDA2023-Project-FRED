@@ -1,4 +1,5 @@
 #include "IRremote.hpp"
+#include <Servo.h>
 
 // Digital Pins
 #define PIN_ESP_TX 2
@@ -43,6 +44,10 @@ byte state = STATE_SETUP;
 // Ultrasonic
 #define DECIMALS 4
 
+// Servomotor
+#define SERVO_HORIZ_CENTER 90
+Servo servoH;
+
 void setup() {
   Serial.begin(9600);
 
@@ -52,6 +57,10 @@ void setup() {
   // Ultrasonic
   pinMode(PIN_ULTRASONIC_TRIG, OUTPUT);
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
+
+  // Servomotor
+  servoH.attach(PIN_SERVO_HORIZ);
+  servoH.write(SERVO_HORIZ_CENTER); 
 }
 
 void loop() {
@@ -85,6 +94,8 @@ void loop() {
         }
     }
   }
+  servoH.write(SERVO_HORIZ_CENTER);
+  delay(1000);
 }
 
 double measureDistance() {
