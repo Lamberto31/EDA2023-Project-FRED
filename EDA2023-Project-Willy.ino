@@ -73,13 +73,13 @@ void setup() {
   pinMode(PIN_ULTRASONIC_TRIG, OUTPUT);
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
 
+  // WiFi
+  wifiInitializeConnect();
+  ConnectToServer();
+
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
   servoH.write(SERVO_HORIZ_CENTER);
-
-  // WiFi
-  //TODO: Capire perchè quando si esegue questa funzione il servo si muove a occhio
-  wifiInitializeConnect();
 }
 
 void loop() {
