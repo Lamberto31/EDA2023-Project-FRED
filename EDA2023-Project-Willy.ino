@@ -114,6 +114,7 @@ void loop() {
     }
   }
   servoH.write(SERVO_HORIZ_CENTER);
+  sendToServer();
   delay(1000);
 }
 
@@ -192,6 +193,8 @@ void sendToServer(){
   String content_length = String(content.length());
   Serial.println(String(distance,4));
 
+  servoH.detach();
+
   // client.print("POST /t/3110/post/ HTTP/1.1" + ret + "Content-Type: application/json" + ret + "Accept: */*" + ret + "Host: ptsv3.com" + ret + "Content-Length: " + content_length + ret + ret + content);
   client.print("GET /update?api_key=WHH69YD9VAM7NLG5&field1=" + String(distance,4) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: api.thingspeak.com" + RET + RET);
 
@@ -203,4 +206,6 @@ void sendToServer(){
      Serial.write(c);
    }
    Serial.println();
+
+   servoH.attach(PIN_SERVO_HORIZ);
 }
