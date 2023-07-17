@@ -61,6 +61,13 @@ WiFiEspClient client;
 // Servomotor
 #define SERVO_HORIZ_CENTER 90
 Servo servoH;
+
+// Motors
+#define DIRECTION_FORWARD 0
+#define DIRECTION_BACKWARD 1
+#define DIRECTION_RIGHT 2
+#define DIRECTION_LEFT 3
+
 void setup() {
   // Debug serial communication
   Serial.begin(9600);
@@ -79,6 +86,15 @@ void setup() {
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
   servoH.write(SERVO_HORIZ_CENTER);
+
+  // Motors
+  pinMode(PIN_MOTOR_ENA, OUTPUT);
+  pinMode(PIN_MOTOR_ENB, OUTPUT);
+
+  pinMode(PIN_MOTOR_IN1, OUTPUT);
+  pinMode(PIN_MOTOR_IN2, OUTPUT);
+  pinMode(PIN_MOTOR_IN3, OUTPUT);
+  pinMode(PIN_MOTOR_IN4, OUTPUT);
 }
 
 void loop() {
@@ -87,29 +103,33 @@ void loop() {
     IrReceiver.resume();
     switch (IrReceiver.decodedIRData.command) {
       case IR_BUTTON_OK: {
-          Serial.println("OK");
-          Serial.println(measureDistance(), DECIMALS);
-          break;
-        }
+        Serial.println("OK");
+        Serial.println(measureDistance(), DECIMALS);
+        break;
+      }
       case IR_BUTTON_UP: {
-          Serial.println("UP");
-          break;
-        }
+        Serial.println("UP");
+        runMotors(DIRECTION_FORWARD);
+        break;
+      }
       case IR_BUTTON_DOWN: {
-          Serial.println("DOWN");
-          break;
-        }
+        Serial.println("DOWN");
+        runMotors(DIRECTION_BACKWARD);
+        break;
+      }
       case IR_BUTTON_RIGHT: {
-          Serial.println("RIGHT");
-          break;
-        }
+        Serial.println("RIGHT");
+        runMotors(DIRECTION_RIGHT);
+        break;
+      }
       case IR_BUTTON_LEFT: {
-          Serial.println("LEFT");
-          break;
-        }
+        Serial.println("LEFT");
+        runMotors(DIRECTION_LEFT);
+        break;
+      }
       default: {
-          Serial.println("NO");
-        }
+        Serial.println("NO");
+      }
     }
   }
   servoH.write(SERVO_HORIZ_CENTER);
@@ -138,7 +158,7 @@ void wifiInitializeConnect() {
 
   // ESP module initialization
   WiFi.init(&WifiSerial);
-  
+
   // Check if module is connected
   //TODO: Capire come gestire questa situazione (avvisare tramite feedback)
   if (WiFi.status() == WL_NO_SHIELD) {
@@ -198,14 +218,35 @@ void sendToServer() {
   // TODO: capire come gestire api_key (se fare dichiarazione o no) e sistemare nomi dei campi (field1)
   client.print("GET /update?api_key=WHH69YD9VAM7NLG5&field1=" + String(distance, 4) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: api.thingspeak.com" + RET + RET);
 
-   Serial.println("Sent!");
-   // if there are incoming bytes available
-   // from the server, read them and print them
-   while (client.available()) {
-     char c = client.read();
-     Serial.write(c);
-   }
-   Serial.println();
+  Serial.println("Sent!");
+  // if there are incoming bytes available
+  // from the server, read them and print them
+  while (client.available()) {
+    char c = client.read();
+    Serial.write(c);
+  }
+  Serial.println();
 
-   servoH.attach(PIN_SERVO_HORIZ);
+  servoH.attach(PIN_SERVO_HORIZ);
+}
+
+void runMotors(byte direction) {
+  switch (direction) {
+    case DIRECTION_FORWARD: {
+      Serial.println("Avanti");
+      break;
+    }
+    case DIRECTION_BACKWARD: {
+      Serial.println("Indietro");
+      break;
+    }
+    case DIRECTION_RIGHT: {
+      Serial.println("Destra");
+      break;
+    }
+    case DIRECTION_LEFT: {
+      Serial.println("Sinistra");
+      break;
+    }
+  }
 }
