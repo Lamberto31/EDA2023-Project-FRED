@@ -46,10 +46,6 @@ byte state = STATE_SETUP;
 // Ultrasonic
 #define DECIMALS 4
 
-// Servomotor
-#define SERVO_HORIZ_CENTER 90
-Servo servoH;
-
 // WiFi
 // #define WIFI_SSID "Fastweb - Preite - Ospiti"
 // #define WIFI_PWD "Grp3mTYLFaf1NhJo"
@@ -57,11 +53,14 @@ Servo servoH;
 #define WIFI_PWD "31EYPGxyASL!G?"
 #define SERVER "api.thingspeak.com"
 #define PORT 80
-#define RET "\r\n"    //NL & CR characters
+#define RET "\r\n"  //NL & CR characters
 SoftwareSerial WifiSerial(PIN_ESP_TX, PIN_ESP_RX);
 int wifiStatus = WL_IDLE_STATUS;
 WiFiEspClient client;
 
+// Servomotor
+#define SERVO_HORIZ_CENTER 90
+Servo servoH;
 void setup() {
   // Debug serial communication
   Serial.begin(9600);
@@ -150,7 +149,7 @@ void wifiInitializeConnect() {
 
   // Connect to WiFi network
   // TODO: Capire anche questa situazione
-  while ( wifiStatus != WL_CONNECTED) {
+  while (wifiStatus != WL_CONNECTED) {
     Serial.print("Attempting to connect to WPA SSID: ");
     Serial.println(WIFI_SSID);
     // Connect to WPA/WPA2 network
@@ -162,7 +161,7 @@ void wifiInitializeConnect() {
   printWifiStatus();
 }
 
-void printWifiStatus(){
+void printWifiStatus() {
   // print the SSID of the network you're attached to
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
@@ -179,7 +178,7 @@ void printWifiStatus(){
   Serial.println(" dBm");
 }
 
-void ConnectToServer(){
+void ConnectToServer() {
   Serial.println("Starting connection to server...");
   // if you get a connection, report back via serial
   if (client.connect(SERVER, PORT)) {
@@ -187,16 +186,17 @@ void ConnectToServer(){
   }
 }
 
-void sendToServer(){
+void sendToServer() {
   double distance = measureDistance();
   String content = "{\"distance\": " + String(distance) + "}";
   String content_length = String(content.length());
-  Serial.println(String(distance,4));
+  Serial.println(String(distance, 4));
 
   servoH.detach();
 
   // client.print("POST /t/3110/post/ HTTP/1.1" + ret + "Content-Type: application/json" + ret + "Accept: */*" + ret + "Host: ptsv3.com" + ret + "Content-Length: " + content_length + ret + ret + content);
-  client.print("GET /update?api_key=WHH69YD9VAM7NLG5&field1=" + String(distance,4) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: api.thingspeak.com" + RET + RET);
+  // TODO: capire come gestire api_key (se fare dichiarazione o no) e sistemare nomi dei campi (field1)
+  client.print("GET /update?api_key=WHH69YD9VAM7NLG5&field1=" + String(distance, 4) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: api.thingspeak.com" + RET + RET);
 
    Serial.println("Sent!");
    // if there are incoming bytes available
