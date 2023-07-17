@@ -73,8 +73,8 @@ void setup() {
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
 
   // WiFi
-  wifiInitializeConnect();
-  ConnectToServer();
+  // wifiInitializeConnect();
+  // ConnectToServer();
 
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
@@ -113,7 +113,7 @@ void loop() {
     }
   }
   servoH.write(SERVO_HORIZ_CENTER);
-  sendToServer();
+  // sendToServer();
   delay(1000);
 }
 
