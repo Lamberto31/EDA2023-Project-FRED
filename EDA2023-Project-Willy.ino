@@ -1,4 +1,5 @@
-#include "IRremote.hpp"
+#define IR_RECEIVE_PIN 10
+#include "TinyIRReceiver.hpp"
 #include <Servo.h>
 #include "WiFiEsp.h"
 #include "SoftwareSerial.h"
@@ -12,7 +13,7 @@
 #define PIN_MOTOR_IN4 7
 #define PIN_MOTOR_IN3 8
 #define PIN_MOTOR_ENB 9
-#define PIN_IR_RECV 10
+// #define PIN_IR_RECV 10
 #define PIN_MOTOR_ENA 11
 #define PIN_MOTOR_IN2 12
 #define PIN_MOTOR_IN1 13
@@ -24,7 +25,8 @@
 #define STATE_MEASURE 3
 byte state = STATE_SETUP;
 
-// IR Button-Command
+// IR
+// Button-Command
 #define IR_BUTTON_1 0x45
 #define IR_BUTTON_2 0x46
 #define IR_BUTTON_3 0x47
@@ -42,6 +44,9 @@ byte state = STATE_SETUP;
 #define IR_BUTTON_RIGHT 0x5A
 #define IR_BUTTON_LEFT 0x8
 #define IR_BUTTON_OK 0x1C
+
+// Used by TinyIRReceiver library
+volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 
 // Ultrasonic
 #define DECIMALS 4
@@ -74,7 +79,9 @@ void setup() {
   Serial.begin(9600);
 
   // IR Receiver
-  IrReceiver.begin(PIN_IR_RECV, 0);
+  if (!initPCIInterruptForTinyReceiver()) {
+    Serial.println("No interrupt available");
+  }
 
   // Ultrasonic
   pinMode(PIN_ULTRASONIC_TRIG, OUTPUT);
@@ -100,32 +107,64 @@ void setup() {
 
 void loop() {
 
-  if (IrReceiver.decode()) {
-    IrReceiver.resume();
-    switch (IrReceiver.decodedIRData.command) {
+  // if (IrReceiver.decode()) {
+  //   IrReceiver.resume();
+  //   switch (IrReceiver.decodedIRData.command) {
+  //     case IR_BUTTON_OK: {
+  //       Serial.println("OK");
+  //       Serial.println(measureDistance(), DECIMALS);
+  //       runMotors(DIRECTION_STOP, 0);
+  //       break;
+  //     }
+  //     case IR_BUTTON_UP: {
+  //       Serial.println("UP");
+  //       runMotors(DIRECTION_FORWARD, 200);
+  //       break;
+  //     }
+  //     case IR_BUTTON_DOWN: {
+  //       Serial.println("DOWN");
+  //       runMotors(DIRECTION_BACKWARD, 100);
+  //       break;
+  //     }
+  //     case IR_BUTTON_RIGHT: {
+  //       Serial.println("RIGHT");
+  //       runMotors(DIRECTION_RIGHT,100);
+  //       break;
+  //     }
+  //     case IR_BUTTON_LEFT: {
+  //       Serial.println("LEFT");
+  //       runMotors(DIRECTION_LEFT,100);
+  //       break;
+  //     }
+  //     default: {
+  //       Serial.println("NO");
+  //     }
+  //   }
+  // }
+  servoH.write(SERVO_HORIZ_CENTER);
+  // sendToServer();
+}
+
+void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
+  printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
+  switch (aCommand) {
       case IR_BUTTON_OK: {
-        Serial.println("OK");
-        Serial.println(measureDistance(), DECIMALS);
         runMotors(DIRECTION_STOP, 0);
         break;
       }
       case IR_BUTTON_UP: {
-        Serial.println("UP");
         runMotors(DIRECTION_FORWARD, 200);
         break;
       }
       case IR_BUTTON_DOWN: {
-        Serial.println("DOWN");
-        runMotors(DIRECTION_BACKWARD, 100);
+      runMotors(DIRECTION_BACKWARD, 200);
         break;
       }
       case IR_BUTTON_RIGHT: {
-        Serial.println("RIGHT");
         runMotors(DIRECTION_RIGHT,100);
         break;
       }
       case IR_BUTTON_LEFT: {
-        Serial.println("LEFT");
         runMotors(DIRECTION_LEFT,100);
         break;
       }
@@ -134,14 +173,6 @@ void loop() {
       }
     }
   }
-  servoH.write(SERVO_HORIZ_CENTER);
-  // sendToServer();
-  delay(1000);
-  runMotors(DIRECTION_FORWARD, 200);
-  delay(2000);
-  runMotors(DIRECTION_STOP, 0);
-  delay(2000);
-}
 
 double measureDistance() {
   long tripTime;
