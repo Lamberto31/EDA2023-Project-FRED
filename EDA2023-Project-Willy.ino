@@ -149,36 +149,35 @@ void loop() {
 // It runs in an ISR context with interrupts enabled
 void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
   printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
-  switch (aCommand) {
-    case IR_BUTTON_OK:
-      {
-        runMotors(DIRECTION_STOP, 0);
-        break;
-      }
-    case IR_BUTTON_UP:
-      {
-        runMotors(DIRECTION_FORWARD, 200);
-        break;
-      }
-    case IR_BUTTON_DOWN:
-      {
-        runMotors(DIRECTION_BACKWARD, 200);
-        break;
-      }
-    case IR_BUTTON_RIGHT:
-      {
-        runMotors(DIRECTION_RIGHT, 100);
-        break;
-      }
-    case IR_BUTTON_LEFT:
-      {
-        runMotors(DIRECTION_LEFT, 100);
-        break;
-      }
-    default:
-      {
-        Serial.println("NO");
-      }
+  understandCommand(aCommand);
+}
+
+void understandCommand(byte command) {
+  // TODO: Capire come strutturare la cosa. Forse meglio se qui riconosco gli stati, poi setto una variabile globale comando e si ritorna nel loop. Da capire
+  switch (command) {
+    case IR_BUTTON_OK: {
+      runMotors(DIRECTION_STOP, 0);
+      break;
+    }
+    case IR_BUTTON_UP: {
+      runMotors(DIRECTION_FORWARD, 200);
+      break;
+    }
+    case IR_BUTTON_DOWN: {
+      runMotors(DIRECTION_BACKWARD, 200);
+      break;
+    }
+    case IR_BUTTON_RIGHT: {
+      runMotors(DIRECTION_RIGHT, 100);
+      break;
+    }
+    case IR_BUTTON_LEFT: {
+      runMotors(DIRECTION_LEFT, 100);
+      break;
+    }
+    default: {
+      Serial.println("NO");
+    }
   }
 }
 
