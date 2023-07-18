@@ -2,7 +2,7 @@
 #include "TinyIRReceiver.hpp"
 #include <Servo.h>
 #include "WiFiEsp.h"
-#include "SoftwareSerial.h"
+// #include "SoftwareSerial.h"
 
 // Digital Pins
 #define PIN_ESP_TX 2
@@ -59,7 +59,7 @@ volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 #define SERVER "api.thingspeak.com"
 #define PORT 80
 #define RET "\r\n"  //NL & CR characters
-SoftwareSerial WifiSerial(PIN_ESP_TX, PIN_ESP_RX);
+// SoftwareSerial WifiSerial(PIN_ESP_TX, PIN_ESP_RX);
 int wifiStatus = WL_IDLE_STATUS;
 WiFiEspClient client;
 
@@ -148,31 +148,31 @@ void loop() {
 void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
   printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
   switch (aCommand) {
-      case IR_BUTTON_OK: {
-        runMotors(DIRECTION_STOP, 0);
-        break;
-      }
-      case IR_BUTTON_UP: {
-        runMotors(DIRECTION_FORWARD, 200);
-        break;
-      }
-      case IR_BUTTON_DOWN: {
+    case IR_BUTTON_OK: {
+      runMotors(DIRECTION_STOP, 0);
+      break;
+    }
+    case IR_BUTTON_UP: {
+      runMotors(DIRECTION_FORWARD, 200);
+      break;
+    }
+    case IR_BUTTON_DOWN: {
       runMotors(DIRECTION_BACKWARD, 200);
-        break;
-      }
-      case IR_BUTTON_RIGHT: {
-        runMotors(DIRECTION_RIGHT,100);
-        break;
-      }
-      case IR_BUTTON_LEFT: {
-        runMotors(DIRECTION_LEFT,100);
-        break;
-      }
-      default: {
-        Serial.println("NO");
-      }
+      break;
+    }
+    case IR_BUTTON_RIGHT: {
+      runMotors(DIRECTION_RIGHT,100);
+      break;
+    }
+    case IR_BUTTON_LEFT: {
+      runMotors(DIRECTION_LEFT,100);
+      break;
+    }
+    default: {
+      Serial.println("NO");
     }
   }
+}
 
 double measureDistance() {
   long tripTime;
@@ -190,50 +190,50 @@ double measureDistance() {
   return distance;
 }
 
-void wifiInitializeConnect() {
-  WifiSerial.begin(9600);
+// void wifiInitializeConnect() {
+//   WifiSerial.begin(9600);
 
-  // ESP module initialization
-  WiFi.init(&WifiSerial);
+//   // ESP module initialization
+//   WiFi.init(&WifiSerial);
 
-  // Check if module is connected
-  //TODO: Capire come gestire questa situazione (avvisare tramite feedback)
-  if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
-    // don't continue
-    while (true);
-  }
+//   // Check if module is connected
+//   //TODO: Capire come gestire questa situazione (avvisare tramite feedback)
+//   if (WiFi.status() == WL_NO_SHIELD) {
+//     Serial.println("WiFi shield not present");
+//     // don't continue
+//     while (true);
+//   }
 
-  // Connect to WiFi network
-  // TODO: Capire anche questa situazione
-  while (wifiStatus != WL_CONNECTED) {
-    Serial.print("Attempting to connect to WPA SSID: ");
-    Serial.println(WIFI_SSID);
-    // Connect to WPA/WPA2 network
-    wifiStatus = WiFi.begin(WIFI_SSID, WIFI_PWD);
-  }
+//   // Connect to WiFi network
+//   // TODO: Capire anche questa situazione
+//   while (wifiStatus != WL_CONNECTED) {
+//     Serial.print("Attempting to connect to WPA SSID: ");
+//     Serial.println(WIFI_SSID);
+//     // Connect to WPA/WPA2 network
+//     wifiStatus = WiFi.begin(WIFI_SSID, WIFI_PWD);
+//   }
 
-  // you're connected now, so print out the data
-  Serial.println("You're connected to the network");
-  printWifiStatus();
-}
+//   // you're connected now, so print out the data
+//   Serial.println("You're connected to the network");
+//   printWifiStatus();
+// }
 
-void printWifiStatus() {
-  // print the SSID of the network you're attached to
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
+// void printWifiStatus() {
+//   // print the SSID of the network you're attached to
+//   Serial.print("SSID: ");
+//   Serial.println(WiFi.SSID());
 
-  // print your WiFi shield's IP address
-  IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
-  Serial.println(ip);
+//   // print your WiFi shield's IP address
+//   IPAddress ip = WiFi.localIP();
+//   Serial.print("IP Address: ");
+//   Serial.println(ip);
 
-  // print the received signal strength
-  long rssi = WiFi.RSSI();
-  Serial.print("Signal strength (RSSI):");
-  Serial.print(rssi);
-  Serial.println(" dBm");
-}
+//   // print the received signal strength
+//   long rssi = WiFi.RSSI();
+//   Serial.print("Signal strength (RSSI):");
+//   Serial.print(rssi);
+//   Serial.println(" dBm");
+// }
 
 void ConnectToServer() {
   Serial.println("Starting connection to server...");
