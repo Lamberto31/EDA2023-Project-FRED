@@ -1,7 +1,8 @@
-#include "IRremote.hpp"
+#define IR_RECEIVE_PIN 10  // Defined here because the library requires it
+#include "TinyIRReceiver.hpp"
 #include <Servo.h>
 #include "WiFiEsp.h"
-#include "SoftwareSerial.h"
+// #include "SoftwareSerial.h"
 
 // Digital Pins
 #define PIN_ESP_TX 2
@@ -12,7 +13,7 @@
 #define PIN_MOTOR_IN4 7
 #define PIN_MOTOR_IN3 8
 #define PIN_MOTOR_ENB 9
-#define PIN_IR_RECV 10
+// #define PIN_IR_RECV 10
 #define PIN_MOTOR_ENA 11
 #define PIN_MOTOR_IN2 12
 #define PIN_MOTOR_IN1 13
@@ -24,7 +25,8 @@
 #define STATE_MEASURE 3
 byte state = STATE_SETUP;
 
-// IR Button-Command
+// IR
+// Button-Command
 #define IR_BUTTON_1 0x45
 #define IR_BUTTON_2 0x46
 #define IR_BUTTON_3 0x47
@@ -43,6 +45,9 @@ byte state = STATE_SETUP;
 #define IR_BUTTON_LEFT 0x8
 #define IR_BUTTON_OK 0x1C
 
+// Used by TinyIRReceiver library
+volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
+
 // Ultrasonic
 #define DECIMALS 4
 
@@ -54,7 +59,7 @@ byte state = STATE_SETUP;
 #define SERVER "api.thingspeak.com"
 #define PORT 80
 #define RET "\r\n"  //NL & CR characters
-SoftwareSerial WifiSerial(PIN_ESP_TX, PIN_ESP_RX);
+// SoftwareSerial WifiSerial(PIN_ESP_TX, PIN_ESP_RX);
 int wifiStatus = WL_IDLE_STATUS;
 WiFiEspClient client;
 
@@ -74,7 +79,9 @@ void setup() {
   Serial.begin(9600);
 
   // IR Receiver
-  IrReceiver.begin(PIN_IR_RECV, 0);
+  if (!initPCIInterruptForTinyReceiver()) {
+    Serial.println("No interrupt available");
+  }
 
   // Ultrasonic
   pinMode(PIN_ULTRASONIC_TRIG, OUTPUT);
@@ -82,7 +89,7 @@ void setup() {
 
   // WiFi
   // wifiInitializeConnect();
-  // ConnectToServer();
+  // connectToServer();
 
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
@@ -95,52 +102,84 @@ void setup() {
   pinMode(PIN_MOTOR_IN1, OUTPUT);
   pinMode(PIN_MOTOR_IN2, OUTPUT);
   pinMode(PIN_MOTOR_IN3, OUTPUT);
-  pinMode(PIN_MOTOR_IN4, OUTPUT); 
+  pinMode(PIN_MOTOR_IN4, OUTPUT);
 }
 
 void loop() {
 
-  if (IrReceiver.decode()) {
-    IrReceiver.resume();
-    switch (IrReceiver.decodedIRData.command) {
-      case IR_BUTTON_OK: {
-        Serial.println("OK");
-        Serial.println(measureDistance(), DECIMALS);
+  // if (IrReceiver.decode()) {
+  //   IrReceiver.resume();
+  //   switch (IrReceiver.decodedIRData.command) {
+  //     case IR_BUTTON_OK: {
+  //       Serial.println("OK");
+  //       Serial.println(measureDistance(), DECIMALS);
+  //       runMotors(DIRECTION_STOP, 0);
+  //       break;
+  //     }
+  //     case IR_BUTTON_UP: {
+  //       Serial.println("UP");
+  //       runMotors(DIRECTION_FORWARD, 200);
+  //       break;
+  //     }
+  //     case IR_BUTTON_DOWN: {
+  //       Serial.println("DOWN");
+  //       runMotors(DIRECTION_BACKWARD, 100);
+  //       break;
+  //     }
+  //     case IR_BUTTON_RIGHT: {
+  //       Serial.println("RIGHT");
+  //       runMotors(DIRECTION_RIGHT,100);
+  //       break;
+  //     }
+  //     case IR_BUTTON_LEFT: {
+  //       Serial.println("LEFT");
+  //       runMotors(DIRECTION_LEFT,100);
+  //       break;
+  //     }
+  //     default: {
+  //       Serial.println("NO");
+  //     }
+  //   }
+  // }
+  servoH.write(SERVO_HORIZ_CENTER);
+  // sendToServer();
+}
+
+// This is the function, which is called if a complete command was received
+// It runs in an ISR context with interrupts enabled
+void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
+  printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
+  switch (aCommand) {
+    case IR_BUTTON_OK:
+      {
         runMotors(DIRECTION_STOP, 0);
         break;
       }
-      case IR_BUTTON_UP: {
-        Serial.println("UP");
+    case IR_BUTTON_UP:
+      {
         runMotors(DIRECTION_FORWARD, 200);
         break;
       }
-      case IR_BUTTON_DOWN: {
-        Serial.println("DOWN");
-        runMotors(DIRECTION_BACKWARD, 100);
+    case IR_BUTTON_DOWN:
+      {
+        runMotors(DIRECTION_BACKWARD, 200);
         break;
       }
-      case IR_BUTTON_RIGHT: {
-        Serial.println("RIGHT");
-        runMotors(DIRECTION_RIGHT,100);
+    case IR_BUTTON_RIGHT:
+      {
+        runMotors(DIRECTION_RIGHT, 100);
         break;
       }
-      case IR_BUTTON_LEFT: {
-        Serial.println("LEFT");
-        runMotors(DIRECTION_LEFT,100);
+    case IR_BUTTON_LEFT:
+      {
+        runMotors(DIRECTION_LEFT, 100);
         break;
       }
-      default: {
+    default:
+      {
         Serial.println("NO");
       }
-    }
   }
-  servoH.write(SERVO_HORIZ_CENTER);
-  // sendToServer();
-  delay(1000);
-  runMotors(DIRECTION_FORWARD, 200);
-  delay(2000);
-  runMotors(DIRECTION_STOP, 0);
-  delay(2000);
 }
 
 double measureDistance() {
@@ -159,52 +198,52 @@ double measureDistance() {
   return distance;
 }
 
-void wifiInitializeConnect() {
-  WifiSerial.begin(9600);
+// void wifiInitializeConnect() {
+//   WifiSerial.begin(9600);
 
-  // ESP module initialization
-  WiFi.init(&WifiSerial);
+//   // ESP module initialization
+//   WiFi.init(&WifiSerial);
 
-  // Check if module is connected
-  //TODO: Capire come gestire questa situazione (avvisare tramite feedback)
-  if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
-    // don't continue
-    while (true);
-  }
+//   // Check if module is connected
+//   //TODO: Capire come gestire questa situazione (avvisare tramite feedback)
+//   if (WiFi.status() == WL_NO_SHIELD) {
+//     Serial.println("WiFi shield not present");
+//     // don't continue
+//     while (true);
+//   }
 
-  // Connect to WiFi network
-  // TODO: Capire anche questa situazione
-  while (wifiStatus != WL_CONNECTED) {
-    Serial.print("Attempting to connect to WPA SSID: ");
-    Serial.println(WIFI_SSID);
-    // Connect to WPA/WPA2 network
-    wifiStatus = WiFi.begin(WIFI_SSID, WIFI_PWD);
-  }
+//   // Connect to WiFi network
+//   // TODO: Capire anche questa situazione
+//   while (wifiStatus != WL_CONNECTED) {
+//     Serial.print("Attempting to connect to WPA SSID: ");
+//     Serial.println(WIFI_SSID);
+//     // Connect to WPA/WPA2 network
+//     wifiStatus = WiFi.begin(WIFI_SSID, WIFI_PWD);
+//   }
 
-  // you're connected now, so print out the data
-  Serial.println("You're connected to the network");
-  printWifiStatus();
-}
+//   // you're connected now, so print out the data
+//   Serial.println("You're connected to the network");
+//   printWifiStatus();
+// }
 
-void printWifiStatus() {
-  // print the SSID of the network you're attached to
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
+// void printWifiStatus() {
+//   // print the SSID of the network you're attached to
+//   Serial.print("SSID: ");
+//   Serial.println(WiFi.SSID());
 
-  // print your WiFi shield's IP address
-  IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
-  Serial.println(ip);
+//   // print your WiFi shield's IP address
+//   IPAddress ip = WiFi.localIP();
+//   Serial.print("IP Address: ");
+//   Serial.println(ip);
 
-  // print the received signal strength
-  long rssi = WiFi.RSSI();
-  Serial.print("Signal strength (RSSI):");
-  Serial.print(rssi);
-  Serial.println(" dBm");
-}
+//   // print the received signal strength
+//   long rssi = WiFi.RSSI();
+//   Serial.print("Signal strength (RSSI):");
+//   Serial.print(rssi);
+//   Serial.println(" dBm");
+// }
 
-void ConnectToServer() {
+void connectToServer() {
   Serial.println("Starting connection to server...");
   // if you get a connection, report back via serial
   if (client.connect(SERVER, PORT)) {
@@ -240,43 +279,48 @@ void runMotors(byte direction, byte speed) {
   Serial.println(direction);
   Serial.println(speed);
   switch (direction) {
-    case DIRECTION_STOP: {
-      Serial.println("Stop");
-      digitalWrite(PIN_MOTOR_IN1, LOW);
-      digitalWrite(PIN_MOTOR_IN2, LOW);
-      digitalWrite(PIN_MOTOR_IN3, LOW);
-      digitalWrite(PIN_MOTOR_IN4, LOW);
-      analogWrite(PIN_MOTOR_ENA, 0);
-      analogWrite(PIN_MOTOR_ENB, 0);
-      break;
-    }
-    case DIRECTION_FORWARD: {
-      Serial.println("Avanti");
-      digitalWrite(PIN_MOTOR_IN1, HIGH);
-      digitalWrite(PIN_MOTOR_IN2, LOW);
-      digitalWrite(PIN_MOTOR_IN3, HIGH);
-      digitalWrite(PIN_MOTOR_IN4, LOW);
-      analogWrite(PIN_MOTOR_ENA, speed);
-      analogWrite(PIN_MOTOR_ENB, speed);
-      break;
-    }
-    case DIRECTION_BACKWARD: {
-      Serial.println("Indietro");
-      digitalWrite(PIN_MOTOR_IN1, LOW);
-      digitalWrite(PIN_MOTOR_IN2, HIGH);
-      digitalWrite(PIN_MOTOR_IN3, LOW);
-      digitalWrite(PIN_MOTOR_IN4, HIGH);
-      analogWrite(PIN_MOTOR_ENA, speed);
-      analogWrite(PIN_MOTOR_ENB, speed);
-      break;
-    }
-    case DIRECTION_RIGHT: {
-      Serial.println("Destra");
-      break;
-    }
-    case DIRECTION_LEFT: {
-      Serial.println("Sinistra");
-      break;
-    }
+    case DIRECTION_STOP:
+      {
+        Serial.println("Stop");
+        digitalWrite(PIN_MOTOR_IN1, LOW);
+        digitalWrite(PIN_MOTOR_IN2, LOW);
+        digitalWrite(PIN_MOTOR_IN3, LOW);
+        digitalWrite(PIN_MOTOR_IN4, LOW);
+        analogWrite(PIN_MOTOR_ENA, 0);
+        analogWrite(PIN_MOTOR_ENB, 0);
+        break;
+      }
+    case DIRECTION_FORWARD:
+      {
+        Serial.println("Avanti");
+        digitalWrite(PIN_MOTOR_IN1, HIGH);
+        digitalWrite(PIN_MOTOR_IN2, LOW);
+        digitalWrite(PIN_MOTOR_IN3, HIGH);
+        digitalWrite(PIN_MOTOR_IN4, LOW);
+        analogWrite(PIN_MOTOR_ENA, speed);
+        analogWrite(PIN_MOTOR_ENB, speed);
+        break;
+      }
+    case DIRECTION_BACKWARD:
+      {
+        Serial.println("Indietro");
+        digitalWrite(PIN_MOTOR_IN1, LOW);
+        digitalWrite(PIN_MOTOR_IN2, HIGH);
+        digitalWrite(PIN_MOTOR_IN3, LOW);
+        digitalWrite(PIN_MOTOR_IN4, HIGH);
+        analogWrite(PIN_MOTOR_ENA, speed);
+        analogWrite(PIN_MOTOR_ENB, speed);
+        break;
+      }
+    case DIRECTION_RIGHT:
+      {
+        Serial.println("Destra");
+        break;
+      }
+    case DIRECTION_LEFT:
+      {
+        Serial.println("Sinistra");
+        break;
+      }
   }
 }
