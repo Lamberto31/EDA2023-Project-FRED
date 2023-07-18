@@ -1,4 +1,4 @@
-#define IR_RECEIVE_PIN 10
+#define IR_RECEIVE_PIN 10  // Defined here because the library requires it
 #include "TinyIRReceiver.hpp"
 #include <Servo.h>
 #include "WiFiEsp.h"
@@ -89,7 +89,7 @@ void setup() {
 
   // WiFi
   // wifiInitializeConnect();
-  // ConnectToServer();
+  // connectToServer();
 
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
@@ -102,7 +102,7 @@ void setup() {
   pinMode(PIN_MOTOR_IN1, OUTPUT);
   pinMode(PIN_MOTOR_IN2, OUTPUT);
   pinMode(PIN_MOTOR_IN3, OUTPUT);
-  pinMode(PIN_MOTOR_IN4, OUTPUT); 
+  pinMode(PIN_MOTOR_IN4, OUTPUT);
 }
 
 void loop() {
@@ -145,32 +145,40 @@ void loop() {
   // sendToServer();
 }
 
+// This is the function, which is called if a complete command was received
+// It runs in an ISR context with interrupts enabled
 void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
   printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
   switch (aCommand) {
-    case IR_BUTTON_OK: {
-      runMotors(DIRECTION_STOP, 0);
-      break;
-    }
-    case IR_BUTTON_UP: {
-      runMotors(DIRECTION_FORWARD, 200);
-      break;
-    }
-    case IR_BUTTON_DOWN: {
-      runMotors(DIRECTION_BACKWARD, 200);
-      break;
-    }
-    case IR_BUTTON_RIGHT: {
-      runMotors(DIRECTION_RIGHT,100);
-      break;
-    }
-    case IR_BUTTON_LEFT: {
-      runMotors(DIRECTION_LEFT,100);
-      break;
-    }
-    default: {
-      Serial.println("NO");
-    }
+    case IR_BUTTON_OK:
+      {
+        runMotors(DIRECTION_STOP, 0);
+        break;
+      }
+    case IR_BUTTON_UP:
+      {
+        runMotors(DIRECTION_FORWARD, 200);
+        break;
+      }
+    case IR_BUTTON_DOWN:
+      {
+        runMotors(DIRECTION_BACKWARD, 200);
+        break;
+      }
+    case IR_BUTTON_RIGHT:
+      {
+        runMotors(DIRECTION_RIGHT, 100);
+        break;
+      }
+    case IR_BUTTON_LEFT:
+      {
+        runMotors(DIRECTION_LEFT, 100);
+        break;
+      }
+    default:
+      {
+        Serial.println("NO");
+      }
   }
 }
 
@@ -235,7 +243,7 @@ double measureDistance() {
 //   Serial.println(" dBm");
 // }
 
-void ConnectToServer() {
+void connectToServer() {
   Serial.println("Starting connection to server...");
   // if you get a connection, report back via serial
   if (client.connect(SERVER, PORT)) {
@@ -271,43 +279,48 @@ void runMotors(byte direction, byte speed) {
   Serial.println(direction);
   Serial.println(speed);
   switch (direction) {
-    case DIRECTION_STOP: {
-      Serial.println("Stop");
-      digitalWrite(PIN_MOTOR_IN1, LOW);
-      digitalWrite(PIN_MOTOR_IN2, LOW);
-      digitalWrite(PIN_MOTOR_IN3, LOW);
-      digitalWrite(PIN_MOTOR_IN4, LOW);
-      analogWrite(PIN_MOTOR_ENA, 0);
-      analogWrite(PIN_MOTOR_ENB, 0);
-      break;
-    }
-    case DIRECTION_FORWARD: {
-      Serial.println("Avanti");
-      digitalWrite(PIN_MOTOR_IN1, HIGH);
-      digitalWrite(PIN_MOTOR_IN2, LOW);
-      digitalWrite(PIN_MOTOR_IN3, HIGH);
-      digitalWrite(PIN_MOTOR_IN4, LOW);
-      analogWrite(PIN_MOTOR_ENA, speed);
-      analogWrite(PIN_MOTOR_ENB, speed);
-      break;
-    }
-    case DIRECTION_BACKWARD: {
-      Serial.println("Indietro");
-      digitalWrite(PIN_MOTOR_IN1, LOW);
-      digitalWrite(PIN_MOTOR_IN2, HIGH);
-      digitalWrite(PIN_MOTOR_IN3, LOW);
-      digitalWrite(PIN_MOTOR_IN4, HIGH);
-      analogWrite(PIN_MOTOR_ENA, speed);
-      analogWrite(PIN_MOTOR_ENB, speed);
-      break;
-    }
-    case DIRECTION_RIGHT: {
-      Serial.println("Destra");
-      break;
-    }
-    case DIRECTION_LEFT: {
-      Serial.println("Sinistra");
-      break;
-    }
+    case DIRECTION_STOP:
+      {
+        Serial.println("Stop");
+        digitalWrite(PIN_MOTOR_IN1, LOW);
+        digitalWrite(PIN_MOTOR_IN2, LOW);
+        digitalWrite(PIN_MOTOR_IN3, LOW);
+        digitalWrite(PIN_MOTOR_IN4, LOW);
+        analogWrite(PIN_MOTOR_ENA, 0);
+        analogWrite(PIN_MOTOR_ENB, 0);
+        break;
+      }
+    case DIRECTION_FORWARD:
+      {
+        Serial.println("Avanti");
+        digitalWrite(PIN_MOTOR_IN1, HIGH);
+        digitalWrite(PIN_MOTOR_IN2, LOW);
+        digitalWrite(PIN_MOTOR_IN3, HIGH);
+        digitalWrite(PIN_MOTOR_IN4, LOW);
+        analogWrite(PIN_MOTOR_ENA, speed);
+        analogWrite(PIN_MOTOR_ENB, speed);
+        break;
+      }
+    case DIRECTION_BACKWARD:
+      {
+        Serial.println("Indietro");
+        digitalWrite(PIN_MOTOR_IN1, LOW);
+        digitalWrite(PIN_MOTOR_IN2, HIGH);
+        digitalWrite(PIN_MOTOR_IN3, LOW);
+        digitalWrite(PIN_MOTOR_IN4, HIGH);
+        analogWrite(PIN_MOTOR_ENA, speed);
+        analogWrite(PIN_MOTOR_ENB, speed);
+        break;
+      }
+    case DIRECTION_RIGHT:
+      {
+        Serial.println("Destra");
+        break;
+      }
+    case DIRECTION_LEFT:
+      {
+        Serial.println("Sinistra");
+        break;
+      }
   }
 }
