@@ -110,6 +110,7 @@ void loop() {
 
   if(!robot_state.cmd_executed) {
     switch(robot_state.current) {
+      // Free state handling
       case STATE_FREE: {
         switch(robot_state.command) {
           case IR_BUTTON_OK: {
@@ -143,10 +144,12 @@ void loop() {
         }
         break;
       }
+      // Search state handling
       case STATE_SEARCH: {
         //TODO SEARCH
         break;
       }
+      // Measure state handling
       case STATE_MEASURE: {
         //TODO MEASURE
         break;
