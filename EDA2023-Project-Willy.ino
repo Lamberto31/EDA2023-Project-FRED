@@ -73,6 +73,11 @@ Servo servoH;
 #define DIRECTION_RIGHT 3
 #define DIRECTION_LEFT 4
 
+// Custom distance in cm
+char customDist [4] = "000";
+byte customDistIdx = 0;
+int numericCustomDist = 0;
+
 void setup() {
   // Debug serial communication
   Serial.begin(9600);
