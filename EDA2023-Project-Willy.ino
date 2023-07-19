@@ -199,7 +199,9 @@ void loop() {
 // It runs in an ISR context with interrupts enabled
 void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
   printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
+  if (!aFlags == IRDATA_FLAGS_IS_REPEAT) {
   stateNewCmd(&robot_state, aCommand);
+  }
 }
 
 double measureDistance() {
