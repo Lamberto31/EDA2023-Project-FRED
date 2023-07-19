@@ -103,7 +103,7 @@ void setup() {
   pinMode(PIN_MOTOR_IN3, OUTPUT);
   pinMode(PIN_MOTOR_IN4, OUTPUT);
 
-  state_change(&robot_state, STATE_FREE);
+  stateChange(&robot_state, STATE_FREE);
 }
 
 void loop() {
@@ -111,31 +111,30 @@ void loop() {
   if(!robot_state.cmd_executed) {
     switch(robot_state.current) {
       case STATE_FREE: {
-        //TODO FREE
         switch(robot_state.command) {
           case IR_BUTTON_OK: {
             runMotors(DIRECTION_STOP, 0);
-            state_cmd_executed(&robot_state);
+            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_UP: {
             runMotors(DIRECTION_FORWARD, 200);
-            state_cmd_executed(&robot_state);
+            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_DOWN: {
             runMotors(DIRECTION_BACKWARD, 200);
-            state_cmd_executed(&robot_state);
+            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_RIGHT: {
             runMotors(DIRECTION_RIGHT, 100);
-            state_cmd_executed(&robot_state);
+            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_LEFT: {
             runMotors(DIRECTION_LEFT, 100);
-            state_cmd_executed(&robot_state);
+            stateCmdExecuted(&robot_state);
             break;
           }
           default: {
@@ -197,7 +196,7 @@ void loop() {
 // It runs in an ISR context with interrupts enabled
 void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
   printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
-  state_new_cmd(&robot_state, aCommand);
+  stateNewCmd(&robot_state, aCommand);
 }
 
 double measureDistance() {

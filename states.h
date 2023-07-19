@@ -14,8 +14,8 @@ struct state {
   bool cmd_executed;
 };
 
-void state_change(state *st, byte dest);
-void state_new_cmd(state *st, byte command);
-void state_cmd_executed(state *st);
+void stateChange(state *st, byte dest);
+void stateNewCmd(state *st, byte command);
+void stateCmdExecuted(state *st);
 
 #endif
