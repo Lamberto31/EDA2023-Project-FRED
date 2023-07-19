@@ -143,7 +143,23 @@ void loop() {
             stateCmdExecuted(&robot_state);
             break;
           }
+          case IR_BUTTON_HASH: {
+            stateChange(&robot_state, STATE_MEASURE);
+            stateCmdExecuted(&robot_state);
+            break;
+          }
+          case IR_BUTTON_AST: {
+            stateChange(&robot_state, STATE_READING);
+            stateCmdExecuted(&robot_state);
+            break;
+          }
           default: {
+            stateCmdExecuted(&robot_state);
+            Serial.println("NO");
+          }
+        }
+        break;
+      }
             Serial.println("NO");
           }
         }
