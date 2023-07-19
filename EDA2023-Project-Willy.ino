@@ -113,7 +113,7 @@ void setup() {
 
 void loop() {
 
-  if(!robot_state.cmd_executed) {
+  if (!robot_state.cmd_executed) {
     switch(robot_state.current) {
       // Free state handling
       case STATE_FREE: {
@@ -216,9 +216,9 @@ void loop() {
           }
           case IR_BUTTON_AST: {
             if (composeNumericDistance()) {
-            Serial.print("numericCustomDist: ");
-            Serial.println(numericCustomDist);
-            stateChange(&robot_state, STATE_SEARCH);
+              Serial.print("numericCustomDist: ");
+              Serial.println(numericCustomDist);
+              stateChange(&robot_state, STATE_SEARCH);
             }
             else {
               stateChange(&robot_state, STATE_FREE);
