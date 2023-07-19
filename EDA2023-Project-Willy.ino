@@ -245,11 +245,13 @@ void loop() {
       // Search state handling
       case STATE_SEARCH: {
         //TODO SEARCH
+        stateChange(&robot_state, STATE_FREE);
         break;
       }
       // Measure state handling
       case STATE_MEASURE: {
         //TODO MEASURE
+        stateChange(&robot_state, STATE_FREE);
         break;
       }
     }
@@ -298,7 +300,7 @@ void loop() {
 void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
   printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
   if (!aFlags == IRDATA_FLAGS_IS_REPEAT) {
-  stateNewCmd(&robot_state, aCommand);
+    stateNewCmd(&robot_state, aCommand);
   }
 }
 
@@ -451,8 +453,8 @@ void readCustomDistance(char digit) {
     stateChange(&robot_state, STATE_FREE);
   }
   else {
-  customDist[customDistIdx] = digit;
-  customDistIdx++;
+    customDist[customDistIdx] = digit;
+    customDistIdx++;
   }
 }
 
