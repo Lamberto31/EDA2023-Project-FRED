@@ -215,11 +215,14 @@ void loop() {
             break;
           }
           case IR_BUTTON_AST: {
-            numericCustomDist = atoi(customDist);
-            resetCustomDistance();
+            if (composeNumericDistance()) {
             Serial.print("numericCustomDist: ");
             Serial.println(numericCustomDist);
             stateChange(&robot_state, STATE_SEARCH);
+            }
+            else {
+              stateChange(&robot_state, STATE_FREE);
+            }
             stateCmdExecuted(&robot_state);
             break;
           }
@@ -456,6 +459,23 @@ void readCustomDistance(char digit) {
     customDist[customDistIdx] = digit;
     customDistIdx++;
   }
+}
+
+bool composeNumericDistance() {
+  if (customDistIdx == 0) {
+    return false;
+  }
+  char buff[customDistIdx+1];
+  for (byte i = 0; i <= customDistIdx - 1; i++) {
+    buff[i] = customDist[i];
+  }
+  buff[customDistIdx] = '\0';
+  numericCustomDist = atoi(buff);
+  if (numericCustomDist == 0) {
+    return false;
+  }
+  resetCustomDistance();
+  return true;
 }
 
 void resetCustomDistance() {
