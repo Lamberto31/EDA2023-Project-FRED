@@ -351,3 +351,21 @@ void runMotors(byte direction, byte speed) {
       }
   }
 }
+
+void readCustomDistance(char digit) {
+  if (customDistIdx == 3) {
+    resetCustomDistance();
+    stateChange(&robot_state, STATE_FREE);
+  }
+  else {
+  customDist[customDistIdx] = digit;
+  customDistIdx++;
+  }
+}
+
+void resetCustomDistance() {
+    customDist[0] = '0';
+    customDist[1] = '0';
+    customDist[2] = '0';
+    customDistIdx = 0;
+}
