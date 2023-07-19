@@ -4,6 +4,9 @@
 #include "WiFiEsp.h"
 // #include "SoftwareSerial.h"
 
+// Custom library for states handling
+#include "states.h"
+
 // Digital Pins
 #define PIN_ESP_TX 2
 #define PIN_ESP_RX 3
@@ -19,11 +22,7 @@
 #define PIN_MOTOR_IN1 13
 
 // States
-#define STATE_SETUP 0
-#define STATE_FREE 1
-#define STATE_SEARCH 2
-#define STATE_MEASURE 3
-byte state = STATE_SETUP;
+state robot_state = {STATE_SETUP, 0, true};
 
 // IR
 // Button-Command
@@ -103,9 +102,58 @@ void setup() {
   pinMode(PIN_MOTOR_IN2, OUTPUT);
   pinMode(PIN_MOTOR_IN3, OUTPUT);
   pinMode(PIN_MOTOR_IN4, OUTPUT);
+
+  state_change(&robot_state, STATE_FREE);
 }
 
 void loop() {
+
+  if(!robot_state.cmd_executed) {
+    switch(robot_state.current) {
+      case STATE_FREE: {
+        //TODO FREE
+        switch(robot_state.command) {
+          case IR_BUTTON_OK: {
+            runMotors(DIRECTION_STOP, 0);
+            state_cmd_executed(&robot_state);
+            break;
+          }
+          case IR_BUTTON_UP: {
+            runMotors(DIRECTION_FORWARD, 200);
+            state_cmd_executed(&robot_state);
+            break;
+          }
+          case IR_BUTTON_DOWN: {
+            runMotors(DIRECTION_BACKWARD, 200);
+            state_cmd_executed(&robot_state);
+            break;
+          }
+          case IR_BUTTON_RIGHT: {
+            runMotors(DIRECTION_RIGHT, 100);
+            state_cmd_executed(&robot_state);
+            break;
+          }
+          case IR_BUTTON_LEFT: {
+            runMotors(DIRECTION_LEFT, 100);
+            state_cmd_executed(&robot_state);
+            break;
+          }
+          default: {
+            Serial.println("NO");
+          }
+        }
+        break;
+      }
+      case STATE_SEARCH: {
+        //TODO SEARCH
+        break;
+      }
+      case STATE_MEASURE: {
+        //TODO MEASURE
+        break;
+      }
+    }
+  }
 
   // if (IrReceiver.decode()) {
   //   IrReceiver.resume();
@@ -149,36 +197,7 @@ void loop() {
 // It runs in an ISR context with interrupts enabled
 void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
   printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
-  understandCommand(aCommand);
-}
-
-void understandCommand(byte command) {
-  // TODO: Capire come strutturare la cosa. Forse meglio se qui riconosco gli stati, poi setto una variabile globale comando e si ritorna nel loop. Da capire
-  switch (command) {
-    case IR_BUTTON_OK: {
-      runMotors(DIRECTION_STOP, 0);
-      break;
-    }
-    case IR_BUTTON_UP: {
-      runMotors(DIRECTION_FORWARD, 200);
-      break;
-    }
-    case IR_BUTTON_DOWN: {
-      runMotors(DIRECTION_BACKWARD, 200);
-      break;
-    }
-    case IR_BUTTON_RIGHT: {
-      runMotors(DIRECTION_RIGHT, 100);
-      break;
-    }
-    case IR_BUTTON_LEFT: {
-      runMotors(DIRECTION_LEFT, 100);
-      break;
-    }
-    default: {
-      Serial.println("NO");
-    }
-  }
+  state_new_cmd(&robot_state, aCommand);
 }
 
 double measureDistance() {
