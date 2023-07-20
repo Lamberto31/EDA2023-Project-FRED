@@ -56,6 +56,9 @@ double measuredDist = 0;
 double diffDist;
 byte speedSlowFactor = 0;
 double measuredFilteredDist = 0;
+#define PERIOD_ULTRASONIC 60
+unsigned long previousMillisUS;
+unsigned long currentMillisUS;
 
 // WiFi
 // #define WIFI_SSID "Fastweb - Preite - Ospiti"
@@ -68,6 +71,9 @@ double measuredFilteredDist = 0;
 // SoftwareSerial WifiSerial(PIN_ESP_TX, PIN_ESP_RX);
 int wifiStatus = WL_IDLE_STATUS;
 WiFiEspClient client;
+#define PERIOD_SERVER 15000
+unsigned long previousMillisServer;
+unsigned long currentMillisServer;
 
 // Servomotor
 #define SERVO_HORIZ_CENTER 90
@@ -80,17 +86,14 @@ char customDist[4] = "000";
 byte customDistIdx = 0;
 int numericCustomDist = 0;
 
-// Time counters
-#define PERIOD_SERVER 15000
-unsigned long previousMillis;
-unsigned long currentMillis;
 
 void setup() {
   // Debug serial communication
   Serial.begin(9600);
 
-  //Start time counter
-  previousMillis = millis();
+  //Start time counters
+  previousMillisUS = millis();
+  previousMillisServer = millis();
 
   // IR Receiver
   if (!initPCIInterruptForTinyReceiver()) {
@@ -237,7 +240,11 @@ void loop() {
     }
     // Search state handling
     case STATE_SEARCH: {
-      checkDistance();
+      currentMillisUS = millis();
+      if (currentMillisUS - previousMillisUS >= PERIOD_ULTRASONIC) {
+        checkDistance();
+        previousMillisUS = millis();
+      }
       if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
@@ -262,8 +269,8 @@ void loop() {
     }
     // Measure state handling
     case STATE_MEASURE: {
-      currentMillis = millis();
-      if (currentMillis - previousMillis >= PERIOD_SERVER) {
+      currentMillisServer = millis();
+      if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
         //TODO: Decidere se misure e filtraggio le fa lo stesso sempre o solo se può inviare al server
         measuredDist = measureDistance();
         //DEBUG
@@ -274,7 +281,7 @@ void loop() {
         Serial.println(measuredDist, DECIMALS);
         Serial.print("measuredFilteredDist = ");
         Serial.println(measuredFilteredDist, 0);
-        previousMillis = millis();
+        previousMillisServer = millis();
       }
       if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
@@ -502,7 +509,6 @@ void resetCustomDistance() {
   customDistIdx = 0;
 }
 
-//TODO: capire come mai a volte fa avanti e indietro velocemente. Sembra non farlo quando c'è qualcosa che lo ritarda (che sia una stampa o un delay)
 void checkDistance() {
   // Measure distance and difference from custom
   measuredDist = measureDistance();
