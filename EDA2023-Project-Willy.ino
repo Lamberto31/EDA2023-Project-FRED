@@ -22,7 +22,7 @@
 #define PIN_MOTOR_IN1 13
 
 // States
-state robot_state = { STATE_SETUP, 0, true };
+state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // IR
 // Button-Command
@@ -68,13 +68,6 @@ WiFiEspClient client;
 // Servomotor
 #define SERVO_HORIZ_CENTER 90
 Servo servoH;
-
-// Motors
-#define DIRECTION_STOP 0
-#define DIRECTION_FORWARD 1
-#define DIRECTION_BACKWARD 2
-#define DIRECTION_RIGHT 3
-#define DIRECTION_LEFT 4
 
 // Custom distance [cm]
 #define CUSTOM_DIST_MIN 5
@@ -394,6 +387,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, LOW);
       analogWrite(PIN_MOTOR_ENA, 0);
       analogWrite(PIN_MOTOR_ENB, 0);
+      stateNewDirection(&robot_state, DIRECTION_STOP);
       break;
     }
     case DIRECTION_FORWARD: {
@@ -404,6 +398,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, LOW);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
+      stateNewDirection(&robot_state, DIRECTION_FORWARD);
       break;
     }
     case DIRECTION_BACKWARD: {
@@ -414,6 +409,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, HIGH);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
+      stateNewDirection(&robot_state, DIRECTION_BACKWARD);
       break;
     }
     case DIRECTION_RIGHT: {
@@ -424,6 +420,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, HIGH);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
+      stateNewDirection(&robot_state, DIRECTION_RIGHT);
       break;
     }
     case DIRECTION_LEFT: {
@@ -434,6 +431,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, LOW);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
+      stateNewDirection(&robot_state, DIRECTION_LEFT);
       break;
     }
   }
