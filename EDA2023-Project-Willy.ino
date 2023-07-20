@@ -253,8 +253,22 @@ void loop() {
     }
     // Measure state handling
     case STATE_MEASURE: {
-      //TODO MEASURE
-      stateChange(&robot_state, STATE_FREE);
+      if (!robot_state.cmd_executed) {
+        switch (robot_state.command) {
+          case IR_BUTTON_OK: {
+            stateChange(&robot_state, STATE_FREE);
+            break;
+          }
+          case IR_BUTTON_AST: {
+            stateChange(&robot_state, STATE_READ);
+            break;
+          }
+          default: {
+            Serial.println("NO");
+          }
+        }
+        stateCmdExecuted(&robot_state);
+      }
       break;
     }
   }
