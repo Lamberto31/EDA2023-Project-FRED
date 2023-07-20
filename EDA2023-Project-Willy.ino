@@ -80,9 +80,17 @@ char customDist[4] = "000";
 byte customDistIdx = 0;
 int numericCustomDist = 0;
 
+// Time counters
+#define PERIOD_SERVER 15000
+unsigned long previousMillis;
+unsigned long currentMillis;
+
 void setup() {
   // Debug serial communication
   Serial.begin(9600);
+
+  //Start time counter
+  previousMillis = millis();
 
   // IR Receiver
   if (!initPCIInterruptForTinyReceiver()) {
@@ -257,7 +265,16 @@ void loop() {
       measuredDist = measureDistance();
       //DEBUG
       measuredFilteredDist = int(measureDistance());
-      sendDataToServer();
+      currentMillis = millis();
+      if (currentMillis - previousMillis >= PERIOD_SERVER) {
+        //sendDataToServer();
+        //DEBUG
+        Serial.print("measuredDist = ");
+        Serial.println(measuredDist);
+        Serial.print("measuredFilteredDist = ");
+        Serial.println(measuredFilteredDist);
+        previousMillis = millis();
+      }
       if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
