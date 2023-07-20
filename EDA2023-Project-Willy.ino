@@ -474,7 +474,7 @@ void checkDistance() {
   measuredDist = measureDistance();
   diffDist = measuredDist - numericCustomDist;
   if (abs(diffDist) < STOP_TRESHOLD) {
-    speedSlowFactor++;
+    if (speedSlowFactor < 20) speedSlowFactor++;
     runMotors(DIRECTION_STOP, 0);
     if (speedSlowFactor > 10) {
       stateChange(&robot_state, STATE_FREE);
@@ -482,11 +482,11 @@ void checkDistance() {
     }
   }
   else if (diffDist > STOP_TRESHOLD && robot_state.direction != DIRECTION_FORWARD) {
-    speedSlowFactor++;
+    if (speedSlowFactor < 20) speedSlowFactor++;
     runMotors(DIRECTION_FORWARD, 200 - (speedSlowFactor * 10));
   }
   else if (diffDist < -STOP_TRESHOLD && robot_state.direction != DIRECTION_BACKWARD) {
-    speedSlowFactor++;
+    if (speedSlowFactor < 20) speedSlowFactor++;
     runMotors(DIRECTION_BACKWARD, 200 - (speedSlowFactor * 10));
   }
 }
