@@ -205,14 +205,7 @@ void loop() {
             break;
           }
           case IR_BUTTON_AST: {
-            if (composeNumericDistance()) {
-              Serial.print("numericCustomDist: ");
-              Serial.println(numericCustomDist);
-              stateChange(&robot_state, STATE_SEARCH);
-            }
-            else {
-              stateChange(&robot_state, STATE_FREE);
-            }
+            if (composeNumericDistance()) stateChange(&robot_state, STATE_SEARCH); else stateChange(&robot_state, STATE_FREE);
             break;
           }
           case IR_BUTTON_OK: {
