@@ -214,6 +214,8 @@ void loop() {
           }
           case IR_BUTTON_AST: {
             if (composeNumericDistance()) stateChange(&robot_state, STATE_SEARCH); else stateChange(&robot_state, STATE_FREE);
+            // DEBUG
+            Serial.print("numericCustomDist = ");
             Serial.println(numericCustomDist);
             break;
           }
@@ -376,7 +378,6 @@ void sendToServer() {
 
 // TODO: in base a come si assembla potrebbero cambiare le funzioni, soprattutto destra e sinistra
 void runMotors(byte direction, byte speed) {
-  Serial.println(speed);
   switch (direction) {
     case DIRECTION_STOP: {
       Serial.println("Stop");
