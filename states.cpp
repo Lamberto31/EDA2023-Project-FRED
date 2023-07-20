@@ -11,3 +11,6 @@ void stateNewCmd(state *st, byte command) {
 void stateCmdExecuted(state *st) {
   st->cmd_executed = true;
 }
+void stateNewDirection(state *st, byte direction) {
+  st->direction = direction;
+}

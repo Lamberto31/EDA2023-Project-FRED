@@ -9,14 +9,22 @@
 #define STATE_MEASURE 3
 #define STATE_READ 4
 
+#define DIRECTION_STOP 0
+#define DIRECTION_FORWARD 1
+#define DIRECTION_BACKWARD 2
+#define DIRECTION_RIGHT 3
+#define DIRECTION_LEFT 4
+
 struct state {
   byte current;
   byte command;
   bool cmd_executed;
+  byte direction;
 };
 
 void stateChange(state *st, byte dest);
 void stateNewCmd(state *st, byte command);
 void stateCmdExecuted(state *st);
+void stateNewDirection(state *st, byte direction);
 
 #endif

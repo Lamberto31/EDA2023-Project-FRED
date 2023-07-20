@@ -22,7 +22,7 @@
 #define PIN_MOTOR_IN1 13
 
 // States
-state robot_state = { STATE_SETUP, 0, true };
+state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // IR
 // Button-Command
@@ -49,6 +49,12 @@ volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 
 // Ultrasonic
 #define DECIMALS 4
+#define STOP_TRESHOLD 0.1
+#define SLOW_FACTOR_MAX 15
+#define SLOW_FACTOR_STOP 10
+double measuredDist = 0;
+double diffDist;
+byte speedSlowFactor = 0;
 
 // WiFi
 // #define WIFI_SSID "Fastweb - Preite - Ospiti"
@@ -65,13 +71,6 @@ WiFiEspClient client;
 // Servomotor
 #define SERVO_HORIZ_CENTER 90
 Servo servoH;
-
-// Motors
-#define DIRECTION_STOP 0
-#define DIRECTION_FORWARD 1
-#define DIRECTION_BACKWARD 2
-#define DIRECTION_RIGHT 3
-#define DIRECTION_LEFT 4
 
 // Custom distance [cm]
 #define CUSTOM_DIST_MIN 5
@@ -115,12 +114,15 @@ void setup() {
 
 void loop() {
 
-  if (!robot_state.cmd_executed) {
-    switch (robot_state.current) {
-      // Free state handling
-      case STATE_FREE: {
+  switch (robot_state.current) {
+    // Free state handling
+    case STATE_FREE: {
+      if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
+            // DEBUG
+            Serial.print("Distance = ");
+            Serial.println(measureDistance(), DECIMALS);
             runMotors(DIRECTION_STOP, 0);
             stateCmdExecuted(&robot_state);
             break;
@@ -146,11 +148,13 @@ void loop() {
             break;
           }
           case IR_BUTTON_HASH: {
+            runMotors(DIRECTION_STOP, 0);
             stateChange(&robot_state, STATE_MEASURE);
             stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_AST: {
+            runMotors(DIRECTION_STOP, 0);
             stateChange(&robot_state, STATE_READ);
             stateCmdExecuted(&robot_state);
             break;
@@ -160,10 +164,12 @@ void loop() {
             Serial.println("NO");
           }
         }
-        break;
       }
-      // Reading state handling
-      case STATE_READ: {
+      break;
+    }
+    // Reading state handling
+    case STATE_READ: {
+      if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
           case IR_BUTTON_1: {
             readCustomDistance('1');
@@ -208,6 +214,8 @@ void loop() {
           }
           case IR_BUTTON_AST: {
             if (composeNumericDistance()) stateChange(&robot_state, STATE_SEARCH); else stateChange(&robot_state, STATE_FREE);
+            // DEBUG
+            Serial.print("numericCustomDist = ");
             Serial.println(numericCustomDist);
             break;
           }
@@ -222,21 +230,44 @@ void loop() {
             break;
           }
         }
-        stateCmdExecuted(&robot_state);
-        break;
+      stateCmdExecuted(&robot_state);
       }
-      // Search state handling
-      case STATE_SEARCH: {
-        //TODO SEARCH
-        stateChange(&robot_state, STATE_FREE);
-        break;
+      break;
+    }
+    // Search state handling
+    case STATE_SEARCH: {
+      //TODO SEARCH
+      // stateChange(&robot_state, STATE_FREE);
+      checkDistance();
+      if (!robot_state.cmd_executed) {
+        switch (robot_state.command) {
+          case IR_BUTTON_OK: {
+            runMotors(DIRECTION_STOP, 0);
+            speedSlowFactor = 0;
+            stateChange(&robot_state, STATE_FREE);
+            stateCmdExecuted(&robot_state);
+            break;
+          }
+          case IR_BUTTON_HASH: {
+            runMotors(DIRECTION_STOP, 0);
+            speedSlowFactor = 0;
+            stateChange(&robot_state, STATE_MEASURE);
+            stateCmdExecuted(&robot_state);
+            break;
+          }
+          default: {
+            stateCmdExecuted(&robot_state);
+            Serial.println("NO");
+          }
+        }
       }
-      // Measure state handling
-      case STATE_MEASURE: {
-        //TODO MEASURE
-        stateChange(&robot_state, STATE_FREE);
-        break;
-      }
+      break;
+    }
+    // Measure state handling
+    case STATE_MEASURE: {
+      //TODO MEASURE
+      stateChange(&robot_state, STATE_FREE);
+      break;
     }
   }
   servoH.write(SERVO_HORIZ_CENTER);
@@ -347,8 +378,6 @@ void sendToServer() {
 
 // TODO: in base a come si assembla potrebbero cambiare le funzioni, soprattutto destra e sinistra
 void runMotors(byte direction, byte speed) {
-  Serial.println(direction);
-  Serial.println(speed);
   switch (direction) {
     case DIRECTION_STOP: {
       Serial.println("Stop");
@@ -358,6 +387,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, LOW);
       analogWrite(PIN_MOTOR_ENA, 0);
       analogWrite(PIN_MOTOR_ENB, 0);
+      stateNewDirection(&robot_state, DIRECTION_STOP);
       break;
     }
     case DIRECTION_FORWARD: {
@@ -368,6 +398,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, LOW);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
+      stateNewDirection(&robot_state, DIRECTION_FORWARD);
       break;
     }
     case DIRECTION_BACKWARD: {
@@ -378,6 +409,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, HIGH);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
+      stateNewDirection(&robot_state, DIRECTION_BACKWARD);
       break;
     }
     case DIRECTION_RIGHT: {
@@ -388,6 +420,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, HIGH);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
+      stateNewDirection(&robot_state, DIRECTION_RIGHT);
       break;
     }
     case DIRECTION_LEFT: {
@@ -398,6 +431,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, LOW);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
+      stateNewDirection(&robot_state, DIRECTION_LEFT);
       break;
     }
   }
@@ -441,4 +475,26 @@ void resetCustomDistance() {
   customDist[1] = '0';
   customDist[2] = '0';
   customDistIdx = 0;
+}
+
+//TODO: capire come mai a volte fa avanti e indietro velocemente. Sembra non farlo quando c'è qualcosa che lo ritarda (che sia una stampa o un delay)
+void checkDistance() {
+  measuredDist = measureDistance();
+  diffDist = measuredDist - numericCustomDist;
+  if (abs(diffDist) < STOP_TRESHOLD) {
+    runMotors(DIRECTION_STOP, 0);
+    if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
+    if (speedSlowFactor >= SLOW_FACTOR_STOP) {
+      stateChange(&robot_state, STATE_FREE);
+      speedSlowFactor = 0;
+    }
+  }
+  else if (diffDist > STOP_TRESHOLD && robot_state.direction != DIRECTION_FORWARD) {
+    runMotors(DIRECTION_FORWARD, 200 - (speedSlowFactor * 10));
+    if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
+  }
+  else if (diffDist < -STOP_TRESHOLD && robot_state.direction != DIRECTION_BACKWARD) {
+    runMotors(DIRECTION_BACKWARD, 200 - (speedSlowFactor * 10));
+    if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
+  }
 }
