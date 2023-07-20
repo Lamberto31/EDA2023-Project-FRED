@@ -440,6 +440,7 @@ void readCustomDistance(char digit) {
 
 bool composeNumericDistance() {
   if (customDistIdx == 0) {
+    numericCustomDist = 0;
     return false;
   }
   char buff[customDistIdx+1];
