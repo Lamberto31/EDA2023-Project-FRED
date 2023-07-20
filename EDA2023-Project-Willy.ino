@@ -73,6 +73,13 @@ Servo servoH;
 #define DIRECTION_RIGHT 3
 #define DIRECTION_LEFT 4
 
+// Custom distance in cm
+#define CUSTOM_DIST_MIN 5
+#define CUSTOM_DIST_MAX 500
+char customDist [4] = "000";
+byte customDistIdx = 0;
+int numericCustomDist = 0;
+
 void setup() {
   // Debug serial communication
   Serial.begin(9600);
@@ -108,7 +115,7 @@ void setup() {
 
 void loop() {
 
-  if(!robot_state.cmd_executed) {
+  if (!robot_state.cmd_executed) {
     switch(robot_state.current) {
       // Free state handling
       case STATE_FREE: {
@@ -138,20 +145,96 @@ void loop() {
             stateCmdExecuted(&robot_state);
             break;
           }
+          case IR_BUTTON_HASH: {
+            stateChange(&robot_state, STATE_MEASURE);
+            stateCmdExecuted(&robot_state);
+            break;
+          }
+          case IR_BUTTON_AST: {
+            stateChange(&robot_state, STATE_READ);
+            stateCmdExecuted(&robot_state);
+            break;
+          }
           default: {
+            stateCmdExecuted(&robot_state);
             Serial.println("NO");
           }
         }
         break;
       }
+      // Reading state handling
+      case STATE_READ: {
+        switch(robot_state.command) {
+          case IR_BUTTON_1: {
+            readCustomDistance('1');
+            break;
+          }
+          case IR_BUTTON_2: {
+            readCustomDistance('2');
+            break;
+          }
+          case IR_BUTTON_3: {
+            readCustomDistance('3');
+            break;
+          }
+          case IR_BUTTON_4: {
+            readCustomDistance('4');
+            break;
+          }
+          case IR_BUTTON_5: {
+            readCustomDistance('5');
+            break;
+          }
+          case IR_BUTTON_6: {
+            readCustomDistance('6');
+            break;
+          }
+          case IR_BUTTON_7: {
+            readCustomDistance('7');
+            break;
+          }
+          case IR_BUTTON_8: {
+            readCustomDistance('8');
+            stateCmdExecuted(&robot_state);
+            break;
+          }
+          case IR_BUTTON_9: {
+            readCustomDistance('9');
+            break;
+          }
+          case IR_BUTTON_0: {
+            readCustomDistance('0');
+            break;
+          }
+          case IR_BUTTON_AST: {
+            if (composeNumericDistance()) stateChange(&robot_state, STATE_SEARCH); else stateChange(&robot_state, STATE_FREE);
+            Serial.println(numericCustomDist);
+            break;
+          }
+          case IR_BUTTON_OK: {
+            resetCustomDistance();
+            stateChange(&robot_state, STATE_FREE);
+            break;
+          }
+          case IR_BUTTON_HASH: {
+            resetCustomDistance();
+            stateChange(&robot_state, STATE_MEASURE);
+            break;
+          }
+        }
+        stateCmdExecuted(&robot_state);
+        break;
+      }
       // Search state handling
       case STATE_SEARCH: {
         //TODO SEARCH
+        stateChange(&robot_state, STATE_FREE);
         break;
       }
       // Measure state handling
       case STATE_MEASURE: {
         //TODO MEASURE
+        stateChange(&robot_state, STATE_FREE);
         break;
       }
     }
@@ -199,7 +282,9 @@ void loop() {
 // It runs in an ISR context with interrupts enabled
 void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
   printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
-  stateNewCmd(&robot_state, aCommand);
+  if (!aFlags == IRDATA_FLAGS_IS_REPEAT) {
+    stateNewCmd(&robot_state, aCommand);
+  }
 }
 
 double measureDistance() {
@@ -343,4 +428,45 @@ void runMotors(byte direction, byte speed) {
         break;
       }
   }
+}
+
+void readCustomDistance(char digit) {
+  if (customDistIdx == 3) {
+    resetCustomDistance();
+    stateChange(&robot_state, STATE_FREE);
+  }
+  else {
+    customDist[customDistIdx] = digit;
+    customDistIdx++;
+  }
+}
+
+bool composeNumericDistance() {
+  // No digits
+  if (customDistIdx == 0) {
+    numericCustomDist = 0;
+    return false;
+  }
+  // Create numericCustomDist
+  char buff[customDistIdx+1];
+  for (byte i = 0; i <= customDistIdx - 1; i++) {
+    buff[i] = customDist[i];
+  }
+  buff[customDistIdx] = '\0';
+  numericCustomDist = atoi(buff);
+  resetCustomDistance();
+
+  // Check if in [CUSTOM_DIST_MIN, CUSTOM_DIST_MAX]
+  if (numericCustomDist < CUSTOM_DIST_MIN || numericCustomDist > CUSTOM_DIST_MAX) {
+    numericCustomDist = 0;
+    return false;
+  }
+  return true;
+}
+
+void resetCustomDistance() {
+    customDist[0] = '0';
+    customDist[1] = '0';
+    customDist[2] = '0';
+    customDistIdx = 0;
 }
