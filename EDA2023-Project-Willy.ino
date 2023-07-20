@@ -55,6 +55,10 @@ volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 double measuredDist = 0;
 double diffDist;
 byte speedSlowFactor = 0;
+double measuredFilteredDist = 0;
+#define PERIOD_ULTRASONIC 60
+unsigned long previousMillisUS;
+unsigned long currentMillisUS;
 
 // WiFi
 // #define WIFI_SSID "Fastweb - Preite - Ospiti"
@@ -67,6 +71,9 @@ byte speedSlowFactor = 0;
 // SoftwareSerial WifiSerial(PIN_ESP_TX, PIN_ESP_RX);
 int wifiStatus = WL_IDLE_STATUS;
 WiFiEspClient client;
+#define PERIOD_SERVER 15000
+unsigned long previousMillisServer;
+unsigned long currentMillisServer;
 
 // Servomotor
 #define SERVO_HORIZ_CENTER 90
@@ -79,9 +86,14 @@ char customDist[4] = "000";
 byte customDistIdx = 0;
 int numericCustomDist = 0;
 
+
 void setup() {
   // Debug serial communication
   Serial.begin(9600);
+
+  //Start time counters
+  previousMillisUS = millis();
+  previousMillisServer = millis();
 
   // IR Receiver
   if (!initPCIInterruptForTinyReceiver()) {
@@ -228,7 +240,11 @@ void loop() {
     }
     // Search state handling
     case STATE_SEARCH: {
-      checkDistance();
+      currentMillisUS = millis();
+      if (currentMillisUS - previousMillisUS >= PERIOD_ULTRASONIC) {
+        checkDistance();
+        previousMillisUS = millis();
+      }
       if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
@@ -253,8 +269,36 @@ void loop() {
     }
     // Measure state handling
     case STATE_MEASURE: {
-      //TODO MEASURE
-      stateChange(&robot_state, STATE_FREE);
+      currentMillisServer = millis();
+      if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
+        //TODO: Decidere se misure e filtraggio le fa lo stesso sempre o solo se può inviare al server
+        measuredDist = measureDistance();
+        //DEBUG
+        measuredFilteredDist = int(measuredDist);
+        //sendDataToServer();
+        //DEBUG
+        Serial.print("measuredDist = ");
+        Serial.println(measuredDist, DECIMALS);
+        Serial.print("measuredFilteredDist = ");
+        Serial.println(measuredFilteredDist, 0);
+        previousMillisServer = millis();
+      }
+      if (!robot_state.cmd_executed) {
+        switch (robot_state.command) {
+          case IR_BUTTON_OK: {
+            stateChange(&robot_state, STATE_FREE);
+            break;
+          }
+          case IR_BUTTON_AST: {
+            stateChange(&robot_state, STATE_READ);
+            break;
+          }
+          default: {
+            Serial.println("NO");
+          }
+        }
+        stateCmdExecuted(&robot_state);
+      }
       break;
     }
   }
@@ -349,8 +393,8 @@ void sendToServer() {
   servoH.detach();
 
   // client.print("POST /t/3110/post/ HTTP/1.1" + ret + "Content-Type: application/json" + ret + "Accept: */*" + ret + "Host: ptsv3.com" + ret + "Content-Length: " + content_length + ret + ret + content);
-  // TODO: capire come gestire api_key (se fare dichiarazione o no) e sistemare nomi dei campi (field1)
-  client.print("GET /update?api_key=WHH69YD9VAM7NLG5&field1=" + String(distance, 4) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: api.thingspeak.com" + RET + RET);
+  // TODO: capire come gestire api_key (se fare dichiarazione o no)
+  client.print("GET /update?api_key=WHH69YD9VAM7NLG5&field1=" + String(distance, 4) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: " + SERVER + RET + RET);
 
   Serial.println("Sent!");
   // if there are incoming bytes available
@@ -465,7 +509,6 @@ void resetCustomDistance() {
   customDistIdx = 0;
 }
 
-//TODO: capire come mai a volte fa avanti e indietro velocemente. Sembra non farlo quando c'è qualcosa che lo ritarda (che sia una stampa o un delay)
 void checkDistance() {
   // Measure distance and difference from custom
   measuredDist = measureDistance();
@@ -489,4 +532,23 @@ void checkDistance() {
     runMotors(DIRECTION_BACKWARD, 200 - (speedSlowFactor * 10));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
   }
+}
+
+void sendDataToServer() {
+  servoH.detach();
+
+  // client.print("POST /t/3110/post/ HTTP/1.1" + ret + "Content-Type: application/json" + ret + "Accept: */*" + ret + "Host: ptsv3.com" + ret + "Content-Length: " + content_length + ret + ret + content);
+  // TODO: capire come gestire api_key (se fare dichiarazione o no)
+  client.print("GET /update?api_key=WHH69YD9VAM7NLG5&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: api.thingspeak.com" + RET + RET);
+
+  Serial.println("Sent!");
+  // if there are incoming bytes available
+  // from the server, read them and print them
+  while (client.available()) {
+    char c = client.read();
+    Serial.write(c);
+  }
+  Serial.println();
+
+  servoH.attach(PIN_SERVO_HORIZ);
 }
