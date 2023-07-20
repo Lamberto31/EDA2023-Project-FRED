@@ -231,6 +231,43 @@ void loop() {
       }
       break;
     }
+    // Search state handling
+    case STATE_SEARCH: {
+      //TODO SEARCH
+      // stateChange(&robot_state, STATE_FREE);
+      measuredDist = measureDistance();
+      diffDist = measuredDist - numericCustomDist;
+      if (abs(diffDist) < STOP_TRESHOLD) {
+        runMotors(DIRECTION_STOP, 0);
+        stateChange(&robot_state, STATE_FREE);
+      }
+      else if (diffDist > STOP_TRESHOLD) {
+        runMotors(DIRECTION_FORWARD, 200);
+      }
+      else if (diffDist < -STOP_TRESHOLD) {
+        runMotors(DIRECTION_BACKWARD, 200);
+      }
+      
+      if (!robot_state.cmd_executed) {
+        switch (robot_state.command) {
+          case IR_BUTTON_OK: {
+            runMotors(DIRECTION_STOP, 0);
+            stateCmdExecuted(&robot_state);
+            break;
+          }
+          case IR_BUTTON_HASH: {
+            stateChange(&robot_state, STATE_MEASURE);
+            stateCmdExecuted(&robot_state);
+            break;
+          }
+          default: {
+            stateCmdExecuted(&robot_state);
+            Serial.println("NO");
+          }
+        }
+      }
+      break;
+    }
     // Measure state handling
     case STATE_MEASURE: {
       //TODO MEASURE
