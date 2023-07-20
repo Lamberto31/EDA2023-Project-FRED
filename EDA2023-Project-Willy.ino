@@ -22,7 +22,7 @@
 #define PIN_MOTOR_IN1 13
 
 // States
-state robot_state = {STATE_SETUP, 0, true};
+state robot_state = { STATE_SETUP, 0, true };
 
 // IR
 // Button-Command
@@ -73,10 +73,10 @@ Servo servoH;
 #define DIRECTION_RIGHT 3
 #define DIRECTION_LEFT 4
 
-// Custom distance in cm
+// Custom distance [cm]
 #define CUSTOM_DIST_MIN 5
 #define CUSTOM_DIST_MAX 500
-char customDist [4] = "000";
+char customDist[4] = "000";
 byte customDistIdx = 0;
 int numericCustomDist = 0;
 
@@ -116,10 +116,10 @@ void setup() {
 void loop() {
 
   if (!robot_state.cmd_executed) {
-    switch(robot_state.current) {
+    switch (robot_state.current) {
       // Free state handling
       case STATE_FREE: {
-        switch(robot_state.command) {
+        switch (robot_state.command) {
           case IR_BUTTON_OK: {
             runMotors(DIRECTION_STOP, 0);
             stateCmdExecuted(&robot_state);
@@ -164,7 +164,7 @@ void loop() {
       }
       // Reading state handling
       case STATE_READ: {
-        switch(robot_state.command) {
+        switch (robot_state.command) {
           case IR_BUTTON_1: {
             readCustomDistance('1');
             break;
@@ -239,41 +239,6 @@ void loop() {
       }
     }
   }
-
-  // if (IrReceiver.decode()) {
-  //   IrReceiver.resume();
-  //   switch (IrReceiver.decodedIRData.command) {
-  //     case IR_BUTTON_OK: {
-  //       Serial.println("OK");
-  //       Serial.println(measureDistance(), DECIMALS);
-  //       runMotors(DIRECTION_STOP, 0);
-  //       break;
-  //     }
-  //     case IR_BUTTON_UP: {
-  //       Serial.println("UP");
-  //       runMotors(DIRECTION_FORWARD, 200);
-  //       break;
-  //     }
-  //     case IR_BUTTON_DOWN: {
-  //       Serial.println("DOWN");
-  //       runMotors(DIRECTION_BACKWARD, 100);
-  //       break;
-  //     }
-  //     case IR_BUTTON_RIGHT: {
-  //       Serial.println("RIGHT");
-  //       runMotors(DIRECTION_RIGHT,100);
-  //       break;
-  //     }
-  //     case IR_BUTTON_LEFT: {
-  //       Serial.println("LEFT");
-  //       runMotors(DIRECTION_LEFT,100);
-  //       break;
-  //     }
-  //     default: {
-  //       Serial.println("NO");
-  //     }
-  //   }
-  // }
   servoH.write(SERVO_HORIZ_CENTER);
   // sendToServer();
 }
@@ -434,8 +399,7 @@ void readCustomDistance(char digit) {
   if (customDistIdx == 3) {
     resetCustomDistance();
     stateChange(&robot_state, STATE_FREE);
-  }
-  else {
+  } else {
     customDist[customDistIdx] = digit;
     customDistIdx++;
   }
@@ -448,7 +412,7 @@ bool composeNumericDistance() {
     return false;
   }
   // Create numericCustomDist
-  char buff[customDistIdx+1];
+  char buff[customDistIdx + 1];
   for (byte i = 0; i <= customDistIdx - 1; i++) {
     buff[i] = customDist[i];
   }
@@ -465,8 +429,8 @@ bool composeNumericDistance() {
 }
 
 void resetCustomDistance() {
-    customDist[0] = '0';
-    customDist[1] = '0';
-    customDist[2] = '0';
-    customDistIdx = 0;
+  customDist[0] = '0';
+  customDist[1] = '0';
+  customDist[2] = '0';
+  customDistIdx = 0;
 }
