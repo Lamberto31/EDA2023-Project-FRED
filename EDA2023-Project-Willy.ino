@@ -162,41 +162,33 @@ void loop() {
       }
       // Reading state handling
       case STATE_READING: {
-        Serial.println("STATO LETTURA");
         switch(robot_state.command) {
           case IR_BUTTON_1: {
             readCustomDistance('1');
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_2: {
             readCustomDistance('2');
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_3: {
             readCustomDistance('3');
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_4: {
             readCustomDistance('4');
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_5: {
             readCustomDistance('5');
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_6: {
             readCustomDistance('6');
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_7: {
             readCustomDistance('7');
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_8: {
@@ -206,12 +198,10 @@ void loop() {
           }
           case IR_BUTTON_9: {
             readCustomDistance('9');
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_0: {
             readCustomDistance('0');
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_AST: {
@@ -223,26 +213,20 @@ void loop() {
             else {
               stateChange(&robot_state, STATE_FREE);
             }
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_OK: {
             resetCustomDistance();
             stateChange(&robot_state, STATE_FREE);
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_HASH: {
             resetCustomDistance();
             stateChange(&robot_state, STATE_MEASURE);
-            stateCmdExecuted(&robot_state);
             break;
           }
-          default: {
-            stateCmdExecuted(&robot_state);
-            Serial.println("NO");
-          }
         }
+        stateCmdExecuted(&robot_state);
         break;
       }
       // Search state handling
