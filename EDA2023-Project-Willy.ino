@@ -262,17 +262,18 @@ void loop() {
     }
     // Measure state handling
     case STATE_MEASURE: {
-      measuredDist = measureDistance();
-      //DEBUG
-      measuredFilteredDist = int(measureDistance());
       currentMillis = millis();
       if (currentMillis - previousMillis >= PERIOD_SERVER) {
+        //TODO: Decidere se misure e filtraggio le fa lo stesso sempre o solo se può inviare al server
+        measuredDist = measureDistance();
+        //DEBUG
+        measuredFilteredDist = int(measuredDist);
         //sendDataToServer();
         //DEBUG
         Serial.print("measuredDist = ");
-        Serial.println(measuredDist);
+        Serial.println(measuredDist, DECIMALS);
         Serial.print("measuredFilteredDist = ");
-        Serial.println(measuredFilteredDist);
+        Serial.println(measuredFilteredDist, 0);
         previousMillis = millis();
       }
       if (!robot_state.cmd_executed) {
@@ -385,8 +386,8 @@ void sendToServer() {
   servoH.detach();
 
   // client.print("POST /t/3110/post/ HTTP/1.1" + ret + "Content-Type: application/json" + ret + "Accept: */*" + ret + "Host: ptsv3.com" + ret + "Content-Length: " + content_length + ret + ret + content);
-  // TODO: capire come gestire api_key (se fare dichiarazione o no) e sistemare nomi dei campi (field1)
-  client.print("GET /update?api_key=WHH69YD9VAM7NLG5&field1=" + String(distance, 4) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: api.thingspeak.com" + RET + RET);
+  // TODO: capire come gestire api_key (se fare dichiarazione o no)
+  client.print("GET /update?api_key=WHH69YD9VAM7NLG5&field1=" + String(distance, 4) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: " + SERVER + RET + RET);
 
   Serial.println("Sent!");
   // if there are incoming bytes available
