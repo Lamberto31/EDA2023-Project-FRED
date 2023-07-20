@@ -143,11 +143,13 @@ void loop() {
             break;
           }
           case IR_BUTTON_HASH: {
+            runMotors(DIRECTION_STOP, 0);
             stateChange(&robot_state, STATE_MEASURE);
             stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_AST: {
+            runMotors(DIRECTION_STOP, 0);
             stateChange(&robot_state, STATE_READ);
             stateCmdExecuted(&robot_state);
             break;
@@ -234,10 +236,12 @@ void loop() {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
             runMotors(DIRECTION_STOP, 0);
+            stateChange(&robot_state, STATE_FREE);
             stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_HASH: {
+            runMotors(DIRECTION_STOP, 0);
             stateChange(&robot_state, STATE_MEASURE);
             stateCmdExecuted(&robot_state);
             break;
