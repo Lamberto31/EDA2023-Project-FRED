@@ -50,6 +50,8 @@ volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 // Ultrasonic
 #define DECIMALS 4
 #define STOP_TRESHOLD 0.1
+#define SLOW_FACTOR_MAX 15
+#define SLOW_FACTOR_STOP 10
 double measuredDist = 0;
 double diffDist;
 byte speedSlowFactor = 0;
@@ -474,23 +476,24 @@ void resetCustomDistance() {
   customDistIdx = 0;
 }
 
+//TODO: capire come mai a volte fa avanti e indietro velocemente. Sembra non farlo quando c'è qualcosa che lo ritarda (che sia una stampa o un delay)
 void checkDistance() {
   measuredDist = measureDistance();
   diffDist = measuredDist - numericCustomDist;
   if (abs(diffDist) < STOP_TRESHOLD) {
-    if (speedSlowFactor < 20) speedSlowFactor++;
     runMotors(DIRECTION_STOP, 0);
-    if (speedSlowFactor > 10) {
+    if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
+    if (speedSlowFactor >= SLOW_FACTOR_STOP) {
       stateChange(&robot_state, STATE_FREE);
       speedSlowFactor = 0;
     }
   }
   else if (diffDist > STOP_TRESHOLD && robot_state.direction != DIRECTION_FORWARD) {
-    if (speedSlowFactor < 20) speedSlowFactor++;
     runMotors(DIRECTION_FORWARD, 200 - (speedSlowFactor * 10));
+    if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
   }
   else if (diffDist < -STOP_TRESHOLD && robot_state.direction != DIRECTION_BACKWARD) {
-    if (speedSlowFactor < 20) speedSlowFactor++;
     runMotors(DIRECTION_BACKWARD, 200 - (speedSlowFactor * 10));
+    if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
   }
 }
