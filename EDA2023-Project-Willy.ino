@@ -472,7 +472,10 @@ void checkDistance() {
   if (abs(diffDist) < STOP_TRESHOLD) {
     speedSlowFactor++;
     runMotors(DIRECTION_STOP, 0);
-    if (speedSlowFactor > 10) stateChange(&robot_state, STATE_FREE);
+    if (speedSlowFactor > 10) {
+      stateChange(&robot_state, STATE_FREE);
+      speedSlowFactor = -1;
+    }
   }
   else if (diffDist > STOP_TRESHOLD && robot_state.direction != DIRECTION_FORWARD) {
     speedSlowFactor++;
