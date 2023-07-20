@@ -55,6 +55,7 @@ volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 double measuredDist = 0;
 double diffDist;
 byte speedSlowFactor = 0;
+double measuredFilteredDist = 0;
 
 // WiFi
 // #define WIFI_SSID "Fastweb - Preite - Ospiti"
@@ -253,6 +254,10 @@ void loop() {
     }
     // Measure state handling
     case STATE_MEASURE: {
+      measuredDist = measureDistance();
+      //DEBUG
+      measuredFilteredDist = int(measureDistance());
+      sendDataToServer();
       if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
@@ -503,4 +508,23 @@ void checkDistance() {
     runMotors(DIRECTION_BACKWARD, 200 - (speedSlowFactor * 10));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
   }
+}
+
+void sendDataToServer() {
+  servoH.detach();
+
+  // client.print("POST /t/3110/post/ HTTP/1.1" + ret + "Content-Type: application/json" + ret + "Accept: */*" + ret + "Host: ptsv3.com" + ret + "Content-Length: " + content_length + ret + ret + content);
+  // TODO: capire come gestire api_key (se fare dichiarazione o no)
+  client.print("GET /update?api_key=WHH69YD9VAM7NLG5&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: api.thingspeak.com" + RET + RET);
+
+  Serial.println("Sent!");
+  // if there are incoming bytes available
+  // from the server, read them and print them
+  while (client.available()) {
+    char c = client.read();
+    Serial.write(c);
+  }
+  Serial.println();
+
+  servoH.attach(PIN_SERVO_HORIZ);
 }
