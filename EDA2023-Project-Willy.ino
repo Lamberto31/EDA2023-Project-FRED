@@ -49,6 +49,9 @@ volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 
 // Ultrasonic
 #define DECIMALS 4
+#define STOP_TRESHOLD 0.05
+double measuredDist = 0;
+double diffDist;
 
 // WiFi
 // #define WIFI_SSID "Fastweb - Preite - Ospiti"
@@ -228,7 +231,18 @@ void loop() {
       // Search state handling
       case STATE_SEARCH: {
         //TODO SEARCH
-        stateChange(&robot_state, STATE_FREE);
+        // stateChange(&robot_state, STATE_FREE);
+        measuredDist = measureDistance();
+        diffDist = measuredDist - numericCustomDist;
+        if (abs(diffDist) < STOP_TRESHOLD) {
+          runMotors(DIRECTION_STOP, 0);
+          stateChange(&robot_state, STATE_FREE);
+        } else if (diffDist > STOP_TRESHOLD) {
+          runMotors(DIRECTION_FORWARD, 200);
+        } else if (diffDist < -STOP_TRESHOLD) {
+          runMotors(DIRECTION_BACKWARD, 200);
+        }
+
         break;
       }
       // Measure state handling
