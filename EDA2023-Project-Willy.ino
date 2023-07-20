@@ -124,46 +124,39 @@ void loop() {
             Serial.print("Distance = ");
             Serial.println(measureDistance(), DECIMALS);
             runMotors(DIRECTION_STOP, 0);
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_UP: {
             runMotors(DIRECTION_FORWARD, 200);
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_DOWN: {
             runMotors(DIRECTION_BACKWARD, 200);
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_RIGHT: {
             runMotors(DIRECTION_RIGHT, 100);
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_LEFT: {
             runMotors(DIRECTION_LEFT, 100);
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_HASH: {
             runMotors(DIRECTION_STOP, 0);
             stateChange(&robot_state, STATE_MEASURE);
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_AST: {
             runMotors(DIRECTION_STOP, 0);
             stateChange(&robot_state, STATE_READ);
-            stateCmdExecuted(&robot_state);
             break;
           }
           default: {
-            stateCmdExecuted(&robot_state);
             Serial.println("NO");
           }
         }
+        stateCmdExecuted(&robot_state);
       }
       break;
     }
@@ -201,7 +194,6 @@ void loop() {
           }
           case IR_BUTTON_8: {
             readCustomDistance('8');
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_9: {
@@ -236,8 +228,6 @@ void loop() {
     }
     // Search state handling
     case STATE_SEARCH: {
-      //TODO SEARCH
-      // stateChange(&robot_state, STATE_FREE);
       checkDistance();
       if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
@@ -245,21 +235,19 @@ void loop() {
             runMotors(DIRECTION_STOP, 0);
             speedSlowFactor = 0;
             stateChange(&robot_state, STATE_FREE);
-            stateCmdExecuted(&robot_state);
             break;
           }
           case IR_BUTTON_HASH: {
             runMotors(DIRECTION_STOP, 0);
             speedSlowFactor = 0;
             stateChange(&robot_state, STATE_MEASURE);
-            stateCmdExecuted(&robot_state);
             break;
           }
           default: {
-            stateCmdExecuted(&robot_state);
             Serial.println("NO");
           }
         }
+        stateCmdExecuted(&robot_state);
       }
       break;
     }
@@ -462,7 +450,7 @@ bool composeNumericDistance() {
   numericCustomDist = atoi(buff);
   resetCustomDistance();
 
-  // Check if in [CUSTOM_DIST_MIN, CUSTOM_DIST_MAX]
+  // Check if not in [CUSTOM_DIST_MIN, CUSTOM_DIST_MAX]
   if (numericCustomDist < CUSTOM_DIST_MIN || numericCustomDist > CUSTOM_DIST_MAX) {
     numericCustomDist = 0;
     return false;
@@ -479,8 +467,11 @@ void resetCustomDistance() {
 
 //TODO: capire come mai a volte fa avanti e indietro velocemente. Sembra non farlo quando c'è qualcosa che lo ritarda (che sia una stampa o un delay)
 void checkDistance() {
+  // Measure distance and difference from custom
   measuredDist = measureDistance();
   diffDist = measuredDist - numericCustomDist;
+
+  // Difference less than treshold
   if (abs(diffDist) < STOP_TRESHOLD) {
     runMotors(DIRECTION_STOP, 0);
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
@@ -489,6 +480,7 @@ void checkDistance() {
       speedSlowFactor = 0;
     }
   }
+  // Difference greater than treshold
   else if (diffDist > STOP_TRESHOLD && robot_state.direction != DIRECTION_FORWARD) {
     runMotors(DIRECTION_FORWARD, 200 - (speedSlowFactor * 10));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
