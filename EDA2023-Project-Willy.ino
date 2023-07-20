@@ -49,7 +49,7 @@ volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 
 // Ultrasonic
 #define DECIMALS 4
-#define STOP_TRESHOLD 0.05
+#define STOP_TRESHOLD 0.1
 double measuredDist = 0;
 double diffDist;
 byte speedSlowFactor = -1;
