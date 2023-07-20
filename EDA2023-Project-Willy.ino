@@ -345,53 +345,61 @@ void sendToServer() {
   servoH.attach(PIN_SERVO_HORIZ);
 }
 
+// TODO: in base a come si assembla potrebbero cambiare le funzioni, soprattutto destra e sinistra
 void runMotors(byte direction, byte speed) {
   Serial.println(direction);
   Serial.println(speed);
   switch (direction) {
-    case DIRECTION_STOP:
-      {
-        Serial.println("Stop");
-        digitalWrite(PIN_MOTOR_IN1, LOW);
-        digitalWrite(PIN_MOTOR_IN2, LOW);
-        digitalWrite(PIN_MOTOR_IN3, LOW);
-        digitalWrite(PIN_MOTOR_IN4, LOW);
-        analogWrite(PIN_MOTOR_ENA, 0);
-        analogWrite(PIN_MOTOR_ENB, 0);
-        break;
-      }
-    case DIRECTION_FORWARD:
-      {
-        Serial.println("Avanti");
-        digitalWrite(PIN_MOTOR_IN1, HIGH);
-        digitalWrite(PIN_MOTOR_IN2, LOW);
-        digitalWrite(PIN_MOTOR_IN3, HIGH);
-        digitalWrite(PIN_MOTOR_IN4, LOW);
-        analogWrite(PIN_MOTOR_ENA, speed);
-        analogWrite(PIN_MOTOR_ENB, speed);
-        break;
-      }
-    case DIRECTION_BACKWARD:
-      {
-        Serial.println("Indietro");
-        digitalWrite(PIN_MOTOR_IN1, LOW);
-        digitalWrite(PIN_MOTOR_IN2, HIGH);
-        digitalWrite(PIN_MOTOR_IN3, LOW);
-        digitalWrite(PIN_MOTOR_IN4, HIGH);
-        analogWrite(PIN_MOTOR_ENA, speed);
-        analogWrite(PIN_MOTOR_ENB, speed);
-        break;
-      }
-    case DIRECTION_RIGHT:
-      {
-        Serial.println("Destra");
-        break;
-      }
-    case DIRECTION_LEFT:
-      {
-        Serial.println("Sinistra");
-        break;
-      }
+    case DIRECTION_STOP: {
+      Serial.println("Stop");
+      digitalWrite(PIN_MOTOR_IN1, LOW);
+      digitalWrite(PIN_MOTOR_IN2, LOW);
+      digitalWrite(PIN_MOTOR_IN3, LOW);
+      digitalWrite(PIN_MOTOR_IN4, LOW);
+      analogWrite(PIN_MOTOR_ENA, 0);
+      analogWrite(PIN_MOTOR_ENB, 0);
+      break;
+    }
+    case DIRECTION_FORWARD: {
+      Serial.println("Avanti");
+      digitalWrite(PIN_MOTOR_IN1, HIGH);
+      digitalWrite(PIN_MOTOR_IN2, LOW);
+      digitalWrite(PIN_MOTOR_IN3, HIGH);
+      digitalWrite(PIN_MOTOR_IN4, LOW);
+      analogWrite(PIN_MOTOR_ENA, speed);
+      analogWrite(PIN_MOTOR_ENB, speed);
+      break;
+    }
+    case DIRECTION_BACKWARD: {
+      Serial.println("Indietro");
+      digitalWrite(PIN_MOTOR_IN1, LOW);
+      digitalWrite(PIN_MOTOR_IN2, HIGH);
+      digitalWrite(PIN_MOTOR_IN3, LOW);
+      digitalWrite(PIN_MOTOR_IN4, HIGH);
+      analogWrite(PIN_MOTOR_ENA, speed);
+      analogWrite(PIN_MOTOR_ENB, speed);
+      break;
+    }
+    case DIRECTION_RIGHT: {
+      Serial.println("Destra");
+      digitalWrite(PIN_MOTOR_IN1, HIGH);
+      digitalWrite(PIN_MOTOR_IN2, LOW);
+      digitalWrite(PIN_MOTOR_IN3, LOW);
+      digitalWrite(PIN_MOTOR_IN4, HIGH);
+      analogWrite(PIN_MOTOR_ENA, speed);
+      analogWrite(PIN_MOTOR_ENB, speed);
+      break;
+    }
+    case DIRECTION_LEFT: {
+      Serial.println("Sinistra");
+      digitalWrite(PIN_MOTOR_IN1, LOW);
+      digitalWrite(PIN_MOTOR_IN2, HIGH);
+      digitalWrite(PIN_MOTOR_IN3, HIGH);
+      digitalWrite(PIN_MOTOR_IN4, LOW);
+      analogWrite(PIN_MOTOR_ENA, speed);
+      analogWrite(PIN_MOTOR_ENB, speed);
+      break;
+    }
   }
 }
 
