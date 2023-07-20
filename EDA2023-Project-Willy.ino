@@ -74,6 +74,8 @@ Servo servoH;
 #define DIRECTION_LEFT 4
 
 // Custom distance in cm
+#define CUSTOM_DIST_MIN 5
+#define CUSTOM_DIST_MAX 500
 char customDist [4] = "000";
 byte customDistIdx = 0;
 int numericCustomDist = 0;
@@ -206,6 +208,7 @@ void loop() {
           }
           case IR_BUTTON_AST: {
             if (composeNumericDistance()) stateChange(&robot_state, STATE_SEARCH); else stateChange(&robot_state, STATE_FREE);
+            Serial.println(numericCustomDist);
             break;
           }
           case IR_BUTTON_OK: {
@@ -439,20 +442,25 @@ void readCustomDistance(char digit) {
 }
 
 bool composeNumericDistance() {
+  // No digits
   if (customDistIdx == 0) {
     numericCustomDist = 0;
     return false;
   }
+  // Create numericCustomDist
   char buff[customDistIdx+1];
   for (byte i = 0; i <= customDistIdx - 1; i++) {
     buff[i] = customDist[i];
   }
   buff[customDistIdx] = '\0';
   numericCustomDist = atoi(buff);
-  if (numericCustomDist == 0) {
+  resetCustomDistance();
+
+  // Check if in [CUSTOM_DIST_MIN, CUSTOM_DIST_MAX]
+  if (numericCustomDist < CUSTOM_DIST_MIN || numericCustomDist > CUSTOM_DIST_MAX) {
+    numericCustomDist = 0;
     return false;
   }
-  resetCustomDistance();
   return true;
 }
 
