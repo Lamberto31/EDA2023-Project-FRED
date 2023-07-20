@@ -118,6 +118,9 @@ void loop() {
       if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
+            // DEBUG
+            Serial.print("Distance = ");
+            Serial.println(measureDistance(), DECIMALS);
             runMotors(DIRECTION_STOP, 0);
             stateCmdExecuted(&robot_state);
             break;
@@ -369,7 +372,6 @@ void sendToServer() {
 
 // TODO: in base a come si assembla potrebbero cambiare le funzioni, soprattutto destra e sinistra
 void runMotors(byte direction, byte speed) {
-  Serial.println(direction);
   Serial.println(speed);
   switch (direction) {
     case DIRECTION_STOP: {
