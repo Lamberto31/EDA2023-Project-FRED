@@ -52,7 +52,7 @@ volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 #define STOP_TRESHOLD 0.1
 double measuredDist = 0;
 double diffDist;
-byte speedSlowFactor = -1;
+byte speedSlowFactor = 0;
 
 // WiFi
 // #define WIFI_SSID "Fastweb - Preite - Ospiti"
@@ -478,7 +478,7 @@ void checkDistance() {
     runMotors(DIRECTION_STOP, 0);
     if (speedSlowFactor > 10) {
       stateChange(&robot_state, STATE_FREE);
-      speedSlowFactor = -1;
+      speedSlowFactor = 0;
     }
   }
   else if (diffDist > STOP_TRESHOLD && robot_state.direction != DIRECTION_FORWARD) {
