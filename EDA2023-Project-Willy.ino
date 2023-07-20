@@ -118,10 +118,10 @@ void setup() {
 
 void loop() {
 
-  if (!robot_state.cmd_executed) {
-    switch (robot_state.current) {
-      // Free state handling
-      case STATE_FREE: {
+  switch (robot_state.current) {
+    // Free state handling
+    case STATE_FREE: {
+      if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
             runMotors(DIRECTION_STOP, 0);
@@ -163,10 +163,12 @@ void loop() {
             Serial.println("NO");
           }
         }
-        break;
       }
-      // Reading state handling
-      case STATE_READ: {
+      break;
+    }
+    // Reading state handling
+    case STATE_READ: {
+      if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
           case IR_BUTTON_1: {
             readCustomDistance('1');
@@ -225,32 +227,15 @@ void loop() {
             break;
           }
         }
-        stateCmdExecuted(&robot_state);
-        break;
+      stateCmdExecuted(&robot_state);
       }
-      // Search state handling
-      case STATE_SEARCH: {
-        //TODO SEARCH
-        // stateChange(&robot_state, STATE_FREE);
-        measuredDist = measureDistance();
-        diffDist = measuredDist - numericCustomDist;
-        if (abs(diffDist) < STOP_TRESHOLD) {
-          runMotors(DIRECTION_STOP, 0);
-          stateChange(&robot_state, STATE_FREE);
-        } else if (diffDist > STOP_TRESHOLD) {
-          runMotors(DIRECTION_FORWARD, 200);
-        } else if (diffDist < -STOP_TRESHOLD) {
-          runMotors(DIRECTION_BACKWARD, 200);
-        }
-
-        break;
-      }
-      // Measure state handling
-      case STATE_MEASURE: {
-        //TODO MEASURE
-        stateChange(&robot_state, STATE_FREE);
-        break;
-      }
+      break;
+    }
+    // Measure state handling
+    case STATE_MEASURE: {
+      //TODO MEASURE
+      stateChange(&robot_state, STATE_FREE);
+      break;
     }
   }
   servoH.write(SERVO_HORIZ_CENTER);
