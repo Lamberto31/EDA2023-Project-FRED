@@ -234,10 +234,10 @@ void loop() {
         runMotors(DIRECTION_STOP, 0);
         stateChange(&robot_state, STATE_FREE);
       }
-      else if (diffDist > STOP_TRESHOLD) {
+      else if (diffDist > STOP_TRESHOLD && robot_state.direction != DIRECTION_FORWARD) {
         runMotors(DIRECTION_FORWARD, 200);
       }
-      else if (diffDist < -STOP_TRESHOLD) {
+      else if (diffDist < -STOP_TRESHOLD && robot_state.direction != DIRECTION_BACKWARD) {
         runMotors(DIRECTION_BACKWARD, 200);
       }
       
