@@ -52,6 +52,7 @@ volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 #define STOP_TRESHOLD 0.05
 double measuredDist = 0;
 double diffDist;
+byte speedSlowFactor = -1;
 
 // WiFi
 // #define WIFI_SSID "Fastweb - Preite - Ospiti"
@@ -228,19 +229,7 @@ void loop() {
     case STATE_SEARCH: {
       //TODO SEARCH
       // stateChange(&robot_state, STATE_FREE);
-      measuredDist = measureDistance();
-      diffDist = measuredDist - numericCustomDist;
-      if (abs(diffDist) < STOP_TRESHOLD) {
-        runMotors(DIRECTION_STOP, 0);
-        stateChange(&robot_state, STATE_FREE);
-      }
-      else if (diffDist > STOP_TRESHOLD && robot_state.direction != DIRECTION_FORWARD) {
-        runMotors(DIRECTION_FORWARD, 200);
-      }
-      else if (diffDist < -STOP_TRESHOLD && robot_state.direction != DIRECTION_BACKWARD) {
-        runMotors(DIRECTION_BACKWARD, 200);
-      }
-      
+      checkDistance();
       if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
@@ -475,4 +464,22 @@ void resetCustomDistance() {
   customDist[1] = '0';
   customDist[2] = '0';
   customDistIdx = 0;
+}
+
+void checkDistance() {
+  measuredDist = measureDistance();
+  diffDist = measuredDist - numericCustomDist;
+  if (abs(diffDist) < STOP_TRESHOLD) {
+    speedSlowFactor++;
+    runMotors(DIRECTION_STOP, 0);
+    if (speedSlowFactor > 10) stateChange(&robot_state, STATE_FREE);
+  }
+  else if (diffDist > STOP_TRESHOLD && robot_state.direction != DIRECTION_FORWARD) {
+    speedSlowFactor++;
+    runMotors(DIRECTION_FORWARD, 200 - (speedSlowFactor * 10));
+  }
+  else if (diffDist < -STOP_TRESHOLD && robot_state.direction != DIRECTION_BACKWARD) {
+    speedSlowFactor++;
+    runMotors(DIRECTION_BACKWARD, 200 - (speedSlowFactor * 10));
+  }
 }
