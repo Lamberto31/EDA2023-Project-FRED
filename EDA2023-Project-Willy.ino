@@ -149,7 +149,7 @@ void loop() {
             break;
           }
           case IR_BUTTON_AST: {
-            stateChange(&robot_state, STATE_READING);
+            stateChange(&robot_state, STATE_READ);
             stateCmdExecuted(&robot_state);
             break;
           }
@@ -161,7 +161,7 @@ void loop() {
         break;
       }
       // Reading state handling
-      case STATE_READING: {
+      case STATE_READ: {
         switch(robot_state.command) {
           case IR_BUTTON_1: {
             readCustomDistance('1');

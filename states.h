@@ -7,7 +7,7 @@
 #define STATE_FREE 1
 #define STATE_SEARCH 2
 #define STATE_MEASURE 3
-#define STATE_READING 4
+#define STATE_READ 4
 
 struct state {
   byte current;
