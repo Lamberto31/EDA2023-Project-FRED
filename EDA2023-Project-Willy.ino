@@ -67,6 +67,7 @@ unsigned long currentMillisUS;
 #define WIFI_PWD "31EYPGxyASL!G?"
 #define SERVER "api.thingspeak.com"
 #define PORT 80
+#define API_KEY "WHH69YD9VAM7NLG5"
 #define RET "\r\n"  //NL & CR characters
 // SoftwareSerial WifiSerial(PIN_ESP_TX, PIN_ESP_RX);
 int wifiStatus = WL_IDLE_STATUS;
@@ -421,27 +422,27 @@ void connectToServer() {
 }
 
 void sendToServer() {
-  double distance = measureDistance();
-  String content = "{\"distance\": " + String(distance) + "}";
-  String content_length = String(content.length());
-  Serial.println(String(distance, 4));
+  // double distance = measureDistance();
+  // String content = "{\"distance\": " + String(distance) + "}";
+  // String content_length = String(content.length());
+  // Serial.println(String(distance, 4));
 
-  servoH.detach();
+  // servoH.detach();
 
-  // client.print("POST /t/3110/post/ HTTP/1.1" + ret + "Content-Type: application/json" + ret + "Accept: */*" + ret + "Host: ptsv3.com" + ret + "Content-Length: " + content_length + ret + ret + content);
-  // TODO: capire come gestire api_key (se fare dichiarazione o no)
-  client.print("GET /update?api_key=WHH69YD9VAM7NLG5&field1=" + String(distance, 4) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: " + SERVER + RET + RET);
+  // // client.print("POST /t/3110/post/ HTTP/1.1" + ret + "Content-Type: application/json" + ret + "Accept: */*" + ret + "Host: ptsv3.com" + ret + "Content-Length: " + content_length + ret + ret + content);
+  // // TODO: capire come gestire api_key (se fare dichiarazione o no)
+  // client.print("GET /update?api_key=WHH69YD9VAM7NLG5&field1=" + String(distance, 4) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: " + SERVER + RET + RET);
 
-  Serial.println("Sent!");
-  // if there are incoming bytes available
-  // from the server, read them and print them
-  while (client.available()) {
-    char c = client.read();
-    Serial.write(c);
-  }
-  Serial.println();
+  // Serial.println("Sent!");
+  // // if there are incoming bytes available
+  // // from the server, read them and print them
+  // while (client.available()) {
+  //   char c = client.read();
+  //   Serial.write(c);
+  // }
+  // Serial.println();
 
-  servoH.attach(PIN_SERVO_HORIZ);
+  // servoH.attach(PIN_SERVO_HORIZ);
 }
 
 // TODO: in base a come si assembla potrebbero cambiare le funzioni, soprattutto destra e sinistra
@@ -582,7 +583,7 @@ void sendDataToServer() {
   servoH.detach();
 
   // TODO: capire come gestire api_key (se fare dichiarazione o no)
-  client.print("GET /update?api_key=WHH69YD9VAM7NLG5&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: api.thingspeak.com" + RET + RET);
+  client.print("GET /update?api_key=" + String(API_KEY) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
 
   Serial.println("Sent!");
   // if there are incoming bytes available
