@@ -110,6 +110,11 @@ void setup() {
 
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
+  // Feedback
+  servoH.write(SERVO_HORIZ_CENTER - 45);
+  delay(1000);
+  servoH.write(SERVO_HORIZ_CENTER + 45);
+  delay(1000);
   servoH.write(SERVO_HORIZ_CENTER);
 
   // Motors
