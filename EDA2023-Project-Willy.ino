@@ -118,6 +118,7 @@ void setup() {
 
   // WiFi
   wifiInitializeConnect();
+  //TODO: Capire se collegarsi ora o ogni volta che si entra nello stato MEASURE
   // connectToServer();
 
   // Servomotor
