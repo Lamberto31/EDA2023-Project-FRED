@@ -576,9 +576,11 @@ void checkDistance() {
 }
 
 void sendDataToServer() {
+  //Feedback
+  digitalWrite(LED_BUILTIN, HIGH);
+  
   servoH.detach();
 
-  // client.print("POST /t/3110/post/ HTTP/1.1" + ret + "Content-Type: application/json" + ret + "Accept: */*" + ret + "Host: ptsv3.com" + ret + "Content-Length: " + content_length + ret + ret + content);
   // TODO: capire come gestire api_key (se fare dichiarazione o no)
   client.print("GET /update?api_key=WHH69YD9VAM7NLG5&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: api.thingspeak.com" + RET + RET);
 
@@ -592,4 +594,7 @@ void sendDataToServer() {
   Serial.println();
 
   servoH.attach(PIN_SERVO_HORIZ);
+
+  //Feedback
+  digitalWrite(LED_BUILTIN, LOW);
 }
