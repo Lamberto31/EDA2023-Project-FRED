@@ -120,11 +120,16 @@ void setup() {
   // Motors
   pinMode(PIN_MOTOR_ENA, OUTPUT);
   pinMode(PIN_MOTOR_ENB, OUTPUT);
-
   pinMode(PIN_MOTOR_IN1, OUTPUT);
   pinMode(PIN_MOTOR_IN2, OUTPUT);
   pinMode(PIN_MOTOR_IN3, OUTPUT);
   pinMode(PIN_MOTOR_IN4, OUTPUT);
+  // Feedback
+  runMotors(DIRECTION_BACKWARD, 200);
+  delay(1000);
+  runMotors(DIRECTION_FORWARD, 200);
+  delay(1000);
+  runMotors(DIRECTION_STOP, 0);
 
   stateChange(&robot_state, STATE_FREE);
 }
