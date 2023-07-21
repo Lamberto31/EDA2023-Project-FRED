@@ -90,6 +90,8 @@ int numericCustomDist = 0;
 void setup() {
   // DEBUG serial communication
   Serial.begin(9600);
+  // Feedback led
+  pinMode(LED_BUILTIN, OUTPUT);
 
   //Start time counters
   previousMillisUS = millis();
@@ -324,6 +326,15 @@ void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags
   printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
   if (!aFlags == IRDATA_FLAGS_IS_REPEAT) {
     stateNewCmd(&robot_state, aCommand);
+  }
+}
+
+void ledFeedback(byte blinkNumber, unsigned int blinkDuration) {
+  for (byte blinkCount = 0; blinkCount < blinkNumber; blinkCount++) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(blinkDuration);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(blinkDuration);
   }
 }
 
