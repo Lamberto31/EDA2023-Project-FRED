@@ -74,6 +74,14 @@ WiFiEspClient client;
 #define PERIOD_SERVER 15000
 unsigned long previousMillisServer;
 unsigned long currentMillisServer;
+#define FEEDBACK_BLINK_WIFI_NO_SHIELD 50
+#define FEEDBACK_DURATION_WIFI_NO_SHIELD 500
+#define FEEDBACK_BLINK_WIFI_CONNECTING 3
+#define FEEDBACK_BLINK_WIFI_CONNECTING 500
+#define FEEDBACK_BLINK_WIFI_CONNECTED 1
+#define FEEDBACK_DURATION_WIFI_CONNECTED 3000 
+#define FEEDBACK_BLINK_WIFI_NO_CONNECTION 5
+#define FEEDBACK_DURATION_WIFI_NO_CONNECTION 500
 
 // Servomotor
 #define SERVO_HORIZ_CENTER 90
@@ -108,7 +116,7 @@ void setup() {
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
 
   // WiFi
-  // wifiInitializeConnect();
+  wifiInitializeConnect();
   // connectToServer();
 
   // Servomotor
@@ -361,8 +369,8 @@ void wifiInitializeConnect() {
   // WiFi.init(&WifiSerial);
 
   // // Check if module is connected
-  // //TODO: Capire come gestire questa situazione (avvisare tramite feedback)
   // if (WiFi.status() == WL_NO_SHIELD) {
+  //   ledFeedback(FEEDBACK_BLINK_WIFI_NO_SHIELD, FEEDBACK_DURATION_WIFI_NO_SHIELD);
   //   // DEBUG
   //   Serial.println("WiFi shield not present");
   //   // don't continue
@@ -370,18 +378,20 @@ void wifiInitializeConnect() {
   // }
 
   // // Connect to WiFi network
-  // // TODO: Capire anche questa situazione
   // while (wifiStatus != WL_CONNECTED) {
+  //   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
   //   // DEBUG
   //   Serial.print("Attempting to connect to WPA SSID: ");
   //   Serial.println(WIFI_SSID);
   //   // Connect to WPA/WPA2 network
   //   wifiStatus = WiFi.begin(WIFI_SSID, WIFI_PWD);
+  //   if(wifiStatus != WL_CONNECTED) ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_BLINK_WIFI_NO_CONNECTION);
   // }
 
   // // you're connected now, so print out the data
-  // Serial.println("You're connected to the network");
+  ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
   // // DEBUG
+  // Serial.println("You're connected to the network");
   // printWifiStatus();
 }
 
