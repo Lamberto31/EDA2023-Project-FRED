@@ -415,6 +415,7 @@ void printWifiStatus() {
 }
 
 void connectToServer() {
+  //TODO: feedback connessione
   Serial.println("Starting connection to server...");
   // if you get a connection, report back via serial
   if (client.connect(SERVER, PORT)) {
