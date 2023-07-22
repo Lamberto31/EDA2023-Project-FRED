@@ -413,13 +413,16 @@ void printWifiStatus() {
   // Serial.print(rssi);
   // Serial.println(" dBm");
 }
-
+// TODO: rendere la funzione bool in modo tale da poter gestire il caso in cui non ci si riesce a connettere
 void connectToServer() {
-  //TODO: feedback connessione
+  ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
   Serial.println("Starting connection to server...");
   // if you get a connection, report back via serial
   if (client.connect(SERVER, PORT)) {
+    ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
     Serial.println("Connected to server");
+  } else {
+    ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
   }
 }
 
