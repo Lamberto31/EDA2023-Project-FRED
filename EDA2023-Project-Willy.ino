@@ -98,7 +98,7 @@ int numericCustomDist = 0;
 
 void setup() {
   // DEBUG serial communication
-  Serial.begin(9600);
+  // Serial.begin(9600);
   // Feedback led
   pinMode(LED_BUILTIN, OUTPUT);
 
@@ -109,7 +109,7 @@ void setup() {
   // IR Receiver
   if (!initPCIInterruptForTinyReceiver()) {
     // DEBUG
-    Serial.println("No interrupt available");
+    // Serial.println("No interrupt available");
   }
 
   // Ultrasonic
@@ -156,8 +156,8 @@ void loop() {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
             // DEBUG
-            Serial.print("Distance = ");
-            Serial.println(measureDistance(), DECIMALS);
+            // Serial.print("Distance = ");
+            // Serial.println(measureDistance(), DECIMALS);
             runMotors(DIRECTION_STOP, 0);
             break;
           }
@@ -188,7 +188,7 @@ void loop() {
             break;
           }
           default: {
-            Serial.println("NO");
+            // Serial.println("NO");
           }
         }
         stateCmdExecuted(&robot_state);
@@ -242,8 +242,8 @@ void loop() {
           case IR_BUTTON_AST: {
             if (composeNumericDistance()) stateChange(&robot_state, STATE_SEARCH); else stateChange(&robot_state, STATE_FREE);
             // DEBUG
-            Serial.print("numericCustomDist = ");
-            Serial.println(numericCustomDist);
+            // Serial.print("numericCustomDist = ");
+            // Serial.println(numericCustomDist);
             break;
           }
           case IR_BUTTON_OK: {
@@ -283,7 +283,7 @@ void loop() {
             break;
           }
           default: {
-            Serial.println("NO");
+            // Serial.println("NO");
           }
         }
         stateCmdExecuted(&robot_state);
@@ -300,10 +300,10 @@ void loop() {
         measuredFilteredDist = int(measuredDist);
         //sendDataToServer();
         //DEBUG
-        Serial.print("measuredDist = ");
-        Serial.println(measuredDist, DECIMALS);
-        Serial.print("measuredFilteredDist = ");
-        Serial.println(measuredFilteredDist, 0);
+        // Serial.print("measuredDist = ");
+        // Serial.println(measuredDist, DECIMALS);
+        // Serial.print("measuredFilteredDist = ");
+        // Serial.println(measuredFilteredDist, 0);
         previousMillisServer = millis();
       }
       if (!robot_state.cmd_executed) {
@@ -317,7 +317,7 @@ void loop() {
             break;
           }
           default: {
-            Serial.println("NO");
+            // Serial.println("NO");
           }
         }
         stateCmdExecuted(&robot_state);
@@ -416,11 +416,11 @@ void printWifiStatus() {
 // TODO: rendere la funzione bool in modo tale da poter gestire il caso in cui non ci si riesce a connettere
 void connectToServer() {
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
-  Serial.println("Starting connection to server...");
+  // Serial.println("Starting connection to server...");
   // if you get a connection, report back via serial
   if (client.connect(SERVER, PORT)) {
     ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
-    Serial.println("Connected to server");
+    // Serial.println("Connected to server");
   } else {
     ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
   }
@@ -454,7 +454,7 @@ void runMotors(byte direction, byte speed) {
   switch (direction) {
     case DIRECTION_STOP: {
       // DEBUG
-      Serial.println("Stop");
+      // Serial.println("Stop");
       digitalWrite(PIN_MOTOR_IN1, LOW);
       digitalWrite(PIN_MOTOR_IN2, LOW);
       digitalWrite(PIN_MOTOR_IN3, LOW);
@@ -466,7 +466,7 @@ void runMotors(byte direction, byte speed) {
     }
     case DIRECTION_FORWARD: {
       // DEBUG
-      Serial.println("Avanti");
+      // Serial.println("Avanti");
       digitalWrite(PIN_MOTOR_IN1, HIGH);
       digitalWrite(PIN_MOTOR_IN2, LOW);
       digitalWrite(PIN_MOTOR_IN3, HIGH);
@@ -478,7 +478,7 @@ void runMotors(byte direction, byte speed) {
     }
     case DIRECTION_BACKWARD: {
       // DEBUG
-      Serial.println("Indietro");
+      // Serial.println("Indietro");
       digitalWrite(PIN_MOTOR_IN1, LOW);
       digitalWrite(PIN_MOTOR_IN2, HIGH);
       digitalWrite(PIN_MOTOR_IN3, LOW);
@@ -490,7 +490,7 @@ void runMotors(byte direction, byte speed) {
     }
     case DIRECTION_RIGHT: {
       // DEBUG
-      Serial.println("Destra");
+      // Serial.println("Destra");
       digitalWrite(PIN_MOTOR_IN1, HIGH);
       digitalWrite(PIN_MOTOR_IN2, LOW);
       digitalWrite(PIN_MOTOR_IN3, LOW);
@@ -502,7 +502,7 @@ void runMotors(byte direction, byte speed) {
     }
     case DIRECTION_LEFT: {
       // DEBUG
-      Serial.println("Sinistra");
+      // Serial.println("Sinistra");
       digitalWrite(PIN_MOTOR_IN1, LOW);
       digitalWrite(PIN_MOTOR_IN2, HIGH);
       digitalWrite(PIN_MOTOR_IN3, HIGH);
@@ -588,14 +588,14 @@ void sendDataToServer() {
 
   client.print("GET /update?api_key=" + String(API_KEY) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
 
-  Serial.println("Sent!");
+  // Serial.println("Sent!");
   // if there are incoming bytes available
   // from the server, read them and print them
   while (client.available()) {
     char c = client.read();
     Serial.write(c);
   }
-  Serial.println();
+  // Serial.println();
 
   servoH.attach(PIN_SERVO_HORIZ);
 
