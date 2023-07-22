@@ -8,8 +8,8 @@
 #include "states.h"
 
 // Digital Pins
-#define PIN_ESP_TX 1
-#define PIN_ESP_RX 0
+#define PIN_ESP_TX 0
+#define PIN_ESP_RX 1
 #define PIN_ULTRASONIC_ECHO 4
 #define PIN_ULTRASONIC_TRIG 5
 #define PIN_SERVO_HORIZ 6
