@@ -8,8 +8,8 @@
 #include "states.h"
 
 // Digital Pins
-#define PIN_ESP_TX 2
-#define PIN_ESP_RX 3
+#define PIN_ESP_TX 1
+#define PIN_ESP_RX 0
 #define PIN_ULTRASONIC_ECHO 4
 #define PIN_ULTRASONIC_TRIG 5
 #define PIN_SERVO_HORIZ 6
@@ -117,6 +117,7 @@ void setup() {
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
 
   // WiFi
+  Serial.begin(9600);
   wifiInitializeConnect();
   //TODO: Capire se collegarsi ora o ogni volta che si entra nello stato MEASURE
   // connectToServer();
@@ -367,30 +368,30 @@ double measureDistance() {
 void wifiInitializeConnect() {
   // WifiSerial.begin(9600);
 
-  // // ESP module initialization
-  // WiFi.init(&WifiSerial);
+  // ESP module initialization
+  WiFi.init(&Serial);
 
-  // // Check if module is connected
-  // if (WiFi.status() == WL_NO_SHIELD) {
-  //   ledFeedback(FEEDBACK_BLINK_WIFI_NO_SHIELD, FEEDBACK_DURATION_WIFI_NO_SHIELD);
-  //   // DEBUG
-  //   Serial.println("WiFi shield not present");
-  //   // don't continue
-  //   while (true);
-  // }
+  // Check if module is connected
+  if (WiFi.status() == WL_NO_SHIELD) {
+    ledFeedback(FEEDBACK_BLINK_WIFI_NO_SHIELD, FEEDBACK_DURATION_WIFI_NO_SHIELD);
+    // DEBUG
+    //Serial.println("WiFi shield not present");
+    // don't continue
+    while (true);
+  }
 
-  // // Connect to WiFi network
-  // while (wifiStatus != WL_CONNECTED) {
-  //   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
-  //   // DEBUG
-  //   Serial.print("Attempting to connect to WPA SSID: ");
-  //   Serial.println(WIFI_SSID);
-  //   // Connect to WPA/WPA2 network
-  //   wifiStatus = WiFi.begin(WIFI_SSID, WIFI_PWD);
-  //   if(wifiStatus != WL_CONNECTED) ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_BLINK_WIFI_NO_CONNECTION);
-  // }
+  // Connect to WiFi network
+  while (wifiStatus != WL_CONNECTED) {
+    ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
+    // DEBUG
+    // Serial.print("Attempting to connect to WPA SSID: ");
+    // Serial.println(WIFI_SSID);
+    // Connect to WPA/WPA2 network
+    wifiStatus = WiFi.begin(WIFI_SSID, WIFI_PWD);
+    if(wifiStatus != WL_CONNECTED) ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_BLINK_WIFI_NO_CONNECTION);
+  }
 
-  // // you're connected now, so print out the data
+  // you're connected now, so print out the data
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
   // // DEBUG
   // Serial.println("You're connected to the network");
