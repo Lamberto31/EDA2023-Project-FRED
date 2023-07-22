@@ -435,7 +435,6 @@ void sendToServer() {
   // servoH.detach();
 
   // // client.print("POST /t/3110/post/ HTTP/1.1" + ret + "Content-Type: application/json" + ret + "Accept: */*" + ret + "Host: ptsv3.com" + ret + "Content-Length: " + content_length + ret + ret + content);
-  // // TODO: capire come gestire api_key (se fare dichiarazione o no)
   // client.print("GET /update?api_key=WHH69YD9VAM7NLG5&field1=" + String(distance, 4) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: " + SERVER + RET + RET);
 
   // Serial.println("Sent!");
@@ -587,7 +586,6 @@ void sendDataToServer() {
   
   servoH.detach();
 
-  // TODO: capire come gestire api_key (se fare dichiarazione o no)
   client.print("GET /update?api_key=" + String(API_KEY) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
 
   Serial.println("Sent!");
