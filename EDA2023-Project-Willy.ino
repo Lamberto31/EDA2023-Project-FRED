@@ -120,7 +120,7 @@ void setup() {
   Serial.begin(9600);
   wifiInitializeConnect();
   //TODO: Capire se collegarsi ora o ogni volta che si entra nello stato MEASURE
-  // connectToServer();
+  connectToServer();
 
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
@@ -299,7 +299,7 @@ void loop() {
         measuredDist = measureDistance();
         //DEBUG
         measuredFilteredDist = int(measuredDist);
-        //sendDataToServer();
+        sendDataToServer();
         //DEBUG
         // Serial.print("measuredDist = ");
         // Serial.println(measuredDist, DECIMALS);
@@ -594,7 +594,7 @@ void sendDataToServer() {
   // from the server, read them and print them
   while (client.available()) {
     char c = client.read();
-    Serial.write(c);
+    // Serial.write(c);
   }
   // Serial.println();
 
