@@ -77,6 +77,7 @@ unsigned long currentMillisUS;
 int wifiStatus = WL_IDLE_STATUS;
 bool wifiActive = WIFI_ACTIVE;
 WiFiEspClient client;
+#define WIFI_CONNECTION_ATTEMPT_MAX 5
 #define PERIOD_SERVER 15000
 unsigned long previousMillisServer;
 unsigned long currentMillisServer;
@@ -385,17 +386,25 @@ void wifiInitializeConnect() {
   }
 
   // Connect to WiFi network
+  byte wifiConnectionAttemptCount = 0;
   while (wifiStatus != WL_CONNECTED) {
+    wifiConnectionAttemptCount++;
+    if (wifiConnectionAttemptCount > WIFI_CONNECTION_ATTEMPT_MAX) {
+      wifiActive = 0;
+      debugln("WiFi connection failed and WiFi disabled");
+      return;
+    }
     ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
     debug("Attempting to connect to WPA SSID: ");
     debugln(WIFI_SSID);
     // Connect to WPA/WPA2 network
     wifiStatus = WiFi.begin(WIFI_SSID, WIFI_PWD);
+    // TODO: Capire se questo feedback è corretto o viene eseguito sempre
     if(wifiStatus != WL_CONNECTED) ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_BLINK_WIFI_NO_CONNECTION);
-    // you're connected now, so print out the data
-    ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
-    debugln("You're connected to the network");
   }
+  // you're connected now, so print out the data
+  ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
+  debugln("You're connected to the network");
   printWifiStatus();
 }
 
