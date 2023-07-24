@@ -24,6 +24,9 @@
 // States
 state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
+// Functionalities active/disabled
+#define WIFI_ACTIVE true
+
 // IR
 // Button-Command
 #define IR_BUTTON_1 0x45
@@ -117,9 +120,11 @@ void setup() {
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
 
   // WiFi
+  if (WIFI_ACTIVE) {
   Serial.begin(9600);
   wifiInitializeConnect();
   connectToServer();
+  }
 
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
@@ -298,13 +303,10 @@ void loop() {
         measuredDist = measureDistance();
         //DEBUG
         measuredFilteredDist = int(measuredDist);
+        if (WIFI_ACTIVE) {
         if (!client.connected()) connectToServer();
         sendDataToServer();
-        //DEBUG
-        // Serial.print("measuredDist = ");
-        // Serial.println(measuredDist, DECIMALS);
-        // Serial.print("measuredFilteredDist = ");
-        // Serial.println(measuredFilteredDist, 0);
+          }
         previousMillisServer = millis();
       }
       if (!robot_state.cmd_executed) {
