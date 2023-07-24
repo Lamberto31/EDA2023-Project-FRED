@@ -25,6 +25,7 @@
 state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // Functionalities active/disabled
+#define DEBUG_ACTIVE 1
 #define WIFI_ACTIVE 1
 
 // IR
@@ -98,6 +99,16 @@ char customDist[4] = "000";
 byte customDistIdx = 0;
 int numericCustomDist = 0;
 
+// Debug macro
+#if DEBUG_ACTIVE == 1
+#define debug(x) Serial.print(x)
+#define debugln(x) Serial.println(x)
+#define debuglnDecimal(x,n) Serial.println(x,n)
+#else
+#define debug(x)
+#define debugln(x)
+#define debuglnDecimal(x,n)
+#endif
 
 void setup() {
   // DEBUG serial communication
