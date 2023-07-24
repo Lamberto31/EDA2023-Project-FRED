@@ -432,29 +432,6 @@ void connectToServer() {
   }
 }
 
-void sendToServer() {
-  // double distance = measureDistance();
-  // String content = "{\"distance\": " + String(distance) + "}";
-  // String content_length = String(content.length());
-  // Serial.println(String(distance, 4));
-
-  // servoH.detach();
-
-  // // client.print("POST /t/3110/post/ HTTP/1.1" + ret + "Content-Type: application/json" + ret + "Accept: */*" + ret + "Host: ptsv3.com" + ret + "Content-Length: " + content_length + ret + ret + content);
-  // client.print("GET /update?api_key=WHH69YD9VAM7NLG5&field1=" + String(distance, 4) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: " + SERVER + RET + RET);
-
-  // Serial.println("Sent!");
-  // // if there are incoming bytes available
-  // // from the server, read them and print them
-  // while (client.available()) {
-  //   char c = client.read();
-  //   Serial.write(c);
-  // }
-  // Serial.println();
-
-  // servoH.attach(PIN_SERVO_HORIZ);
-}
-
 // TODO: in base a come si assembla potrebbero cambiare le funzioni, soprattutto destra e sinistra
 void runMotors(byte direction, byte speed) {
   switch (direction) {
