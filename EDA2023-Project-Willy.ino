@@ -8,8 +8,8 @@
 #include "states.h"
 
 // Digital Pins
-#define PIN_ESP_TX 2
-#define PIN_ESP_RX 3
+#define PIN_ESP_TX 0
+#define PIN_ESP_RX 1
 #define PIN_ULTRASONIC_ECHO 4
 #define PIN_ULTRASONIC_TRIG 5
 #define PIN_SERVO_HORIZ 6
@@ -23,6 +23,9 @@
 
 // States
 state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
+
+// Functionalities active/disabled
+#define WIFI_ACTIVE 1
 
 // IR
 // Button-Command
@@ -76,13 +79,13 @@ WiFiEspClient client;
 unsigned long previousMillisServer;
 unsigned long currentMillisServer;
 #define FEEDBACK_BLINK_WIFI_NO_SHIELD 10
-#define FEEDBACK_DURATION_WIFI_NO_SHIELD 500
+#define FEEDBACK_DURATION_WIFI_NO_SHIELD 250
 #define FEEDBACK_BLINK_WIFI_CONNECTING 3
-#define FEEDBACK_DURATION_WIFI_CONNECTING 1000
+#define FEEDBACK_DURATION_WIFI_CONNECTING 500
 #define FEEDBACK_BLINK_WIFI_CONNECTED 1
-#define FEEDBACK_DURATION_WIFI_CONNECTED 1000 
+#define FEEDBACK_DURATION_WIFI_CONNECTED 500 
 #define FEEDBACK_BLINK_WIFI_NO_CONNECTION 5
-#define FEEDBACK_DURATION_WIFI_NO_CONNECTION 500
+#define FEEDBACK_DURATION_WIFI_NO_CONNECTION 250
 
 // Servomotor
 #define SERVO_HORIZ_CENTER 90
@@ -98,7 +101,7 @@ int numericCustomDist = 0;
 
 void setup() {
   // DEBUG serial communication
-  Serial.begin(9600);
+  // Serial.begin(9600);
   // Feedback led
   pinMode(LED_BUILTIN, OUTPUT);
 
@@ -109,7 +112,7 @@ void setup() {
   // IR Receiver
   if (!initPCIInterruptForTinyReceiver()) {
     // DEBUG
-    Serial.println("No interrupt available");
+    // Serial.println("No interrupt available");
   }
 
   // Ultrasonic
@@ -117,12 +120,15 @@ void setup() {
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
 
   // WiFi
+  if (WIFI_ACTIVE) {
+  Serial.begin(9600);
   wifiInitializeConnect();
-  //TODO: Capire se collegarsi ora o ogni volta che si entra nello stato MEASURE
-  // connectToServer();
+  connectToServer();
+  }
 
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
+
   // Feedback
   servoH.write(SERVO_HORIZ_CENTER - 45);
   delay(1000);
@@ -137,6 +143,7 @@ void setup() {
   pinMode(PIN_MOTOR_IN2, OUTPUT);
   pinMode(PIN_MOTOR_IN3, OUTPUT);
   pinMode(PIN_MOTOR_IN4, OUTPUT);
+
   // Feedback
   runMotors(DIRECTION_BACKWARD, 200);
   delay(1000);
@@ -148,7 +155,6 @@ void setup() {
 }
 
 void loop() {
-
   switch (robot_state.current) {
     // Free state handling
     case STATE_FREE: {
@@ -156,8 +162,8 @@ void loop() {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
             // DEBUG
-            Serial.print("Distance = ");
-            Serial.println(measureDistance(), DECIMALS);
+            // Serial.print("Distance = ");
+            // Serial.println(measureDistance(), DECIMALS);
             runMotors(DIRECTION_STOP, 0);
             break;
           }
@@ -186,9 +192,6 @@ void loop() {
             runMotors(DIRECTION_STOP, 0);
             stateChange(&robot_state, STATE_READ);
             break;
-          }
-          default: {
-            Serial.println("NO");
           }
         }
         stateCmdExecuted(&robot_state);
@@ -242,8 +245,8 @@ void loop() {
           case IR_BUTTON_AST: {
             if (composeNumericDistance()) stateChange(&robot_state, STATE_SEARCH); else stateChange(&robot_state, STATE_FREE);
             // DEBUG
-            Serial.print("numericCustomDist = ");
-            Serial.println(numericCustomDist);
+            // Serial.print("numericCustomDist = ");
+            // Serial.println(numericCustomDist);
             break;
           }
           case IR_BUTTON_OK: {
@@ -282,9 +285,6 @@ void loop() {
             stateChange(&robot_state, STATE_MEASURE);
             break;
           }
-          default: {
-            Serial.println("NO");
-          }
         }
         stateCmdExecuted(&robot_state);
       }
@@ -298,12 +298,10 @@ void loop() {
         measuredDist = measureDistance();
         //DEBUG
         measuredFilteredDist = int(measuredDist);
-        //sendDataToServer();
-        //DEBUG
-        Serial.print("measuredDist = ");
-        Serial.println(measuredDist, DECIMALS);
-        Serial.print("measuredFilteredDist = ");
-        Serial.println(measuredFilteredDist, 0);
+        if (WIFI_ACTIVE) {
+        if (!client.connected()) connectToServer();
+        sendDataToServer();
+          }
         previousMillisServer = millis();
       }
       if (!robot_state.cmd_executed) {
@@ -316,9 +314,6 @@ void loop() {
             stateChange(&robot_state, STATE_READ);
             break;
           }
-          default: {
-            Serial.println("NO");
-          }
         }
         stateCmdExecuted(&robot_state);
       }
@@ -326,7 +321,6 @@ void loop() {
     }
   }
   servoH.write(SERVO_HORIZ_CENTER);
-  // sendToServer();
 }
 
 // This is the function, which is called if a complete command was received
@@ -367,30 +361,30 @@ double measureDistance() {
 void wifiInitializeConnect() {
   // WifiSerial.begin(9600);
 
-  // // ESP module initialization
-  // WiFi.init(&WifiSerial);
+  // ESP module initialization
+  WiFi.init(&Serial);
 
-  // // Check if module is connected
-  // if (WiFi.status() == WL_NO_SHIELD) {
-  //   ledFeedback(FEEDBACK_BLINK_WIFI_NO_SHIELD, FEEDBACK_DURATION_WIFI_NO_SHIELD);
-  //   // DEBUG
-  //   Serial.println("WiFi shield not present");
-  //   // don't continue
-  //   while (true);
-  // }
+  // Check if module is connected
+  if (WiFi.status() == WL_NO_SHIELD) {
+    ledFeedback(FEEDBACK_BLINK_WIFI_NO_SHIELD, FEEDBACK_DURATION_WIFI_NO_SHIELD);
+    // DEBUG
+    //Serial.println("WiFi shield not present");
+    // don't continue
+    while (true);
+  }
 
-  // // Connect to WiFi network
-  // while (wifiStatus != WL_CONNECTED) {
-  //   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
-  //   // DEBUG
-  //   Serial.print("Attempting to connect to WPA SSID: ");
-  //   Serial.println(WIFI_SSID);
-  //   // Connect to WPA/WPA2 network
-  //   wifiStatus = WiFi.begin(WIFI_SSID, WIFI_PWD);
-  //   if(wifiStatus != WL_CONNECTED) ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_BLINK_WIFI_NO_CONNECTION);
-  // }
+  // Connect to WiFi network
+  while (wifiStatus != WL_CONNECTED) {
+    ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
+    // DEBUG
+    // Serial.print("Attempting to connect to WPA SSID: ");
+    // Serial.println(WIFI_SSID);
+    // Connect to WPA/WPA2 network
+    wifiStatus = WiFi.begin(WIFI_SSID, WIFI_PWD);
+    if(wifiStatus != WL_CONNECTED) ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_BLINK_WIFI_NO_CONNECTION);
+  }
 
-  // // you're connected now, so print out the data
+  // you're connected now, so print out the data
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
   // // DEBUG
   // Serial.println("You're connected to the network");
@@ -413,14 +407,15 @@ void printWifiStatus() {
   // Serial.print(rssi);
   // Serial.println(" dBm");
 }
+
 // TODO: rendere la funzione bool in modo tale da poter gestire il caso in cui non ci si riesce a connettere
 void connectToServer() {
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
-  Serial.println("Starting connection to server...");
+  // Serial.println("Starting connection to server...");
   // if you get a connection, report back via serial
   if (client.connect(SERVER, PORT)) {
     ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
-    Serial.println("Connected to server");
+    // Serial.println("Connected to server");
   } else {
     ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
   }
@@ -454,7 +449,7 @@ void runMotors(byte direction, byte speed) {
   switch (direction) {
     case DIRECTION_STOP: {
       // DEBUG
-      Serial.println("Stop");
+      // Serial.println("Stop");
       digitalWrite(PIN_MOTOR_IN1, LOW);
       digitalWrite(PIN_MOTOR_IN2, LOW);
       digitalWrite(PIN_MOTOR_IN3, LOW);
@@ -466,7 +461,7 @@ void runMotors(byte direction, byte speed) {
     }
     case DIRECTION_FORWARD: {
       // DEBUG
-      Serial.println("Avanti");
+      // Serial.println("Avanti");
       digitalWrite(PIN_MOTOR_IN1, HIGH);
       digitalWrite(PIN_MOTOR_IN2, LOW);
       digitalWrite(PIN_MOTOR_IN3, HIGH);
@@ -478,7 +473,7 @@ void runMotors(byte direction, byte speed) {
     }
     case DIRECTION_BACKWARD: {
       // DEBUG
-      Serial.println("Indietro");
+      // Serial.println("Indietro");
       digitalWrite(PIN_MOTOR_IN1, LOW);
       digitalWrite(PIN_MOTOR_IN2, HIGH);
       digitalWrite(PIN_MOTOR_IN3, LOW);
@@ -490,7 +485,7 @@ void runMotors(byte direction, byte speed) {
     }
     case DIRECTION_RIGHT: {
       // DEBUG
-      Serial.println("Destra");
+      // Serial.println("Destra");
       digitalWrite(PIN_MOTOR_IN1, HIGH);
       digitalWrite(PIN_MOTOR_IN2, LOW);
       digitalWrite(PIN_MOTOR_IN3, LOW);
@@ -502,7 +497,7 @@ void runMotors(byte direction, byte speed) {
     }
     case DIRECTION_LEFT: {
       // DEBUG
-      Serial.println("Sinistra");
+      // Serial.println("Sinistra");
       digitalWrite(PIN_MOTOR_IN1, LOW);
       digitalWrite(PIN_MOTOR_IN2, HIGH);
       digitalWrite(PIN_MOTOR_IN3, HIGH);
@@ -588,14 +583,13 @@ void sendDataToServer() {
 
   client.print("GET /update?api_key=" + String(API_KEY) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
 
-  Serial.println("Sent!");
   // if there are incoming bytes available
   // from the server, read them and print them
   while (client.available()) {
     char c = client.read();
-    Serial.write(c);
+    // Serial.write(c);
   }
-  Serial.println();
+  // Serial.println();
 
   servoH.attach(PIN_SERVO_HORIZ);
 
