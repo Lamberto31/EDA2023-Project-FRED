@@ -25,7 +25,7 @@
 state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // Functionalities active/disabled
-#define WIFI_ACTIVE true
+#define WIFI_ACTIVE 1
 
 // IR
 // Button-Command
@@ -128,6 +128,7 @@ void setup() {
 
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
+
   // Feedback
   servoH.write(SERVO_HORIZ_CENTER - 45);
   delay(1000);
@@ -142,6 +143,7 @@ void setup() {
   pinMode(PIN_MOTOR_IN2, OUTPUT);
   pinMode(PIN_MOTOR_IN3, OUTPUT);
   pinMode(PIN_MOTOR_IN4, OUTPUT);
+
   // Feedback
   runMotors(DIRECTION_BACKWARD, 200);
   delay(1000);
@@ -153,7 +155,6 @@ void setup() {
 }
 
 void loop() {
-
   switch (robot_state.current) {
     // Free state handling
     case STATE_FREE: {
@@ -191,9 +192,6 @@ void loop() {
             runMotors(DIRECTION_STOP, 0);
             stateChange(&robot_state, STATE_READ);
             break;
-          }
-          default: {
-            // Serial.println("NO");
           }
         }
         stateCmdExecuted(&robot_state);
@@ -287,9 +285,6 @@ void loop() {
             stateChange(&robot_state, STATE_MEASURE);
             break;
           }
-          default: {
-            // Serial.println("NO");
-          }
         }
         stateCmdExecuted(&robot_state);
       }
@@ -319,9 +314,6 @@ void loop() {
             stateChange(&robot_state, STATE_READ);
             break;
           }
-          default: {
-            // Serial.println("NO");
-          }
         }
         stateCmdExecuted(&robot_state);
       }
@@ -329,7 +321,6 @@ void loop() {
     }
   }
   servoH.write(SERVO_HORIZ_CENTER);
-  // sendToServer();
 }
 
 // This is the function, which is called if a complete command was received
@@ -416,6 +407,7 @@ void printWifiStatus() {
   // Serial.print(rssi);
   // Serial.println(" dBm");
 }
+
 // TODO: rendere la funzione bool in modo tale da poter gestire il caso in cui non ci si riesce a connettere
 void connectToServer() {
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
@@ -591,7 +583,6 @@ void sendDataToServer() {
 
   client.print("GET /update?api_key=" + String(API_KEY) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
 
-  // Serial.println("Sent!");
   // if there are incoming bytes available
   // from the server, read them and print them
   while (client.available()) {
