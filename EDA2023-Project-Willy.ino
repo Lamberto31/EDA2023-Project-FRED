@@ -75,6 +75,7 @@ unsigned long currentMillisUS;
 #define RET "\r\n"  //NL & CR characters
 // SoftwareSerial WifiSerial(PIN_ESP_TX, PIN_ESP_RX);
 int wifiStatus = WL_IDLE_STATUS;
+bool wifiActive = WIFI_ACTIVE;
 WiFiEspClient client;
 #define PERIOD_SERVER 15000
 unsigned long previousMillisServer;
@@ -130,7 +131,7 @@ void setup() {
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
 
   // WiFi
-  if (WIFI_ACTIVE) {
+  if (wifiActive) {
     Serial.begin(9600);
     wifiInitializeConnect();
     connectToServer();
@@ -310,7 +311,7 @@ void loop() {
         debuglnDecimal(measuredDist, DECIMALS);
         debug("measuredFilteredDist = ");
         debuglnDecimal(measuredFilteredDist, 0);
-        if (WIFI_ACTIVE) {
+        if (wifiActive) {
           if (!client.connected()) connectToServer();
           sendDataToServer();
           }
