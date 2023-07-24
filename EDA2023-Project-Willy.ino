@@ -381,8 +381,7 @@ void wifiInitializeConnect() {
   if (WiFi.status() == WL_NO_SHIELD) {
     ledFeedback(FEEDBACK_BLINK_WIFI_NO_SHIELD, FEEDBACK_DURATION_WIFI_NO_SHIELD);
     debugln("WiFi shield not present");
-    // don't continue
-    while (true);
+    wifiActive = 0;
   }
 
   // Connect to WiFi network
