@@ -392,29 +392,28 @@ void wifiInitializeConnect() {
     // Connect to WPA/WPA2 network
     wifiStatus = WiFi.begin(WIFI_SSID, WIFI_PWD);
     if(wifiStatus != WL_CONNECTED) ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_BLINK_WIFI_NO_CONNECTION);
-  }
-
   // you're connected now, so print out the data
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
   debugln("You're connected to the network");
   printWifiStatus();
 }
+}
 
 void printWifiStatus() {
-  // // print the SSID of the network you're attached to
-  // Serial.print("SSID: ");
-  // Serial.println(WiFi.SSID());
+  // print the SSID of the network you're attached to
+  debug("SSID: ");
+  debugln(WiFi.SSID());
 
-  // // print your WiFi shield's IP address
-  // IPAddress ip = WiFi.localIP();
-  // Serial.print("IP Address: ");
-  // Serial.println(ip);
+  // print your WiFi shield's IP address
+  IPAddress ip = WiFi.localIP();
+  debug("IP Address: ");
+  debugln(ip);
 
-  // // print the received signal strength
-  // long rssi = WiFi.RSSI();
-  // Serial.print("Signal strength (RSSI):");
-  // Serial.print(rssi);
-  // Serial.println(" dBm");
+  // print the received signal strength
+  long rssi = WiFi.RSSI();
+  debug("Signal strength (RSSI):");
+  debug(rssi);
+  debugln(" dBm");
 }
 
 // TODO: rendere la funzione bool in modo tale da poter gestire il caso in cui non ci si riesce a connettere
