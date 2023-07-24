@@ -392,11 +392,11 @@ void wifiInitializeConnect() {
     // Connect to WPA/WPA2 network
     wifiStatus = WiFi.begin(WIFI_SSID, WIFI_PWD);
     if(wifiStatus != WL_CONNECTED) ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_BLINK_WIFI_NO_CONNECTION);
-  // you're connected now, so print out the data
-  ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
-  debugln("You're connected to the network");
+    // you're connected now, so print out the data
+    ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
+    debugln("You're connected to the network");
+  }
   printWifiStatus();
-}
 }
 
 void printWifiStatus() {
