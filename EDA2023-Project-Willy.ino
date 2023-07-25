@@ -91,7 +91,7 @@ unsigned long currentMillisServer;
 #define FEEDBACK_DURATION_WIFI_NO_CONNECTION 250
 
 // Servomotor
-#define SERVO_HORIZ_CENTER 90
+#define SERVO_HORIZ_CENTER 120
 Servo servoH;
 
 // Custom distance [cm]
@@ -140,11 +140,12 @@ void setup() {
 
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
+  servoH.write(SERVO_HORIZ_CENTER);
 
   // Feedback
-  servoH.write(SERVO_HORIZ_CENTER - 45);
+  servoH.write(SERVO_HORIZ_CENTER - 15);
   delay(1000);
-  servoH.write(SERVO_HORIZ_CENTER + 45);
+  servoH.write(SERVO_HORIZ_CENTER + 15);
   delay(1000);
   servoH.write(SERVO_HORIZ_CENTER);
 
