@@ -12,10 +12,10 @@
 #define PIN_ESP_RX 1
 #define PIN_ULTRASONIC_ECHO 4
 #define PIN_ULTRASONIC_TRIG 5
-#define PIN_SERVO_HORIZ 6
+#define PIN_MOTOR_ENB 6
 #define PIN_MOTOR_IN4 7
 #define PIN_MOTOR_IN3 8
-#define PIN_MOTOR_ENB 9
+#define PIN_SERVO_HORIZ 9
 // #define PIN_IR_RECV 10
 #define PIN_MOTOR_ENA 11
 #define PIN_MOTOR_IN2 12
