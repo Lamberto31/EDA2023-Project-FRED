@@ -1,4 +1,5 @@
 #define IR_RECEIVE_PIN 10  // Defined here because the library requires it
+#define NO_LED_FEEDBACK_CODE
 #include "TinyIRReceiver.hpp"
 #include <Servo.h>
 #include "WiFiEsp.h"
