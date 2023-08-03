@@ -341,7 +341,6 @@ void loop() {
 // This is the function, which is called if a complete command was received
 // It runs in an ISR context with interrupts enabled
 void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
-  // DEBUG
   if (DEBUG_ACTIVE) printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
   if (!aFlags == IRDATA_FLAGS_IS_REPEAT) {
     stateNewCmd(&robot_state, aCommand);
@@ -406,7 +405,7 @@ void wifiInitializeConnect() {
   // you're connected now, so print out the data
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
   debugln("You're connected to the network");
-  printWifiStatus();
+  if (DEBUG_ACTIVE) printWifiStatus();
 }
 
 void printWifiStatus() {
