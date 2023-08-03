@@ -136,7 +136,6 @@ void setup() {
   if (wifiActive) {
     Serial.begin(9600);
     wifiInitializeConnect();
-    connectToServer();
   }
 
   // Servomotor
@@ -384,6 +383,7 @@ void wifiInitializeConnect() {
     ledFeedback(FEEDBACK_BLINK_WIFI_NO_SHIELD, FEEDBACK_DURATION_WIFI_NO_SHIELD);
     debugln("WiFi shield not present");
     wifiActive = 0;
+    return;
   }
 
   // Connect to WiFi network
@@ -407,6 +407,7 @@ void wifiInitializeConnect() {
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
   debugln("You're connected to the network");
   if (DEBUG_ACTIVE) printWifiStatus();
+  connectToServer();
 }
 
 void printWifiStatus() {
