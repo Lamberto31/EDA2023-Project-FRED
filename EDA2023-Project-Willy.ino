@@ -158,9 +158,9 @@ void setup() {
   pinMode(PIN_MOTOR_IN4, OUTPUT);
 
   // Feedback
-  runMotors(DIRECTION_BACKWARD, 200);
+  runMotors(DIRECTION_BACKWARD, 255);
   delay(1000);
-  runMotors(DIRECTION_FORWARD, 200);
+  runMotors(DIRECTION_FORWARD, 255);
   delay(1000);
   runMotors(DIRECTION_STOP, 0);
 
@@ -180,19 +180,19 @@ void loop() {
             break;
           }
           case IR_BUTTON_UP: {
-            runMotors(DIRECTION_FORWARD, 200);
+            runMotors(DIRECTION_FORWARD, 255);
             break;
           }
           case IR_BUTTON_DOWN: {
-            runMotors(DIRECTION_BACKWARD, 200);
+            runMotors(DIRECTION_BACKWARD, 255);
             break;
           }
           case IR_BUTTON_RIGHT: {
-            runMotors(DIRECTION_RIGHT, 100);
+            runMotors(DIRECTION_RIGHT, 255);
             break;
           }
           case IR_BUTTON_LEFT: {
-            runMotors(DIRECTION_LEFT, 100);
+            runMotors(DIRECTION_LEFT, 255);
             break;
           }
           case IR_BUTTON_HASH: {
@@ -557,11 +557,11 @@ void checkDistance() {
   }
   // Difference greater than treshold
   else if (diffDist > STOP_TRESHOLD && robot_state.direction != DIRECTION_FORWARD) {
-    runMotors(DIRECTION_FORWARD, 200 - (speedSlowFactor * 10));
+    runMotors(DIRECTION_FORWARD, 255 - (speedSlowFactor * 10));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
   }
   else if (diffDist < -STOP_TRESHOLD && robot_state.direction != DIRECTION_BACKWARD) {
-    runMotors(DIRECTION_BACKWARD, 200 - (speedSlowFactor * 10));
+    runMotors(DIRECTION_BACKWARD, 255 - (speedSlowFactor * 10));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
   }
 }
