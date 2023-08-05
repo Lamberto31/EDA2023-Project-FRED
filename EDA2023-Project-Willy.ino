@@ -52,7 +52,7 @@ state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 #define FEEDBACK_BLINK_WIFI_CONNECTING 3
 #define FEEDBACK_DURATION_WIFI_CONNECTING 500
 #define FEEDBACK_BLINK_WIFI_CONNECTED 1
-#define FEEDBACK_DURATION_WIFI_CONNECTED 500 
+#define FEEDBACK_DURATION_WIFI_CONNECTED 1000 
 #define FEEDBACK_BLINK_WIFI_NO_CONNECTION 5
 #define FEEDBACK_DURATION_WIFI_NO_CONNECTION 250
 //Servo
@@ -375,76 +375,6 @@ double measureDistance() {
   return distance;
 }
 
-void wifiInitializeConnect() {
-  privateData pvt = getPvtDataFromEEPROM();
-  // WifiSerial.begin(9600);
-
-  // ESP module initialization
-  WiFi.init(&Serial);
-
-  // Check if module is connected
-  if (WiFi.status() == WL_NO_SHIELD) {
-    ledFeedback(FEEDBACK_BLINK_WIFI_NO_SHIELD, FEEDBACK_DURATION_WIFI_NO_SHIELD);
-    debugln("WiFi shield not present");
-    wifiActive = 0;
-    return;
-  }
-
-  // Connect to WiFi network
-  byte wifiConnectionAttemptCount = 0;
-  while (wifiStatus != WL_CONNECTED) {
-    wifiConnectionAttemptCount++;
-    if (wifiConnectionAttemptCount > WIFI_CONNECTION_ATTEMPT_MAX) {
-      wifiActive = 0;
-      debugln("WiFi connection failed and WiFi disabled");
-      return;
-    }
-    ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
-    debug("Attempting to connect to WPA SSID: ");
-    debugln(pvt.ssid);
-    // Connect to WPA/WPA2 network
-    wifiStatus = WiFi.begin(pvt.ssid, pvt.pwd);
-    // TODO: Capire se questo feedback è corretto o viene eseguito sempre
-    if(wifiStatus != WL_CONNECTED) ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_BLINK_WIFI_NO_CONNECTION);
-  }
-  // you're connected now, so print out the data
-  ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
-  debugln("You're connected to the network");
-  if (DEBUG_ACTIVE) printWifiStatus();
-  connectToServer();
-}
-
-void printWifiStatus() {
-  // print the SSID of the network you're attached to
-  debug("SSID: ");
-  debugln(WiFi.SSID());
-
-  // print your WiFi shield's IP address
-  IPAddress ip = WiFi.localIP();
-  debug("IP Address: ");
-  debugln(ip);
-
-  // print the received signal strength
-  long rssi = WiFi.RSSI();
-  debug("Signal strength (RSSI):");
-  debug(rssi);
-  debugln(" dBm");
-}
-
-// TODO: rendere la funzione bool in modo tale da poter gestire il caso in cui non ci si riesce a connettere
-void connectToServer() {
-  ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
-  debugln("Starting connection to server...");
-  // if you get a connection, report back via serial
-  if (client.connect(SERVER, PORT)) {
-    ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
-    debugln("Connected to server");
-  } else {
-    ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
-  }
-}
-
-// TODO: in base a come si assembla potrebbero cambiare le funzioni, soprattutto destra e sinistra
 void runMotors(byte direction, byte speed) {
   switch (direction) {
     case DIRECTION_STOP: {
@@ -567,6 +497,75 @@ void checkDistance() {
   else if (diffDist < -STOP_TRESHOLD && robot_state.direction != DIRECTION_BACKWARD) {
     runMotors(DIRECTION_BACKWARD, 255 - (speedSlowFactor * 10));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
+  }
+}
+
+// WIFI
+void wifiInitializeConnect() {
+  privateData pvt = getPvtDataFromEEPROM();
+
+  // ESP module initialization
+  WiFi.init(&Serial);
+
+  // Check if module is connected
+  if (WiFi.status() == WL_NO_SHIELD) {
+    ledFeedback(FEEDBACK_BLINK_WIFI_NO_SHIELD, FEEDBACK_DURATION_WIFI_NO_SHIELD);
+    wifiActive = 0;
+    debugln("WiFi shield not present and WiFi disabled");
+    return;
+  }
+
+  // Connect to WiFi network
+  byte wifiConnectionAttemptCount = 0;
+  while (wifiStatus != WL_CONNECTED) {
+    wifiConnectionAttemptCount++;
+    if (wifiConnectionAttemptCount > WIFI_CONNECTION_ATTEMPT_MAX) {
+      wifiActive = 0;
+      debugln("WiFi connection failed and WiFi disabled");
+      return;
+    }
+    ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
+    debug("Attempting to connect to WPA SSID: ");
+    debugln(pvt.ssid);
+    // Connect to WPA/WPA2 network
+    wifiStatus = WiFi.begin(pvt.ssid, pvt.pwd);
+    // TODO: Capire se questo feedback è corretto o viene eseguito sempre
+    if(wifiStatus != WL_CONNECTED) ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
+  }
+  // you're connected now
+  ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
+  debugln("You're connected to the network");
+  if (DEBUG_ACTIVE) printWifiStatus();
+  // connectToServer();
+}
+
+void printWifiStatus() {
+  // print the SSID of the network you're attached to
+  debug("SSID: ");
+  debugln(WiFi.SSID());
+
+  // print your WiFi shield's IP address
+  IPAddress ip = WiFi.localIP();
+  debug("IP Address: ");
+  debugln(ip);
+
+  // print the received signal strength
+  long rssi = WiFi.RSSI();
+  debug("Signal strength (RSSI):");
+  debug(rssi);
+  debugln(" dBm");
+}
+
+// TODO: rendere la funzione bool in modo tale da poter gestire il caso in cui non ci si riesce a connettere
+void connectToServer() {
+  ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
+  debugln("Starting connection to server...");
+  // if you get a connection, report back via led feedback
+  if (client.connect(SERVER, PORT)) {
+    ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
+    debugln("Connected to server");
+  } else {
+    ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
   }
 }
 
