@@ -1,5 +1,5 @@
-#define IR_RECEIVE_PIN 10  // Defined here because the library requires it
-#define NO_LED_FEEDBACK_CODE
+#define IR_RECEIVE_PIN 10     // Defined here because the library requires it
+#define NO_LED_FEEDBACK_CODE  // Defined here because the library requires it
 #include "TinyIRReceiver.hpp"
 #include <Servo.h>
 #include "WiFiEsp.h"
@@ -31,6 +31,33 @@ state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 #define DEBUG_ACTIVE 1
 #define WIFI_ACTIVE 1
 
+// PARAMETERS
+// Ultrasonic
+#define DECIMALS 4
+#define STOP_TRESHOLD 0.1
+#define SLOW_FACTOR_MAX 15
+#define SLOW_FACTOR_STOP 10
+#define PERIOD_ULTRASONIC 60
+// Custom distance [cm]
+#define CUSTOM_DIST_MIN 5
+#define CUSTOM_DIST_MAX 500
+#define CUSTOM_DIST_CHAR 4
+// WiFi
+#define SERVER "api.thingspeak.com"
+#define PORT 80
+#define PERIOD_SERVER 15000
+#define WIFI_CONNECTION_ATTEMPT_MAX 5
+#define FEEDBACK_BLINK_WIFI_NO_SHIELD 10
+#define FEEDBACK_DURATION_WIFI_NO_SHIELD 250
+#define FEEDBACK_BLINK_WIFI_CONNECTING 3
+#define FEEDBACK_DURATION_WIFI_CONNECTING 500
+#define FEEDBACK_BLINK_WIFI_CONNECTED 1
+#define FEEDBACK_DURATION_WIFI_CONNECTED 500 
+#define FEEDBACK_BLINK_WIFI_NO_CONNECTION 5
+#define FEEDBACK_DURATION_WIFI_NO_CONNECTION 250
+//Servo
+#define SERVO_HORIZ_CENTER 120
+
 // IR
 // Button-Command
 #define IR_BUTTON_1 0x45
@@ -55,46 +82,26 @@ state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 
 // Ultrasonic
-#define DECIMALS 4
-#define STOP_TRESHOLD 0.1
-#define SLOW_FACTOR_MAX 15
-#define SLOW_FACTOR_STOP 10
 double measuredDist = 0;
 double diffDist;
 byte speedSlowFactor = 0;
 double measuredFilteredDist = 0;
-#define PERIOD_ULTRASONIC 60
 unsigned long previousMillisUS;
 unsigned long currentMillisUS;
 
 // WiFi
-#define SERVER "api.thingspeak.com"
-#define PORT 80
 #define RET "\r\n"  //NL & CR characters
 int wifiStatus = WL_IDLE_STATUS;
 bool wifiActive = WIFI_ACTIVE;
 WiFiEspClient client;
-#define WIFI_CONNECTION_ATTEMPT_MAX 5
-#define PERIOD_SERVER 15000
 unsigned long previousMillisServer;
 unsigned long currentMillisServer;
-#define FEEDBACK_BLINK_WIFI_NO_SHIELD 10
-#define FEEDBACK_DURATION_WIFI_NO_SHIELD 250
-#define FEEDBACK_BLINK_WIFI_CONNECTING 3
-#define FEEDBACK_DURATION_WIFI_CONNECTING 500
-#define FEEDBACK_BLINK_WIFI_CONNECTED 1
-#define FEEDBACK_DURATION_WIFI_CONNECTED 500 
-#define FEEDBACK_BLINK_WIFI_NO_CONNECTION 5
-#define FEEDBACK_DURATION_WIFI_NO_CONNECTION 250
 
 // Servomotor
-#define SERVO_HORIZ_CENTER 120
 Servo servoH;
 
 // Custom distance [cm]
-#define CUSTOM_DIST_MIN 5
-#define CUSTOM_DIST_MAX 500
-char customDist[4] = "000";
+char customDist[CUSTOM_DIST_CHAR] = "000";
 byte customDistIdx = 0;
 int numericCustomDist = 0;
 
