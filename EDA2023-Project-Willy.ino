@@ -359,22 +359,6 @@ void ledFeedback(byte blinkNumber, unsigned int blinkDuration) {
   }
 }
 
-double measureDistance() {
-  long tripTime;
-  double distance;
-
-  digitalWrite(PIN_ULTRASONIC_TRIG, LOW);
-  delayMicroseconds(5);
-  digitalWrite(PIN_ULTRASONIC_TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(PIN_ULTRASONIC_TRIG, LOW);
-
-  tripTime = pulseIn(PIN_ULTRASONIC_ECHO, HIGH);
-  distance = 0.0343 * tripTime / 2.0;
-
-  return distance;
-}
-
 void runMotors(byte direction, byte speed) {
   switch (direction) {
     case DIRECTION_STOP: {
@@ -433,6 +417,23 @@ void runMotors(byte direction, byte speed) {
       break;
     }
   }
+}
+
+// DISTANCE
+double measureDistance() {
+  long tripTime;
+  double distance;
+
+  digitalWrite(PIN_ULTRASONIC_TRIG, LOW);
+  delayMicroseconds(5);
+  digitalWrite(PIN_ULTRASONIC_TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(PIN_ULTRASONIC_TRIG, LOW);
+
+  tripTime = pulseIn(PIN_ULTRASONIC_ECHO, HIGH);
+  distance = 0.0343 * tripTime / 2.0;
+
+  return distance;
 }
 
 void readCustomDistance(char digit) {
