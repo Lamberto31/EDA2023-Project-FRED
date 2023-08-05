@@ -69,13 +69,8 @@ unsigned long previousMillisUS;
 unsigned long currentMillisUS;
 
 // WiFi
-// #define WIFI_SSID "Fastweb - Preite - Ospiti"
-// #define WIFI_PWD "Grp3mTYLFaf1NhJo"
-#define WIFI_SSID "Fastweb-Mauro"
-#define WIFI_PWD "31EYPGxyASL!G?"
 #define SERVER "api.thingspeak.com"
 #define PORT 80
-#define API_KEY "WHH69YD9VAM7NLG5"
 #define RET "\r\n"  //NL & CR characters
 // SoftwareSerial WifiSerial(PIN_ESP_TX, PIN_ESP_RX);
 int wifiStatus = WL_IDLE_STATUS;
