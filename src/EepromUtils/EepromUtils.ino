@@ -1,5 +1,7 @@
 #include "EepromUtils.h"
 
+#define READONLY 1
+
 void setup() {
   Serial.begin(9600);
 
@@ -9,7 +11,7 @@ void setup() {
     "API-KEY"
   };
 
-  putPvtDataIntoEEPROM(pvt);
+  if(!READONLY) putPvtDataIntoEEPROM(pvt);
 
   privateData read;
   read = getPvtDataFromEEPROM();
