@@ -537,6 +537,7 @@ void wifiInitializeConnect() {
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
   debugln("You're connected to the network");
   if (DEBUG_ACTIVE) printWifiStatus();
+  //TODO: Capire se connettersi da subito o solo quando serve
   // connectToServer();
 }
 
@@ -557,17 +558,19 @@ void printWifiStatus() {
   debugln(" dBm");
 }
 
-// TODO: rendere la funzione bool in modo tale da poter gestire il caso in cui non ci si riesce a connettere
-void connectToServer() {
+bool connectToServer() {
+  bool connected;
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
   debugln("Starting connection to server...");
   // if you get a connection, report back via led feedback
-  if (client.connect(SERVER, PORT)) {
+  connected = client.connect(SERVER, PORT);
+  if (connected) {
     ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
     debugln("Connected to server");
   } else {
     ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
   }
+  return connected;
 }
 
 void sendDataToServer() {
