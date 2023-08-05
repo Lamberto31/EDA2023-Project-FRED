@@ -521,6 +521,8 @@ void wifiInitializeConnect() {
   while (wifiStatus != WL_CONNECTED) {
     wifiConnectionAttemptCount++;
     if (wifiConnectionAttemptCount > WIFI_CONNECTION_ATTEMPT_MAX) {
+      // TODO: Capire se questo feedback è corretto o viene eseguito sempre
+      ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
       wifiActive = 0;
       debugln("WiFi connection failed and WiFi disabled");
       return;
@@ -530,8 +532,6 @@ void wifiInitializeConnect() {
     debugln(pvt.ssid);
     // Connect to WPA/WPA2 network
     wifiStatus = WiFi.begin(pvt.ssid, pvt.pwd);
-    // TODO: Capire se questo feedback è corretto o viene eseguito sempre
-    if(wifiStatus != WL_CONNECTED) ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
   }
   // you're connected now
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
