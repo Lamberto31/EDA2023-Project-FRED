@@ -6,7 +6,8 @@
 // #include "SoftwareSerial.h"
 
 // Custom library for states handling
-#include "states.h"
+#include "src/states/states.h"
+
 
 // Digital Pins
 #define PIN_ESP_TX 0
