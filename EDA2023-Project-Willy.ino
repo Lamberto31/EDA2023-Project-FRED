@@ -3,7 +3,6 @@
 #include "TinyIRReceiver.hpp"
 #include <Servo.h>
 #include "WiFiEsp.h"
-// #include "SoftwareSerial.h"
 
 // Custom library for states handling
 #include "src/states/states.h"
@@ -72,7 +71,6 @@ unsigned long currentMillisUS;
 #define SERVER "api.thingspeak.com"
 #define PORT 80
 #define RET "\r\n"  //NL & CR characters
-// SoftwareSerial WifiSerial(PIN_ESP_TX, PIN_ESP_RX);
 int wifiStatus = WL_IDLE_STATUS;
 bool wifiActive = WIFI_ACTIVE;
 WiFiEspClient client;
