@@ -8,6 +8,8 @@
 // Custom library for states handling
 #include "src/states/states.h"
 
+// Custom library for EEPROM memory handling
+#include "src/EepromUtils/EepromUtils.h"
 
 // Digital Pins
 #define PIN_ESP_TX 0
@@ -374,6 +376,7 @@ double measureDistance() {
 }
 
 void wifiInitializeConnect() {
+  privateData pvt = getPvtDataFromEEPROM();
   // WifiSerial.begin(9600);
 
   // ESP module initialization
@@ -398,9 +401,9 @@ void wifiInitializeConnect() {
     }
     ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
     debug("Attempting to connect to WPA SSID: ");
-    debugln(WIFI_SSID);
+    debugln(pvt.ssid);
     // Connect to WPA/WPA2 network
-    wifiStatus = WiFi.begin(WIFI_SSID, WIFI_PWD);
+    wifiStatus = WiFi.begin(pvt.ssid, pvt.pwd);
     // TODO: Capire se questo feedback è corretto o viene eseguito sempre
     if(wifiStatus != WL_CONNECTED) ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_BLINK_WIFI_NO_CONNECTION);
   }
@@ -568,12 +571,13 @@ void checkDistance() {
 }
 
 void sendDataToServer() {
+  privateData pvt = getPvtDataFromEEPROM();
   //Feedback
   digitalWrite(LED_BUILTIN, HIGH);
   
   servoH.detach();
 
-  client.print("GET /update?api_key=" + String(API_KEY) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
+  client.print("GET /update?api_key=" + String(pvt.key) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
 
   // if there are incoming bytes available
   // from the server, read them and print them
