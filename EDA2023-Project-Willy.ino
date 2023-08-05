@@ -29,17 +29,18 @@ state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 1
-#define WIFI_ACTIVE 1
+#define WIFI_ACTIVE 0
 
 // PARAMETERS
 // Ultrasonic
 #define DECIMALS 4
 #define STOP_TRESHOLD 0.1
+#define STOP_SECURE_TRESHOLD 10
 #define SLOW_FACTOR_MAX 15
 #define SLOW_FACTOR_STOP 10
 #define PERIOD_ULTRASONIC 60
 // Custom distance [cm]
-#define CUSTOM_DIST_MIN 5
+#define CUSTOM_DIST_MIN 10
 #define CUSTOM_DIST_MAX 500
 #define CUSTOM_DIST_CHAR 4
 // WiFi
@@ -174,6 +175,13 @@ void loop() {
   switch (robot_state.current) {
     // Free state handling
     case STATE_FREE: {
+      if (robot_state.direction == DIRECTION_FORWARD) {
+        currentMillisUS = millis();
+        if (currentMillisUS - previousMillisUS >= PERIOD_ULTRASONIC) {
+          preventDamage(CUSTOM_DIST_MIN);
+          previousMillisUS = millis();
+        }
+      }
       if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
@@ -498,6 +506,17 @@ void checkDistance() {
   else if (diffDist < -STOP_TRESHOLD && robot_state.direction != DIRECTION_BACKWARD) {
     runMotors(DIRECTION_BACKWARD, 255 - (speedSlowFactor * 10));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
+  }
+}
+
+void preventDamage(int minDistance) {
+  // Measure distance and difference from custom
+  measuredDist = measureDistance();
+  diffDist = measuredDist - minDistance - STOP_SECURE_TRESHOLD;
+
+  // Difference less than treshold
+  if (diffDist < STOP_TRESHOLD) {
+    runMotors(DIRECTION_STOP, 0);
   }
 }
 
