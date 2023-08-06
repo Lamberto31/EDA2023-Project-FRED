@@ -98,6 +98,8 @@ unsigned long currentMillisMeasureToSend;
 //TODO: Capire come allocare dinamicamente, è dato da PERIOD_SERVER/PERIOD_MEASURETOSEND
 dataToSend sendBuffer[5];
 byte sendBufferIndex = 0;
+//TODO: Anche questo dipende indirettamente, approssimando dovrebbe essere 50 + 51 per ogni elemento (quindi dipende dal calcolo precedente)
+char jsonToSend[310] = "{\"write_api_key\":\"";
 
 // WiFi
 #define RET "\r\n"  //NL & CR characters
@@ -344,6 +346,7 @@ void loop() {
       }
       currentMillisServer = millis();
       if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
+        jsonBuildForSend(&sendBuffer[0], sendBufferIndex, getPvtDataFromEEPROM().key, jsonToSend);
         if (wifiActive) {
           if (!client.connected()) connectToServer();
           sendDataToServer();
