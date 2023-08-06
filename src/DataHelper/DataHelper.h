@@ -8,7 +8,8 @@ struct dataToSend {
   double field1;
   double field2;
   };
-void insertNewData(dataToSend *dataArray, dataToSend *dataToAdd);
+
+void insertNewData(dataToSend *dataArray, unsigned long deltaT, double field1, double field2);
 
 //TODO: creare JSON per POST
 void jsonBuilder();

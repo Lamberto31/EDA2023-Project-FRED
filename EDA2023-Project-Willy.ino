@@ -96,7 +96,6 @@ unsigned long currentMillisUS;
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
 dataToSend sendBuffer[15];
-dataToSend tempBuffer;
 byte sendBufferIndex = 0;
 
 // WiFi
@@ -329,15 +328,8 @@ void loop() {
         measuredDist = measureDistance();
         //DEBUG_TEMP
         measuredFilteredDist = int(measuredDist);
-        debug("measuredDist = ");
-        debuglnDecimal(measuredDist, DECIMALS);
-        debug("measuredFilteredDist = ");
-        debuglnDecimal(measuredFilteredDist, 0);
 
-        tempBuffer.deltaT = sendBufferIndex;
-        tempBuffer.field1 = measuredDist;
-        tempBuffer.field2 = measuredFilteredDist;
-        insertNewData(&sendBuffer[sendBufferIndex], &tempBuffer);
+        insertNewData(&sendBuffer[sendBufferIndex], sendBufferIndex, measuredDist, measuredFilteredDist);
 
         debug("sendBuffer[sendBufferIndex].deltaT = ");
         debugln(sendBuffer[sendBufferIndex].deltaT);
