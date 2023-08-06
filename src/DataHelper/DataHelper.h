@@ -11,7 +11,6 @@ struct dataToSend {
 
 void insertNewData(dataToSend *dataArray, unsigned long deltaT, double field1, double field2);
 
-//TODO: creare JSON per POST
-void jsonBuilder();
+void jsonBuildForSend(dataToSend *dataArray, byte elements, char key[], char json[]);
 
 #endif
