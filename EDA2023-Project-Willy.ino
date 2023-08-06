@@ -36,7 +36,7 @@ state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // PARAMETERS
 // Ultrasonic
-#define DECIMALS 4
+#define DECIMALS 4      // Max value 4, it may cause buffer overflow if increased
 #define STOP_TRESHOLD 0.1
 #define STOP_SECURE_TRESHOLD 10
 #define SLOW_FACTOR_MAX 15
@@ -99,7 +99,9 @@ unsigned long currentMillisMeasureToSend;
 dataToSend sendBuffer[5];
 byte sendBufferIndex = 0;
 //TODO: Anche questo dipende indirettamente, approssimando dovrebbe essere 50 + 51 per ogni elemento (quindi dipende dal calcolo precedente)
-char jsonToSend[310] = "{\"write_api_key\":\"";
+// Dovrebbe dipendere anche da DECIMALS (con 4 ogni elemento + 51, con 3 ogni elemento + 50 e così via)
+// char jsonToSend[310] = "{\"write_api_key\":\"";
+char jsonToSend[310];
 
 // WiFi
 #define RET "\r\n"  //NL & CR characters
@@ -332,7 +334,7 @@ void loop() {
         //DEBUG_TEMP
         measuredFilteredDist = int(measuredDist);
 
-        insertNewData(&sendBuffer[sendBufferIndex], sendBufferIndex, measuredDist, measuredFilteredDist);
+        insertNewData(&sendBuffer[sendBufferIndex], 3*sendBufferIndex, measuredDist, measuredFilteredDist);
 
         debug("sendBuffer[sendBufferIndex].deltaT = ");
         debugln(sendBuffer[sendBufferIndex].deltaT);
