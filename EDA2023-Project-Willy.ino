@@ -42,7 +42,7 @@ state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 #define SLOW_FACTOR_MAX 15
 #define SLOW_FACTOR_STOP 10
 #define PERIOD_ULTRASONIC 60
-#define PERIOD_MEASURETOSEND 1000
+#define PERIOD_MEASURETOSEND 3000
 // Custom distance [cm]
 #define CUSTOM_DIST_MIN 10
 #define CUSTOM_DIST_MAX 500
@@ -95,7 +95,8 @@ unsigned long previousMillisUS;
 unsigned long currentMillisUS;
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
-dataToSend sendBuffer[15];
+//TODO: Capire come allocare dinamicamente, è dato da PERIOD_SERVER/PERIOD_MEASURETOSEND
+dataToSend sendBuffer[5];
 byte sendBufferIndex = 0;
 
 // WiFi
