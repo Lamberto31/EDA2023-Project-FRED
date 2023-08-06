@@ -10,6 +10,9 @@
 // Custom library for EEPROM memory handling
 #include "src/EepromUtils/EepromUtils.h"
 
+// Custom library for build data to send to remote server
+#include "src/DataHelper/DataHelper.h"
+
 // Digital Pins
 #define PIN_ESP_TX 0
 #define PIN_ESP_RX 1
@@ -39,6 +42,7 @@ state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 #define SLOW_FACTOR_MAX 15
 #define SLOW_FACTOR_STOP 10
 #define PERIOD_ULTRASONIC 60
+#define PERIOD_MEASURETOSEND 1000
 // Custom distance [cm]
 #define CUSTOM_DIST_MIN 10
 #define CUSTOM_DIST_MAX 500
@@ -89,6 +93,11 @@ byte speedSlowFactor = 0;
 double measuredFilteredDist = 0;
 unsigned long previousMillisUS;
 unsigned long currentMillisUS;
+unsigned long previousMillisMeasureToSend;
+unsigned long currentMillisMeasureToSend;
+dataToSend sendBuffer[15];
+dataToSend tempBuffer;
+byte sendBufferIndex = 0;
 
 // WiFi
 #define RET "\r\n"  //NL & CR characters
@@ -125,6 +134,7 @@ void setup() {
 
   //Start time counters
   previousMillisUS = millis();
+  previousMillisMeasureToSend = millis();
   previousMillisServer = millis();
 
   // IR Receiver
@@ -314,9 +324,8 @@ void loop() {
     }
     // Measure state handling
     case STATE_MEASURE: {
-      currentMillisServer = millis();
-      if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
-        //TODO: Decidere se misure e filtraggio le fa lo stesso sempre o solo se può inviare al server
+      currentMillisMeasureToSend = millis();
+      if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
         measuredDist = measureDistance();
         //DEBUG_TEMP
         measuredFilteredDist = int(measuredDist);
@@ -324,19 +333,40 @@ void loop() {
         debuglnDecimal(measuredDist, DECIMALS);
         debug("measuredFilteredDist = ");
         debuglnDecimal(measuredFilteredDist, 0);
+
+        tempBuffer.deltaT = sendBufferIndex;
+        tempBuffer.field1 = measuredDist;
+        tempBuffer.field2 = measuredFilteredDist;
+        insertNewData(&sendBuffer[sendBufferIndex], &tempBuffer);
+
+        debug("sendBuffer[sendBufferIndex].deltaT = ");
+        debugln(sendBuffer[sendBufferIndex].deltaT);
+        debug("sendBuffer[sendBufferIndex].field1 = ");
+        debuglnDecimal(sendBuffer[sendBufferIndex].field1, DECIMALS);
+        debug("sendBuffer[sendBufferIndex].field2 = ");
+        debuglnDecimal(sendBuffer[sendBufferIndex].field2, 0);
+        sendBufferIndex++;
+        previousMillisMeasureToSend = millis();
+
+      }
+      currentMillisServer = millis();
+      if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
         if (wifiActive) {
           if (!client.connected()) connectToServer();
           sendDataToServer();
           }
+          sendBufferIndex = 0;
           previousMillisServer = millis();
         }
       if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
+            sendBufferIndex = 0;
             stateChange(&robot_state, STATE_FREE);
             break;
           }
           case IR_BUTTON_AST: {
+            sendBufferIndex = 0;
             stateChange(&robot_state, STATE_READ);
             break;
           }
