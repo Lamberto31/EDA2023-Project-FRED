@@ -32,7 +32,7 @@ state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 1
-#define WIFI_ACTIVE 0
+#define WIFI_ACTIVE 1
 
 // PARAMETERS
 // Ultrasonic
@@ -350,8 +350,9 @@ void loop() {
       if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
         jsonBuildForSend(&sendBuffer[0], sendBufferIndex, getPvtDataFromEEPROM().key, jsonToSend);
         if (wifiActive) {
-          if (!client.connected()) connectToServer();
-          sendDataToServer();
+          // if (!client.connected()) connectToServer();
+          // sendDataToServer();
+          sendBulkDataToServer();
           }
           sendBufferIndex = 0;
           previousMillisServer = millis();
@@ -641,4 +642,39 @@ void sendDataToServer() {
 
   //Feedback
   digitalWrite(LED_BUILTIN, LOW);
+}
+
+void sendBulkDataToServer() {
+  //Feedback
+  // digitalWrite(LED_BUILTIN, HIGH);
+  
+  servoH.detach();
+
+  String DataLength = String(strlen(jsonToSend));
+  debug("json: ");
+  debugln(jsonToSend);
+  debug("DataLenght =");
+  debugln(DataLength);
+
+  client.stop();
+
+  // client.print("GET /update?api_key=" + String(pvt.key) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
+  // client.print("POST /channels/2219976/bulk_update.json HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
+  // client.print("POST /channels/2219976/bulk_update.json HTTP/1.1" + RET + "Host: " + SERVER + RET + "Content-Type: application/json" + RET + "Content-Length: " + DataLength + RET + RET + jsonToSend);
+  if (client.connect(SERVER, PORT)) {
+    client.print("POST /channels/2219976/bulk_update.json HTTP/1.1" + String(RET) + "Host: " + SERVER + RET + "Connection: close" + RET + "Content-Type: application/json" + RET + "Content-Length: " + DataLength + RET + RET + jsonToSend);
+  }
+  else {
+    debugln("Failure: Failed to connect to ThingSpeak");
+  }
+  delay(250);
+  client.parseFloat();
+  String resp = String(client.parseInt());
+  Serial.println("Response code:"+resp); // Print the response code. 202 indicates that the server has accepted the response
+
+  servoH.attach(PIN_SERVO_HORIZ);
+
+  //Feedback
+  // digitalWrite(LED_BUILTIN, LOW);
+
 }
