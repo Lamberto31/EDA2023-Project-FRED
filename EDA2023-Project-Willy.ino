@@ -645,6 +645,8 @@ void sendDataToServer() {
 }
 
 void sendBulkDataToServer() {
+  char c;   //Store received char from server
+
   //Feedback
   digitalWrite(LED_BUILTIN, HIGH);
   
@@ -656,17 +658,13 @@ void sendBulkDataToServer() {
   debug("DataLenght =");
   debugln(DataLength);
 
-  client.print("POST /channels/2219976/bulk_update.json HTTP/1.1" + String(RET) + "Host: " + SERVER + RET + /*"Connection: close" + RET */+ "Content-Type: application/json" + RET + "Content-Length: " + DataLength + RET + RET + jsonToSend);
-  
-  // if there are incoming bytes available
-  // from the server, read them and print them
-  // while (client.available()) {
-  //   char c = client.read();
-  // }
+
   delay(250); //Wait to receive the response
-  client.parseFloat();
-  String resp = String(client.parseInt());
-  Serial.println("Response code:"+ resp);
+  while (client.available() && c != '\n') {
+    c = client.read();
+    Serial.print(c);
+  }
+  Serial.println();
 
   servoH.attach(PIN_SERVO_HORIZ);
 
