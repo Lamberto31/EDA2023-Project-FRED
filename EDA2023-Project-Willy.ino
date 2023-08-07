@@ -569,7 +569,6 @@ void wifiInitializeConnect() {
   while (wifiStatus != WL_CONNECTED) {
     wifiConnectionAttemptCount++;
     if (wifiConnectionAttemptCount > WIFI_CONNECTION_ATTEMPT_MAX) {
-      // TODO: Capire se questo feedback è corretto o viene eseguito sempre
       ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
       wifiActive = 0;
       debugln("WiFi connection failed and WiFi disabled");
@@ -610,6 +609,7 @@ bool connectToServer() {
   debugln("Starting connection to server...");
   // if you get a connection, report back via led feedback
   connected = client.connect(SERVER, PORT);
+  //TODO: Capire questo feedback che sembra scorretto
   if (connected) {
     ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
     debugln("Connected to server");
