@@ -46,7 +46,7 @@ state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 // Custom distance [cm]
 #define CUSTOM_DIST_MIN 10
 #define CUSTOM_DIST_MAX 500
-#define CUSTOM_DIST_CHAR 4
+#define CUSTOM_DIST_CHAR 4    // Max value 4, it may cause buffer overflow if increased
 // WiFi
 #define SERVER "api.thingspeak.com"
 #define PORT 80
@@ -585,8 +585,6 @@ void wifiInitializeConnect() {
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
   debugln("You're connected to the network");
   if (DEBUG_ACTIVE) printWifiStatus();
-  //TODO: Capire se connettersi da subito o solo quando serve
-  // connectToServer();
 }
 
 void printWifiStatus() {
@@ -617,6 +615,7 @@ bool connectToServer() {
     debugln("Connected to server");
   } else {
     ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
+    debugln("Connection failed");
   }
   return connected;
 }
@@ -655,7 +654,7 @@ void sendBulkDataToServer(char channelId[]) {
   String dataLength = String(strlen(jsonToSend));
   debug("json: ");
   debugln(jsonToSend);
-  debug("DataLenght =");
+  debug("dataLenght = ");
   debugln(dataLength);
 
   client.print("POST /channels/"+ String(channelId) + "/bulk_update.json HTTP/1.1" + RET + "Host: " + SERVER + RET + /*"Connection: close" + RET */+ "Content-Type: application/json" + RET + "Content-Length: " + dataLength + RET + RET + jsonToSend);
