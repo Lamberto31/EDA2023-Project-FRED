@@ -95,13 +95,15 @@ unsigned long previousMillisUS;
 unsigned long currentMillisUS;
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
-//TODO: Capire come allocare dinamicamente, è dato da PERIOD_SERVER/PERIOD_MEASURETOSEND
-dataToSend sendBuffer[5];
+// dataToSend sendBuffer[5];
+dataToSend sendBuffer[PERIOD_SERVER/PERIOD_MEASURETOSEND];
 byte sendBufferIndex = 0;
-//TODO: Anche questo dipende indirettamente, approssimando dovrebbe essere 50 + 51 per ogni elemento (quindi dipende dal calcolo precedente)
-// Dovrebbe dipendere anche da DECIMALS (con 4 ogni elemento + 51, con 3 ogni elemento + 50 e così via)
-// char jsonToSend[310] = "{\"write_api_key\":\"";
-char jsonToSend[310];
+// char jsonToSend[310];
+/*10 is a little extra to avoid problems
+  50 is the characters used by the body in general
+  51 is the caracters used by each dataToSend (with DECIMALS = 4)
+*/
+char jsonToSend[10 + 50 + (51*(PERIOD_SERVER/PERIOD_MEASURETOSEND))];
 
 // WiFi
 #define RET "\r\n"  //NL & CR characters
