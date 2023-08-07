@@ -350,7 +350,7 @@ void loop() {
       if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
         jsonBuildForSend(&sendBuffer[0], sendBufferIndex, getPvtDataFromEEPROM().key, jsonToSend);
         if (wifiActive) {
-          // if (!client.connected()) connectToServer();
+          if (!client.connected()) connectToServer();
           // sendDataToServer();
           sendBulkDataToServer();
           }
@@ -646,7 +646,7 @@ void sendDataToServer() {
 
 void sendBulkDataToServer() {
   //Feedback
-  // digitalWrite(LED_BUILTIN, HIGH);
+  digitalWrite(LED_BUILTIN, HIGH);
   
   servoH.detach();
 
@@ -656,25 +656,20 @@ void sendBulkDataToServer() {
   debug("DataLenght =");
   debugln(DataLength);
 
-  client.stop();
-
-  // client.print("GET /update?api_key=" + String(pvt.key) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
-  // client.print("POST /channels/2219976/bulk_update.json HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
-  // client.print("POST /channels/2219976/bulk_update.json HTTP/1.1" + RET + "Host: " + SERVER + RET + "Content-Type: application/json" + RET + "Content-Length: " + DataLength + RET + RET + jsonToSend);
-  if (client.connect(SERVER, PORT)) {
-    client.print("POST /channels/2219976/bulk_update.json HTTP/1.1" + String(RET) + "Host: " + SERVER + RET + "Connection: close" + RET + "Content-Type: application/json" + RET + "Content-Length: " + DataLength + RET + RET + jsonToSend);
-  }
-  else {
-    debugln("Failure: Failed to connect to ThingSpeak");
-  }
-  delay(250);
+  client.print("POST /channels/2219976/bulk_update.json HTTP/1.1" + String(RET) + "Host: " + SERVER + RET + /*"Connection: close" + RET */+ "Content-Type: application/json" + RET + "Content-Length: " + DataLength + RET + RET + jsonToSend);
+  
+  // if there are incoming bytes available
+  // from the server, read them and print them
+  // while (client.available()) {
+  //   char c = client.read();
+  // }
+  delay(250); //Wait to receive the response
   client.parseFloat();
   String resp = String(client.parseInt());
-  Serial.println("Response code:"+resp); // Print the response code. 202 indicates that the server has accepted the response
+  Serial.println("Response code:"+ resp);
 
   servoH.attach(PIN_SERVO_HORIZ);
 
   //Feedback
-  // digitalWrite(LED_BUILTIN, LOW);
-
+  digitalWrite(LED_BUILTIN, LOW);
 }
