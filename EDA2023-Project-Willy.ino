@@ -31,7 +31,7 @@
 state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // Functionalities active/disabled
-#define DEBUG_ACTIVE 1
+#define DEBUG_ACTIVE 0
 #define WIFI_ACTIVE 1
 
 // PARAMETERS
@@ -652,12 +652,13 @@ void sendBulkDataToServer() {
   
   servoH.detach();
 
-  String DataLength = String(strlen(jsonToSend));
+  String dataLength = String(strlen(jsonToSend));
   debug("json: ");
   debugln(jsonToSend);
   debug("DataLenght =");
-  debugln(DataLength);
+  debugln(dataLength);
 
+  client.print("POST /channels/2219976/bulk_update.json HTTP/1.1" + String(RET) + "Host: " + SERVER + RET + /*"Connection: close" + RET */+ "Content-Type: application/json" + RET + "Content-Length: " + dataLength + RET + RET + jsonToSend);
 
   delay(250); //Wait to receive the response
   while (client.available() && c != '\n') {
