@@ -348,11 +348,11 @@ void loop() {
       }
       currentMillisServer = millis();
       if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
-        jsonBuildForSend(&sendBuffer[0], sendBufferIndex, getPvtDataFromEEPROM().key, jsonToSend);
+        jsonBuildForSend(&sendBuffer[0], sendBufferIndex, getPvtDataFromEEPROM().writeKey, jsonToSend);
         if (wifiActive) {
           if (!client.connected()) connectToServer();
           // sendDataToServer();
-          sendBulkDataToServer();
+          sendBulkDataToServer(getPvtDataFromEEPROM().channelId);
           }
           sendBufferIndex = 0;
           previousMillisServer = millis();
@@ -628,7 +628,7 @@ void sendDataToServer() {
   
   servoH.detach();
 
-  client.print("GET /update?api_key=" + String(pvt.key) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
+  client.print("GET /update?api_key=" + String(pvt.writeKey) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
 
   // if there are incoming bytes available
   // from the server, read them and print them
@@ -644,7 +644,7 @@ void sendDataToServer() {
   digitalWrite(LED_BUILTIN, LOW);
 }
 
-void sendBulkDataToServer() {
+void sendBulkDataToServer(char channelId[]) {
   char c;   //Store received char from server
 
   //Feedback
@@ -658,7 +658,7 @@ void sendBulkDataToServer() {
   debug("DataLenght =");
   debugln(dataLength);
 
-  client.print("POST /channels/2219976/bulk_update.json HTTP/1.1" + String(RET) + "Host: " + SERVER + RET + /*"Connection: close" + RET */+ "Content-Type: application/json" + RET + "Content-Length: " + dataLength + RET + RET + jsonToSend);
+  client.print("POST /channels/"+ String(channelId) + "/bulk_update.json HTTP/1.1" + RET + "Host: " + SERVER + RET + /*"Connection: close" + RET */+ "Content-Type: application/json" + RET + "Content-Length: " + dataLength + RET + RET + jsonToSend);
 
   delay(250); //Wait to receive the response
   while (client.available() && c != '\n') {
