@@ -31,8 +31,8 @@
 state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // Functionalities active/disabled
-#define DEBUG_ACTIVE 1
-#define WIFI_ACTIVE 0
+#define DEBUG_ACTIVE 0
+#define WIFI_ACTIVE 1
 
 // PARAMETERS
 // Ultrasonic
@@ -52,7 +52,7 @@ state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 #define PORT 80
 #define PERIOD_SERVER 15000
 #define WIFI_CONNECTION_ATTEMPT_MAX 5
-#define SEND_BUFFER_SIZE PERIOD_SERVER/PERIOD_MEASURETOSEND   //Can be changed to arbitrary value, it's better to don't go over 5/10 due to memory consumption (see where it's used)
+#define SEND_BUFFER_SIZE PERIOD_SERVER/PERIOD_MEASURETOSEND   //Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
 // WiFi Feedback
 #define FEEDBACK_BLINK_WIFI_NO_SHIELD 10
 #define FEEDBACK_DURATION_WIFI_NO_SHIELD 250
