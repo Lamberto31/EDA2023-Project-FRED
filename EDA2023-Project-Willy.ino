@@ -99,7 +99,7 @@ unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
 // dataToSend sendBuffer[5];
 dataToSend sendBuffer[SEND_BUFFER_SIZE];
-byte sendBufferIndex = 0;
+unsigned int sendBufferIndex = 0;
 /*10 is a little extra to avoid problems
   50 is the characters used by the body in general
   51 is the caracters used by each dataToSend (with DECIMALS = 4)
@@ -332,20 +332,6 @@ void loop() {
     }
     // Measure state handling
     case STATE_MEASURE: {
-      currentMillisMeasureToSend = millis();
-      if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
-        measuredDist = measureDistance();
-        //DEBUG_TEMP
-        measuredFilteredDist = int(measuredDist);
-
-        // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist);
-        insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist, sendBufferIndex, SEND_BUFFER_SIZE);
-        sendBufferIndex++;
-
-        // if (DEBUG_ACTIVE) readData(&sendBuffer[0], SEND_BUFFER_SIZE);
-
-        previousMillisMeasureToSend = millis();
-      }
       currentMillisServer = millis();
       if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
         jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE - 1), getPvtDataFromEEPROM().writeKey, jsonToSend);
@@ -361,12 +347,10 @@ void loop() {
       if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
-            sendBufferIndex = 0;
             stateChange(&robot_state, STATE_FREE);
             break;
           }
           case IR_BUTTON_AST: {
-            sendBufferIndex = 0;
             stateChange(&robot_state, STATE_READ);
             break;
           }
@@ -375,6 +359,20 @@ void loop() {
       }
       break;
     }
+  }
+  currentMillisMeasureToSend = millis();
+  if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
+    measuredDist = measureDistance();
+    //DEBUG_TEMP
+    measuredFilteredDist = int(measuredDist);
+
+    // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist);
+    insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist, sendBufferIndex, SEND_BUFFER_SIZE);
+    sendBufferIndex++;
+
+    // if (DEBUG_ACTIVE) readData(&sendBuffer[0], SEND_BUFFER_SIZE);
+
+    previousMillisMeasureToSend = millis();
   }
   servoH.write(SERVO_HORIZ_CENTER);
 }

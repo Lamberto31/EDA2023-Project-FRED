@@ -7,7 +7,7 @@ void insertNewData(dataToSend *dataArray, unsigned long deltaT, double field1, d
   dataArray->field2 = field2;
 }
 
-void jsonBuildForSend(dataToSend *dataArray, byte elements, char key[], char json[]) {
+void jsonBuildForSend(dataToSend *dataArray, unsigned int elements, char key[], char json[]) {
   unsigned long deltaT;
   double field1;
   double field2;
@@ -42,7 +42,7 @@ void jsonBuildForSend(dataToSend *dataArray, byte elements, char key[], char jso
   strcat(json, "]}");
 }
 
-void insertNewCircularData(dataToSend *dataArray, unsigned long deltaT, double field1, double field2, byte elementIndex, byte elementMax) {
+void insertNewCircularData(dataToSend *dataArray, unsigned long deltaT, double field1, double field2, unsigned int elementIndex, byte elementMax) {
   if (elementIndex < elementMax)
   {
     dataArray->deltaT = deltaT;
