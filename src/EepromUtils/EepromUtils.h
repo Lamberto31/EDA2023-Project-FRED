@@ -9,7 +9,8 @@
 struct privateData {
   char ssid[MAX_LEN];
   char pwd[MAX_LEN];
-  char key[MAX_LEN];
+  char channelId[MAX_LEN];
+  char writeKey[MAX_LEN];
   };
 
 void putPvtDataIntoEEPROM(privateData data);

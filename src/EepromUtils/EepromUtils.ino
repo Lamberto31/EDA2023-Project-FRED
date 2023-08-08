@@ -19,7 +19,8 @@ void setup() {
   Serial.println("Read custom object from EEPROM: ");
   Serial.println(read.ssid);
   Serial.println(read.pwd);
-  Serial.println(read.key);
+  Serial.println(read.channelId);
+  Serial.println(read.writeKey);
 }
 
 void loop() {

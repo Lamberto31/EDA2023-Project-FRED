@@ -10,6 +10,9 @@
 // Custom library for EEPROM memory handling
 #include "src/EepromUtils/EepromUtils.h"
 
+// Custom library for build data to send to remote server
+#include "src/DataHelper/DataHelper.h"
+
 // Digital Pins
 #define PIN_ESP_TX 0
 #define PIN_ESP_RX 1
@@ -28,21 +31,22 @@
 state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // Functionalities active/disabled
-#define DEBUG_ACTIVE 1
-#define WIFI_ACTIVE 0
+#define DEBUG_ACTIVE 0
+#define WIFI_ACTIVE 1
 
 // PARAMETERS
 // Ultrasonic
-#define DECIMALS 4
+#define DECIMALS 4      // Max value 4, it may cause buffer overflow if increased
 #define STOP_TRESHOLD 0.1
 #define STOP_SECURE_TRESHOLD 10
 #define SLOW_FACTOR_MAX 15
 #define SLOW_FACTOR_STOP 10
 #define PERIOD_ULTRASONIC 60
+#define PERIOD_MEASURETOSEND 3000
 // Custom distance [cm]
 #define CUSTOM_DIST_MIN 10
 #define CUSTOM_DIST_MAX 500
-#define CUSTOM_DIST_CHAR 4
+#define CUSTOM_DIST_CHAR 4    // Max value 4, it may cause buffer overflow if increased
 // WiFi
 #define SERVER "api.thingspeak.com"
 #define PORT 80
@@ -89,6 +93,17 @@ byte speedSlowFactor = 0;
 double measuredFilteredDist = 0;
 unsigned long previousMillisUS;
 unsigned long currentMillisUS;
+unsigned long previousMillisMeasureToSend;
+unsigned long currentMillisMeasureToSend;
+// dataToSend sendBuffer[5];
+dataToSend sendBuffer[PERIOD_SERVER/PERIOD_MEASURETOSEND];
+byte sendBufferIndex = 0;
+// char jsonToSend[310];
+/*10 is a little extra to avoid problems
+  50 is the characters used by the body in general
+  51 is the caracters used by each dataToSend (with DECIMALS = 4)
+*/
+char jsonToSend[10 + 50 + (51*(PERIOD_SERVER/PERIOD_MEASURETOSEND))];
 
 // WiFi
 #define RET "\r\n"  //NL & CR characters
@@ -125,6 +140,7 @@ void setup() {
 
   //Start time counters
   previousMillisUS = millis();
+  previousMillisMeasureToSend = millis();
   previousMillisServer = millis();
 
   // IR Receiver
@@ -314,29 +330,44 @@ void loop() {
     }
     // Measure state handling
     case STATE_MEASURE: {
-      currentMillisServer = millis();
-      if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
-        //TODO: Decidere se misure e filtraggio le fa lo stesso sempre o solo se può inviare al server
+      currentMillisMeasureToSend = millis();
+      if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
         measuredDist = measureDistance();
         //DEBUG_TEMP
         measuredFilteredDist = int(measuredDist);
-        debug("measuredDist = ");
-        debuglnDecimal(measuredDist, DECIMALS);
-        debug("measuredFilteredDist = ");
-        debuglnDecimal(measuredFilteredDist, 0);
+
+        insertNewData(&sendBuffer[sendBufferIndex], 3*sendBufferIndex, measuredDist, measuredFilteredDist);
+
+        debug("sendBuffer[sendBufferIndex].deltaT = ");
+        debugln(sendBuffer[sendBufferIndex].deltaT);
+        debug("sendBuffer[sendBufferIndex].field1 = ");
+        debuglnDecimal(sendBuffer[sendBufferIndex].field1, DECIMALS);
+        debug("sendBuffer[sendBufferIndex].field2 = ");
+        debuglnDecimal(sendBuffer[sendBufferIndex].field2, 0);
+        sendBufferIndex++;
+        previousMillisMeasureToSend = millis();
+
+      }
+      currentMillisServer = millis();
+      if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
+        jsonBuildForSend(&sendBuffer[0], sendBufferIndex, getPvtDataFromEEPROM().writeKey, jsonToSend);
         if (wifiActive) {
           if (!client.connected()) connectToServer();
-          sendDataToServer();
+          // sendDataToServer();
+          sendBulkDataToServer(getPvtDataFromEEPROM().channelId);
           }
+          sendBufferIndex = 0;
           previousMillisServer = millis();
         }
       if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
+            sendBufferIndex = 0;
             stateChange(&robot_state, STATE_FREE);
             break;
           }
           case IR_BUTTON_AST: {
+            sendBufferIndex = 0;
             stateChange(&robot_state, STATE_READ);
             break;
           }
@@ -540,7 +571,6 @@ void wifiInitializeConnect() {
   while (wifiStatus != WL_CONNECTED) {
     wifiConnectionAttemptCount++;
     if (wifiConnectionAttemptCount > WIFI_CONNECTION_ATTEMPT_MAX) {
-      // TODO: Capire se questo feedback è corretto o viene eseguito sempre
       ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
       wifiActive = 0;
       debugln("WiFi connection failed and WiFi disabled");
@@ -556,8 +586,6 @@ void wifiInitializeConnect() {
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
   debugln("You're connected to the network");
   if (DEBUG_ACTIVE) printWifiStatus();
-  //TODO: Capire se connettersi da subito o solo quando serve
-  // connectToServer();
 }
 
 void printWifiStatus() {
@@ -583,11 +611,13 @@ bool connectToServer() {
   debugln("Starting connection to server...");
   // if you get a connection, report back via led feedback
   connected = client.connect(SERVER, PORT);
+  //TODO: Capire questo feedback che sembra scorretto
   if (connected) {
     ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
     debugln("Connected to server");
   } else {
     ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
+    debugln("Connection failed");
   }
   return connected;
 }
@@ -599,7 +629,7 @@ void sendDataToServer() {
   
   servoH.detach();
 
-  client.print("GET /update?api_key=" + String(pvt.key) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
+  client.print("GET /update?api_key=" + String(pvt.writeKey) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
 
   // if there are incoming bytes available
   // from the server, read them and print them
@@ -608,6 +638,35 @@ void sendDataToServer() {
     // Serial.write(c);
   }
   // Serial.println();
+
+  servoH.attach(PIN_SERVO_HORIZ);
+
+  //Feedback
+  digitalWrite(LED_BUILTIN, LOW);
+}
+
+void sendBulkDataToServer(char channelId[]) {
+  char c;   //Store received char from server
+
+  //Feedback
+  digitalWrite(LED_BUILTIN, HIGH);
+  
+  servoH.detach();
+
+  String dataLength = String(strlen(jsonToSend));
+  debug("json: ");
+  debugln(jsonToSend);
+  debug("dataLenght = ");
+  debugln(dataLength);
+
+  client.print("POST /channels/"+ String(channelId) + "/bulk_update.json HTTP/1.1" + RET + "Host: " + SERVER + RET + /*"Connection: close" + RET */+ "Content-Type: application/json" + RET + "Content-Length: " + dataLength + RET + RET + jsonToSend);
+
+  delay(250); //Wait to receive the response
+  while (client.available() && c != '\n') {
+    c = client.read();
+    Serial.print(c);
+  }
+  Serial.println();
 
   servoH.attach(PIN_SERVO_HORIZ);
 
