@@ -370,7 +370,7 @@ void loop() {
     insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist, sendBufferIndex, SEND_BUFFER_SIZE);
     sendBufferIndex++;
 
-    // if (DEBUG_ACTIVE) readData(&sendBuffer[0], SEND_BUFFER_SIZE);
+    if (DEBUG_ACTIVE) readData(&sendBuffer[0], SEND_BUFFER_SIZE);
 
     previousMillisMeasureToSend = millis();
   }
