@@ -41,3 +41,8 @@ void jsonBuildForSend(dataToSend *dataArray, byte elements, char key[], char jso
   }
   strcat(json, "]}");
 }
+void swapDouble(double &a, double &b) {
+  double c = a;
+  a = b;
+  b = c;
+}
