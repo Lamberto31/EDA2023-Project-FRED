@@ -31,8 +31,8 @@
 state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // Functionalities active/disabled
-#define DEBUG_ACTIVE 0
-#define WIFI_ACTIVE 1
+#define DEBUG_ACTIVE 1
+#define WIFI_ACTIVE 0
 
 // PARAMETERS
 // Ultrasonic
@@ -52,6 +52,8 @@ state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 #define PORT 80
 #define PERIOD_SERVER 15000
 #define WIFI_CONNECTION_ATTEMPT_MAX 5
+#define SEND_BUFFER_SIZE PERIOD_SERVER/PERIOD_MEASURETOSEND   //Can be changed to arbitrary value, it's better to don't go over 5/10 due to memory consumption (see where it's used)
+// WiFi Feedback
 #define FEEDBACK_BLINK_WIFI_NO_SHIELD 10
 #define FEEDBACK_DURATION_WIFI_NO_SHIELD 250
 #define FEEDBACK_BLINK_WIFI_CONNECTING 3
@@ -96,7 +98,6 @@ unsigned long currentMillisUS;
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
 // dataToSend sendBuffer[5];
-#define SEND_BUFFER_SIZE PERIOD_SERVER/PERIOD_MEASURETOSEND
 dataToSend sendBuffer[SEND_BUFFER_SIZE];
 byte sendBufferIndex = 0;
 /*10 is a little extra to avoid problems
@@ -341,15 +342,9 @@ void loop() {
         insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist, sendBufferIndex, SEND_BUFFER_SIZE);
         sendBufferIndex++;
 
-        debug("sendBuffer[sendBufferIndex].deltaT = ");
-        debugln(sendBuffer[sendBufferIndex].deltaT);
-        debug("sendBuffer[sendBufferIndex].field1 = ");
-        debuglnDecimal(sendBuffer[sendBufferIndex].field1, DECIMALS);
-        debug("sendBuffer[sendBufferIndex].field2 = ");
-        debuglnDecimal(sendBuffer[sendBufferIndex].field2, 0);
-        sendBufferIndex++;
-        previousMillisMeasureToSend = millis();
+        // if (DEBUG_ACTIVE) readData(&sendBuffer[0], SEND_BUFFER_SIZE);
 
+        previousMillisMeasureToSend = millis();
       }
       currentMillisServer = millis();
       if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
