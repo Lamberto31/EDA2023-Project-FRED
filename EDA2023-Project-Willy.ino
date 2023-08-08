@@ -336,7 +336,7 @@ void loop() {
         //DEBUG_TEMP
         measuredFilteredDist = int(measuredDist);
 
-        insertNewData(&sendBuffer[sendBufferIndex], 3*sendBufferIndex, measuredDist, measuredFilteredDist);
+        insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist);
 
         debug("sendBuffer[sendBufferIndex].deltaT = ");
         debugln(sendBuffer[sendBufferIndex].deltaT);
