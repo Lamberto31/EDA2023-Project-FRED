@@ -98,11 +98,11 @@ unsigned long currentMillisMeasureToSend;
 // dataToSend sendBuffer[5];
 dataToSend sendBuffer[PERIOD_SERVER/PERIOD_MEASURETOSEND];
 byte sendBufferIndex = 0;
-// char jsonToSend[310];
 /*10 is a little extra to avoid problems
   50 is the characters used by the body in general
   51 is the caracters used by each dataToSend (with DECIMALS = 4)
 */
+// char jsonToSend[310];
 char jsonToSend[10 + 50 + (51*(PERIOD_SERVER/PERIOD_MEASURETOSEND))];
 
 // WiFi
@@ -582,23 +582,23 @@ void wifiInitializeConnect() {
     // Connect to WPA/WPA2 network
     wifiStatus = WiFi.begin(pvt.ssid, pvt.pwd);
   }
-  // you're connected now
+  // Connected
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
   debugln("You're connected to the network");
   if (DEBUG_ACTIVE) printWifiStatus();
 }
 
 void printWifiStatus() {
-  // print the SSID of the network you're attached to
+  // Print the SSID of the network you're attached to
   debug("SSID: ");
   debugln(WiFi.SSID());
 
-  // print your WiFi shield's IP address
+  // Print your WiFi shield's IP address
   IPAddress ip = WiFi.localIP();
   debug("IP Address: ");
   debugln(ip);
 
-  // print the received signal strength
+  // Print the received signal strength
   long rssi = WiFi.RSSI();
   debug("Signal strength (RSSI):");
   debug(rssi);
@@ -609,9 +609,8 @@ bool connectToServer() {
   bool connected;
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
   debugln("Starting connection to server...");
-  // if you get a connection, report back via led feedback
   connected = client.connect(SERVER, PORT);
-  //TODO: Capire questo feedback che sembra scorretto
+  //TODO: Capire questo feedback che sembra scorretto (sembra non entrare mai anche se si connette)
   if (connected) {
     ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
     debugln("Connected to server");
