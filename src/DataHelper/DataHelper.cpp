@@ -61,24 +61,30 @@ void insertNewCircularData(dataToSend *dataArray, unsigned long deltaT, double f
   }
 }
 
-void readData(dataToSend *dataArray, byte elements) {
+void readAndPrintData(dataToSend *dataArray, byte elements) {
+  Serial.println("SEND BUFFER ELEMENTS");
+  Serial.print("[i]");
+  Serial.print("\tdeltaT");
+  Serial.print("\tfield1");
+  Serial.println("\tfield2");
   for (byte i = 0; i < elements; i++)
   {
-    Serial.print("sendBuffer[");
+    Serial.print("[");
     Serial.print(i);
-    Serial.println("]");
+    Serial.print("]");
 
-    Serial.print("\tdeltaT = ");
-    Serial.println(dataArray->deltaT);
+    Serial.print("\t");
+    Serial.print(dataArray->deltaT);
 
-    Serial.print("\tfield1 = ");
-    Serial.println(dataArray->field1);
+    Serial.print("\t");
+    Serial.print(dataArray->field1);
 
-    Serial.print("\tdfield2 = ");
+    Serial.print("\t");
     Serial.println(dataArray->field2);
-    Serial.println();
+    //Serial.println();
     dataArray++;
   }
+  Serial.println();
 }
 
 void swapDouble(double &a, double &b) {
