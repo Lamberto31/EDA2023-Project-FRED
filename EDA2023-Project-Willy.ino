@@ -96,14 +96,15 @@ unsigned long currentMillisUS;
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
 // dataToSend sendBuffer[5];
-dataToSend sendBuffer[PERIOD_SERVER/PERIOD_MEASURETOSEND];
+#define SEND_BUFFER_SIZE PERIOD_SERVER/PERIOD_MEASURETOSEND
+dataToSend sendBuffer[SEND_BUFFER_SIZE];
 byte sendBufferIndex = 0;
 /*10 is a little extra to avoid problems
   50 is the characters used by the body in general
   51 is the caracters used by each dataToSend (with DECIMALS = 4)
 */
 // char jsonToSend[310];
-char jsonToSend[10 + 50 + (51*(PERIOD_SERVER/PERIOD_MEASURETOSEND))];
+char jsonToSend[10 + 50 + (51*(SEND_BUFFER_SIZE))];
 
 // WiFi
 #define RET "\r\n"  //NL & CR characters
