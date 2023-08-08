@@ -52,6 +52,8 @@ state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 #define PORT 80
 #define PERIOD_SERVER 15000
 #define WIFI_CONNECTION_ATTEMPT_MAX 5
+#define SEND_BUFFER_SIZE PERIOD_SERVER/PERIOD_MEASURETOSEND   //Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
+// WiFi Feedback
 #define FEEDBACK_BLINK_WIFI_NO_SHIELD 10
 #define FEEDBACK_DURATION_WIFI_NO_SHIELD 250
 #define FEEDBACK_BLINK_WIFI_CONNECTING 3
@@ -96,14 +98,14 @@ unsigned long currentMillisUS;
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
 // dataToSend sendBuffer[5];
-dataToSend sendBuffer[PERIOD_SERVER/PERIOD_MEASURETOSEND];
-byte sendBufferIndex = 0;
+dataToSend sendBuffer[SEND_BUFFER_SIZE];
+unsigned int sendBufferIndex = 0;
 /*10 is a little extra to avoid problems
   50 is the characters used by the body in general
   51 is the caracters used by each dataToSend (with DECIMALS = 4)
 */
 // char jsonToSend[310];
-char jsonToSend[10 + 50 + (51*(PERIOD_SERVER/PERIOD_MEASURETOSEND))];
+char jsonToSend[10 + 50 + (51*(SEND_BUFFER_SIZE))];
 
 // WiFi
 #define RET "\r\n"  //NL & CR characters
@@ -330,44 +332,25 @@ void loop() {
     }
     // Measure state handling
     case STATE_MEASURE: {
-      currentMillisMeasureToSend = millis();
-      if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
-        measuredDist = measureDistance();
-        //DEBUG_TEMP
-        measuredFilteredDist = int(measuredDist);
-
-        insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist);
-
-        debug("sendBuffer[sendBufferIndex].deltaT = ");
-        debugln(sendBuffer[sendBufferIndex].deltaT);
-        debug("sendBuffer[sendBufferIndex].field1 = ");
-        debuglnDecimal(sendBuffer[sendBufferIndex].field1, DECIMALS);
-        debug("sendBuffer[sendBufferIndex].field2 = ");
-        debuglnDecimal(sendBuffer[sendBufferIndex].field2, 0);
-        sendBufferIndex++;
-        previousMillisMeasureToSend = millis();
-
-      }
       currentMillisServer = millis();
       if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
-        jsonBuildForSend(&sendBuffer[0], sendBufferIndex, getPvtDataFromEEPROM().writeKey, jsonToSend);
+        jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE - 1), getPvtDataFromEEPROM().writeKey, jsonToSend);
         if (wifiActive) {
           if (!client.connected()) connectToServer();
           // sendDataToServer();
           sendBulkDataToServer(getPvtDataFromEEPROM().channelId);
           }
           sendBufferIndex = 0;
+          memset(sendBuffer, 0, sizeof(sendBuffer));
           previousMillisServer = millis();
         }
       if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
-            sendBufferIndex = 0;
             stateChange(&robot_state, STATE_FREE);
             break;
           }
           case IR_BUTTON_AST: {
-            sendBufferIndex = 0;
             stateChange(&robot_state, STATE_READ);
             break;
           }
@@ -376,6 +359,20 @@ void loop() {
       }
       break;
     }
+  }
+  currentMillisMeasureToSend = millis();
+  if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
+    measuredDist = measureDistance();
+    //DEBUG_TEMP
+    measuredFilteredDist = int(measuredDist);
+
+    // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist);
+    insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist, sendBufferIndex, SEND_BUFFER_SIZE);
+    sendBufferIndex++;
+
+    if (DEBUG_ACTIVE) readAndPrintData(&sendBuffer[0], SEND_BUFFER_SIZE);
+
+    previousMillisMeasureToSend = millis();
   }
   servoH.write(SERVO_HORIZ_CENTER);
 }

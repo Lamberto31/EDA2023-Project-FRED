@@ -11,6 +11,12 @@ struct dataToSend {
 
 void insertNewData(dataToSend *dataArray, unsigned long deltaT, double field1, double field2);
 
-void jsonBuildForSend(dataToSend *dataArray, byte elements, char key[], char json[]);
+void jsonBuildForSend(dataToSend *dataArray, unsigned int elements, char key[], char json[]);
+
+void insertNewCircularData(dataToSend *dataArray, unsigned long deltaT, double field1, double field2, unsigned int elementIndex, byte elementMax);
+
+void swapDouble(double &a, double &b);
+
+void readAndPrintData(dataToSend *dataArray, byte elements);
 
 #endif

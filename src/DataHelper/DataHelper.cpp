@@ -7,7 +7,7 @@ void insertNewData(dataToSend *dataArray, unsigned long deltaT, double field1, d
   dataArray->field2 = field2;
 }
 
-void jsonBuildForSend(dataToSend *dataArray, byte elements, char key[], char json[]) {
+void jsonBuildForSend(dataToSend *dataArray, unsigned int elements, char key[], char json[]) {
   unsigned long deltaT;
   double field1;
   double field2;
@@ -40,4 +40,55 @@ void jsonBuildForSend(dataToSend *dataArray, byte elements, char key[], char jso
     if (i < elements - 1) strcat(json, ",");
   }
   strcat(json, "]}");
+}
+
+void insertNewCircularData(dataToSend *dataArray, unsigned long deltaT, double field1, double field2, unsigned int elementIndex, byte elementMax) {
+  if (elementIndex < elementMax)
+  {
+    dataArray->deltaT = deltaT;
+    dataArray->field1 = field1;
+    dataArray->field2 = field2;
+  }
+  else {
+    double tempField1 = field1;
+    double tempField2 = field2;
+    for (byte i = 0; i < elementMax; i++)
+    {
+      swapDouble(dataArray->field1, tempField1);
+      swapDouble(dataArray->field2, tempField2);
+      dataArray--;
+    }
+  }
+}
+
+void readAndPrintData(dataToSend *dataArray, byte elements) {
+  Serial.println("SEND BUFFER ELEMENTS");
+  Serial.print("[i]");
+  Serial.print("\tdeltaT");
+  Serial.print("\tfield1");
+  Serial.println("\tfield2");
+  for (byte i = 0; i < elements; i++)
+  {
+    Serial.print("[");
+    Serial.print(i);
+    Serial.print("]");
+
+    Serial.print("\t");
+    Serial.print(dataArray->deltaT);
+
+    Serial.print("\t");
+    Serial.print(dataArray->field1);
+
+    Serial.print("\t");
+    Serial.println(dataArray->field2);
+    //Serial.println();
+    dataArray++;
+  }
+  Serial.println();
+}
+
+void swapDouble(double &a, double &b) {
+  double c = a;
+  a = b;
+  b = c;
 }
