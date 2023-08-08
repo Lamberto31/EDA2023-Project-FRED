@@ -41,6 +41,25 @@ void jsonBuildForSend(dataToSend *dataArray, byte elements, char key[], char jso
   }
   strcat(json, "]}");
 }
+
+void insertNewCircularData(dataToSend *dataArray, unsigned long deltaT, double field1, double field2, byte elementIndex, byte elementMax) {
+  if (elementIndex < elementMax)
+  {
+    dataArray->deltaT = deltaT;
+    dataArray->field1 = field1;
+    dataArray->field2 = field2;
+  }
+  else {
+    double tempField1 = field1;
+    double tempField2 = field2;
+    for (byte i = 0; i < elementMax; i++)
+    {
+      swapDouble(dataArray->field1, tempField1);
+      swapDouble(dataArray->field2, tempField2);
+      dataArray--;
+    }
+  }
+}
 void swapDouble(double &a, double &b) {
   double c = a;
   a = b;

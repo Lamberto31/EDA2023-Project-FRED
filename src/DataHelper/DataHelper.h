@@ -13,6 +13,8 @@ void insertNewData(dataToSend *dataArray, unsigned long deltaT, double field1, d
 
 void jsonBuildForSend(dataToSend *dataArray, byte elements, char key[], char json[]);
 
+void insertNewCircularData(dataToSend *dataArray, unsigned long deltaT, double field1, double field2, byte elementIndex, byte elementMax);
+
 void swapDouble(double &a, double &b);
 
 
