@@ -337,7 +337,9 @@ void loop() {
         //DEBUG_TEMP
         measuredFilteredDist = int(measuredDist);
 
-        insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist);
+        // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist);
+        insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist, sendBufferIndex, SEND_BUFFER_SIZE);
+        sendBufferIndex++;
 
         debug("sendBuffer[sendBufferIndex].deltaT = ");
         debugln(sendBuffer[sendBufferIndex].deltaT);
@@ -351,13 +353,14 @@ void loop() {
       }
       currentMillisServer = millis();
       if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
-        jsonBuildForSend(&sendBuffer[0], sendBufferIndex, getPvtDataFromEEPROM().writeKey, jsonToSend);
+        jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE - 1), getPvtDataFromEEPROM().writeKey, jsonToSend);
         if (wifiActive) {
           if (!client.connected()) connectToServer();
           // sendDataToServer();
           sendBulkDataToServer(getPvtDataFromEEPROM().channelId);
           }
           sendBufferIndex = 0;
+          memset(sendBuffer, 0, sizeof(sendBuffer));
           previousMillisServer = millis();
         }
       if (!robot_state.cmd_executed) {
