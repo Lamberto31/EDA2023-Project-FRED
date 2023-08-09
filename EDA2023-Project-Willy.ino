@@ -690,10 +690,39 @@ void sendBulkDataToServer(char channelId[]) {
   //   }
   // }
 
+  //COMMENTO_TEMP: funzione per cercare stringa "HTTP/1.1 " (con spazio) da implementare bene
+  searchResponseCode();
+  
   Serial.println();
 
   servoH.attach(PIN_SERVO_HORIZ);
 
   //Feedback
   digitalWrite(LED_BUILTIN, LOW);
+}
+
+void searchResponseCode() {
+  char searchString[] = "HTTP/1.1 ";
+  char tempString[9];
+  char c;
+  char httpCode[3];
+  byte count = 0;
+
+  char * p;
+
+  while(client.available()) {
+    c = client.read();
+    if (count % 9 == 0) {
+      // Serial.println(tempString);
+      p = strstr (tempString, searchString);
+      if (p) {
+        Serial.println("found ["); Serial.print(searchString); Serial.print("] at position "); Serial.print((int) (p - tempString));
+        break;
+      } else {
+        Serial.println("could not find ["); Serial.print(searchString); Serial.print("]");
+      }
+    }  
+    tempString[count % 9] = c;
+    count++;
+  }
 }
