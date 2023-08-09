@@ -31,7 +31,7 @@
 state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // Functionalities active/disabled
-#define DEBUG_ACTIVE 0
+#define DEBUG_ACTIVE 1
 #define WIFI_ACTIVE 1
 
 // PARAMETERS
@@ -128,10 +128,14 @@ int numericCustomDist = 0;
 #define debug(x) Serial.print(x)
 #define debugln(x) Serial.println(x)
 #define debuglnDecimal(x,n) Serial.println(x,n)
+#define debugF(x) Serial.print(F(x))
+#define debugFln(x) Serial.println(F(x))
 #else
 #define debug(x)
 #define debugln(x)
 #define debuglnDecimal(x,n)
+#define debugF(x)
+#define debugFln(x)
 #endif
 
 void setup() {
@@ -147,7 +151,7 @@ void setup() {
 
   // IR Receiver
   if (!initPCIInterruptForTinyReceiver()) {
-    debugln("No interrupt available");
+    debugF("No interrupt available");
   }
 
   // Ultrasonic
@@ -203,7 +207,7 @@ void loop() {
       if (!robot_state.cmd_executed) {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
-            debug("Distance = ");
+            debugF("Distance = ");
             debuglnDecimal(measureDistance(), DECIMALS);
             runMotors(DIRECTION_STOP, 0);
             break;
@@ -285,7 +289,7 @@ void loop() {
           }
           case IR_BUTTON_AST: {
             if (composeNumericDistance()) stateChange(&robot_state, STATE_SEARCH); else stateChange(&robot_state, STATE_FREE);
-              debug("numericCustomDist = ");
+              debugF("numericCustomDist = ");
               debugln(numericCustomDist);
             break;
           }
@@ -398,7 +402,7 @@ void ledFeedback(byte blinkNumber, unsigned int blinkDuration) {
 void runMotors(byte direction, byte speed) {
   switch (direction) {
     case DIRECTION_STOP: {
-      debugln("Stop");
+      debugFln("Stop");
       digitalWrite(PIN_MOTOR_IN1, LOW);
       digitalWrite(PIN_MOTOR_IN2, LOW);
       digitalWrite(PIN_MOTOR_IN3, LOW);
@@ -409,7 +413,7 @@ void runMotors(byte direction, byte speed) {
       break;
     }
     case DIRECTION_FORWARD: {
-      debugln("Avanti");
+      debugFln("Avanti");
       digitalWrite(PIN_MOTOR_IN1, HIGH);
       digitalWrite(PIN_MOTOR_IN2, LOW);
       digitalWrite(PIN_MOTOR_IN3, HIGH);
@@ -420,7 +424,7 @@ void runMotors(byte direction, byte speed) {
       break;
     }
     case DIRECTION_BACKWARD: {
-      debugln("Indietro");
+      debugFln("Indietro");
       digitalWrite(PIN_MOTOR_IN1, LOW);
       digitalWrite(PIN_MOTOR_IN2, HIGH);
       digitalWrite(PIN_MOTOR_IN3, LOW);
@@ -431,7 +435,7 @@ void runMotors(byte direction, byte speed) {
       break;
     }
     case DIRECTION_RIGHT: {
-      debugln("Destra");
+      debugFln("Destra");
       digitalWrite(PIN_MOTOR_IN1, HIGH);
       digitalWrite(PIN_MOTOR_IN2, LOW);
       digitalWrite(PIN_MOTOR_IN3, LOW);
@@ -442,7 +446,7 @@ void runMotors(byte direction, byte speed) {
       break;
     }
     case DIRECTION_LEFT: {
-      debugln("Sinistra");
+      debugFln("Sinistra");
       digitalWrite(PIN_MOTOR_IN1, LOW);
       digitalWrite(PIN_MOTOR_IN2, HIGH);
       digitalWrite(PIN_MOTOR_IN3, HIGH);
@@ -559,7 +563,7 @@ void wifiInitializeConnect() {
   if (WiFi.status() == WL_NO_SHIELD) {
     ledFeedback(FEEDBACK_BLINK_WIFI_NO_SHIELD, FEEDBACK_DURATION_WIFI_NO_SHIELD);
     wifiActive = 0;
-    debugln("WiFi shield not present and WiFi disabled");
+    debugFln("WiFi shield not present and WiFi disabled");
     return;
   }
 
@@ -570,50 +574,50 @@ void wifiInitializeConnect() {
     if (wifiConnectionAttemptCount > WIFI_CONNECTION_ATTEMPT_MAX) {
       ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
       wifiActive = 0;
-      debugln("WiFi connection failed and WiFi disabled");
+      debugFln("WiFi connection failed and WiFi disabled");
       return;
     }
     ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
-    debug("Attempting to connect to WPA SSID: ");
+    debugF("Attempting to connect to WPA SSID: ");
     debugln(pvt.ssid);
     // Connect to WPA/WPA2 network
     wifiStatus = WiFi.begin(pvt.ssid, pvt.pwd);
   }
   // Connected
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
-  debugln("You're connected to the network");
+  debugFln("You're connected to the network");
   if (DEBUG_ACTIVE) printWifiStatus();
 }
 
 void printWifiStatus() {
   // Print the SSID of the network you're attached to
-  debug("SSID: ");
+  debugF("SSID: ");
   debugln(WiFi.SSID());
 
   // Print your WiFi shield's IP address
   IPAddress ip = WiFi.localIP();
-  debug("IP Address: ");
+  debugF("IP Address: ");
   debugln(ip);
 
   // Print the received signal strength
   long rssi = WiFi.RSSI();
-  debug("Signal strength (RSSI):");
+  debugF("Signal strength (RSSI):");
   debug(rssi);
-  debugln(" dBm");
+  debugFln(" dBm");
 }
 
 bool connectToServer() {
   bool connected;
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
-  debugln("Starting connection to server...");
+  debugFln("Starting connection to server...");
   connected = client.connect(SERVER, PORT);
   //TODO: Capire questo feedback che sembra scorretto (sembra non entrare mai anche se si connette)
   if (connected) {
     ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
-    debugln("Connected to server");
+    debugFln("Connected to server");
   } else {
     ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
-    debugln("Connection failed");
+    debugFln("Connection failed");
   }
   return connected;
 }
@@ -650,9 +654,9 @@ void sendBulkDataToServer(char channelId[]) {
   servoH.detach();
 
   String dataLength = String(strlen(jsonToSend));
-  debug("json: ");
+  debugF("json: ");
   debugln(jsonToSend);
-  debug("dataLenght = ");
+  debugF("dataLenght = ");
   debugln(dataLength);
 
   client.print("POST /channels/"+ String(channelId) + "/bulk_update.json HTTP/1.1" + RET + "Host: " + SERVER + RET + /*"Connection: close" + RET */+ "Content-Type: application/json" + RET + "Content-Length: " + dataLength + RET + RET + jsonToSend);
