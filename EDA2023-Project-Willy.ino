@@ -607,19 +607,21 @@ void printWifiStatus() {
 }
 
 bool connectToServer() {
-  bool connected;
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
   debugFln("Starting connection to server...");
-  connected = client.connect(SERVER, PORT);
+  client.connect(SERVER, PORT);
   //TODO: Capire questo feedback che sembra scorretto (sembra non entrare mai anche se si connette)
-  if (connected) {
+  delay(100);
+  if (client.connected()) {
     ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
     debugFln("Connected to server");
+    return true;
   } else {
     ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
     debugFln("Connection failed");
+    return false;
   }
-  return connected;
+  // return connected;
 }
 
 void sendDataToServer() {
