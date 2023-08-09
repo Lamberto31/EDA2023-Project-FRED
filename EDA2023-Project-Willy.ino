@@ -657,10 +657,6 @@ void sendBulkDataToServer(char channelId[]) {
   jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE - 1), getPvtDataFromEEPROM().writeKey, jsonToSend);
 
   String dataLength = String(strlen(jsonToSend));
-  debugF("json: ");
-  debugln(jsonToSend);
-  debugF("dataLenght = ");
-  debugln(dataLength);
 
   client.print("POST /channels/"+ String(channelId) + "/bulk_update.json HTTP/1.1" + RET + "Host: " + SERVER + RET + /*"Connection: close" + RET */+ "Content-Type: application/json" + RET + "Content-Length: " + dataLength + RET + RET + jsonToSend);
 
