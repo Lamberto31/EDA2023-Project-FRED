@@ -338,7 +338,7 @@ void loop() {
     case STATE_MEASURE: {
       currentMillisServer = millis();
       if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
-        jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE - 1), getPvtDataFromEEPROM().writeKey, jsonToSend);
+        jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE), getPvtDataFromEEPROM().writeKey, jsonToSend);
         if (wifiActive) {
           if (!client.connected()) connectToServer();
           // sendDataToServer();
