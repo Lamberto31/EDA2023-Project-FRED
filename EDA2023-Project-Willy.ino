@@ -651,6 +651,7 @@ void sendDataToServer() {
 
 void sendBulkDataToServer(char channelId[]) {
   char c;   //Store received char from server
+  char httpCode [3];
 
   //Feedback
   digitalWrite(LED_BUILTIN, HIGH);
@@ -662,10 +663,33 @@ void sendBulkDataToServer(char channelId[]) {
   client.print("POST /channels/"+ String(channelId) + "/bulk_update.json HTTP/1.1" + RET + "Host: " + SERVER + RET + /*"Connection: close" + RET */+ "Content-Type: application/json" + RET + "Content-Length: " + dataLength + RET + RET + jsonToSend);
 
   delay(250); //Wait to receive the response
-  while (client.available() && c != '\n') {
-    c = client.read();
-    Serial.print(c);
-  }
+  //COMMENTO_TEMP: vecchia funzione che legge fino al caporigo ma che non funziona bene
+  // while (client.available() && c != '\n') {
+  //   c = client.read();
+  //   Serial.print(c);
+  // }
+  
+  //COMMENTO_TEMP: funzione che legge finchè non trova 202, sembra funzionare ma non va bene per leggere eventuali altre risposte
+  // while (client.available()) {
+  //   c = client.read();
+  //   if (c == '2')
+  //   {
+  //     httpCode[0] = c;
+  //     c = client.read();
+  //     if (c == '0') {
+  //       httpCode[1] = c;
+  //       c = client.read();
+  //       if (c == '2') 
+  //       {
+  //         httpCode[2] = c;
+  //         debugF("Response code: ");
+  //         debugln(httpCode);
+  //         break;
+  //       }
+  //     }
+  //   }
+  // }
+
   Serial.println();
 
   servoH.attach(PIN_SERVO_HORIZ);
