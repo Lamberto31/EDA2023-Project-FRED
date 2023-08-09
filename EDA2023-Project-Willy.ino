@@ -352,10 +352,12 @@ void loop() {
         switch (robot_state.command) {
           case IR_BUTTON_OK: {
             stateChange(&robot_state, STATE_FREE);
+            client.stop();
             break;
           }
           case IR_BUTTON_AST: {
             stateChange(&robot_state, STATE_READ);
+            client.stop();
             break;
           }
         }
