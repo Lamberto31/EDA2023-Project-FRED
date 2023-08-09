@@ -105,7 +105,7 @@ unsigned int sendBufferIndex = 0;
   51 is the caracters used by each dataToSend (with DECIMALS = 4)
 */
 // char jsonToSend[310];
-// char jsonToSend[10 + 50 + (51*(SEND_BUFFER_SIZE))];
+char jsonToSend[10 + 50 + (51*(SEND_BUFFER_SIZE))];
 
 // WiFi
 #define RET "\r\n"  //NL & CR characters
@@ -338,6 +338,7 @@ void loop() {
     case STATE_MEASURE: {
       currentMillisServer = millis();
       if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
+        jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE - 1), getPvtDataFromEEPROM().writeKey, jsonToSend);
         if (wifiActive) {
           if (!client.connected()) connectToServer();
           // sendDataToServer();
@@ -646,15 +647,11 @@ void sendDataToServer() {
 
 void sendBulkDataToServer(char channelId[]) {
   char c;   //Store received char from server
-  char jsonToSend[10 + 50 + (51*(SEND_BUFFER_SIZE))];
-
 
   //Feedback
   digitalWrite(LED_BUILTIN, HIGH);
   
   servoH.detach();
-
-  jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE - 1), getPvtDataFromEEPROM().writeKey, jsonToSend);
 
   String dataLength = String(strlen(jsonToSend));
 
