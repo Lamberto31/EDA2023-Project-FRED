@@ -651,9 +651,9 @@ void sendDataToServer() {
 
 void sendBulkDataToServer(char channelId[]) {
   char c;   //Store received char from server
-
-  //Feedback
-  digitalWrite(LED_BUILTIN, HIGH);
+  byte httpCodeLen = 3;
+  int httpCode;
+  int correctHttpCode = 202;
   
   servoH.detach();
 
@@ -662,14 +662,47 @@ void sendBulkDataToServer(char channelId[]) {
   client.print("POST /channels/"+ String(channelId) + "/bulk_update.json HTTP/1.1" + RET + "Host: " + SERVER + RET + /*"Connection: close" + RET */+ "Content-Type: application/json" + RET + "Content-Length: " + dataLength + RET + RET + jsonToSend);
 
   delay(250); //Wait to receive the response
-  while (client.available() && c != '\n') {
-    c = client.read();
-    Serial.print(c);
+  debugFln("");
+  httpCode = gethResponseCode(httpCodeLen);
+  debugF("Response code: ");
+  debugln(httpCode);
+
+  //Feedback
+  if (httpCode == correctHttpCode) {
+    ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
+  } else {
+    ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
   }
+  
   Serial.println();
 
   servoH.attach(PIN_SERVO_HORIZ);
+}
 
-  //Feedback
-  digitalWrite(LED_BUILTIN, LOW);
+int gethResponseCode(byte responseCodeLen) {
+  char c;
+  char toFind[] = "HTTP/1.1 ";
+  byte toFindLen = sizeof(toFind)/sizeof(toFind[0]) - 1;
+  byte currentIndex = 0;
+  char responseCode[responseCodeLen];
+  int responseCodeInt;
+
+  while (client.available()) {
+    c = client.read();
+    if (c == toFind[currentIndex]) {
+      currentIndex++;
+    } else {
+      currentIndex = 0;
+    }
+    if (currentIndex == toFindLen) {
+      break;
+    }
+  }
+  // questo o salvare risposta meglio
+  for (byte i = 0; i < responseCodeLen; i++) {
+    c = client.read();
+    responseCode[i] = c;
+  }
+  responseCodeInt = atoi(&responseCode[0]);
+  return responseCodeInt;
 }
