@@ -690,8 +690,7 @@ void sendBulkDataToServer(char channelId[]) {
   //   }
   // }
 
-  //COMMENTO_TEMP: funzione per cercare stringa "HTTP/1.1 " (con spazio) da implementare bene
-  searchResponseCode();
+  gethResponseCode();
   
   Serial.println();
 
@@ -701,28 +700,30 @@ void sendBulkDataToServer(char channelId[]) {
   digitalWrite(LED_BUILTIN, LOW);
 }
 
-void searchResponseCode() {
-  char searchString[] = "HTTP/1.1 ";
-  char tempString[9];
+void gethResponseCode() {
   char c;
-  char httpCode[3];
-  byte count = 0;
+  char toFind[] = "HTTP/1.1 ";
+  byte toFindLen = sizeof(toFind)/sizeof(toFind[0]) - 1;
+  byte currentIndex = 0;
+  byte responseCodeLen = 3;
+  char responseCode[responseCodeLen];
 
-  char * p;
-
-  while(client.available()) {
+  while (client.available()) {
     c = client.read();
-    if (count % 9 == 0) {
-      // Serial.println(tempString);
-      p = strstr (tempString, searchString);
-      if (p) {
-        Serial.println("found ["); Serial.print(searchString); Serial.print("] at position "); Serial.print((int) (p - tempString));
-        break;
-      } else {
-        Serial.println("could not find ["); Serial.print(searchString); Serial.print("]");
-      }
-    }  
-    tempString[count % 9] = c;
-    count++;
+    if (c == toFind[currentIndex]) {
+      currentIndex++;
+    } else {
+      currentIndex = 0;
+    }
+    if (currentIndex == toFindLen) {
+      break;
+    }
   }
+  // questo o salvare risposta meglio
+  for (byte i = 0; i < responseCodeLen; i++) {
+    c = client.read();
+    responseCode[i] = c;
+  }
+  Serial.print("Response Code = ");
+  Serial.println(responseCode);
 }
