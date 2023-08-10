@@ -651,7 +651,9 @@ void sendDataToServer() {
 
 void sendBulkDataToServer(char channelId[]) {
   char c;   //Store received char from server
-  char httpCode [3];
+  byte httpCodeLen = 3;
+  char httpCode [httpCodeLen];
+  int httpCodeInt;
 
   //Feedback
   digitalWrite(LED_BUILTIN, HIGH);
@@ -689,8 +691,13 @@ void sendBulkDataToServer(char channelId[]) {
   //     }
   //   }
   // }
-
-  gethResponseCode();
+  debugFln("");
+  gethResponseCode(httpCode, httpCodeLen);
+  debugF("Response code: ");
+  debugln(httpCode);
+  httpCodeInt = atoi(&httpCode[0]);
+  debugF("Response code: ");
+  debugln(httpCodeInt);
   
   Serial.println();
 
@@ -700,13 +707,11 @@ void sendBulkDataToServer(char channelId[]) {
   digitalWrite(LED_BUILTIN, LOW);
 }
 
-void gethResponseCode() {
+void gethResponseCode(char *responseCode, byte responseCodeLen) {
   char c;
   char toFind[] = "HTTP/1.1 ";
   byte toFindLen = sizeof(toFind)/sizeof(toFind[0]) - 1;
   byte currentIndex = 0;
-  byte responseCodeLen = 3;
-  char responseCode[responseCodeLen];
 
   while (client.available()) {
     c = client.read();
@@ -724,6 +729,4 @@ void gethResponseCode() {
     c = client.read();
     responseCode[i] = c;
   }
-  Serial.print("Response Code = ");
-  Serial.println(responseCode);
 }
