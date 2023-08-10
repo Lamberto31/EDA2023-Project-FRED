@@ -652,8 +652,8 @@ void sendDataToServer() {
 void sendBulkDataToServer(char channelId[]) {
   char c;   //Store received char from server
   byte httpCodeLen = 3;
-  char httpCode [httpCodeLen];
-  int httpCodeInt;
+  int httpCode;
+  int correctHttpCode = 202;
 
   //Feedback
   digitalWrite(LED_BUILTIN, HIGH);
@@ -665,39 +665,12 @@ void sendBulkDataToServer(char channelId[]) {
   client.print("POST /channels/"+ String(channelId) + "/bulk_update.json HTTP/1.1" + RET + "Host: " + SERVER + RET + /*"Connection: close" + RET */+ "Content-Type: application/json" + RET + "Content-Length: " + dataLength + RET + RET + jsonToSend);
 
   delay(250); //Wait to receive the response
-  //COMMENTO_TEMP: vecchia funzione che legge fino al caporigo ma che non funziona bene
-  // while (client.available() && c != '\n') {
-  //   c = client.read();
-  //   Serial.print(c);
-  // }
-  
-  //COMMENTO_TEMP: funzione che legge finchè non trova 202, sembra funzionare ma non va bene per leggere eventuali altre risposte
-  // while (client.available()) {
-  //   c = client.read();
-  //   if (c == '2')
-  //   {
-  //     httpCode[0] = c;
-  //     c = client.read();
-  //     if (c == '0') {
-  //       httpCode[1] = c;
-  //       c = client.read();
-  //       if (c == '2') 
-  //       {
-  //         httpCode[2] = c;
-  //         debugF("Response code: ");
-  //         debugln(httpCode);
-  //         break;
-  //       }
-  //     }
-  //   }
-  // }
   debugFln("");
-  gethResponseCode(httpCode, httpCodeLen);
+  httpCode = gethResponseCode(httpCodeLen);
   debugF("Response code: ");
   debugln(httpCode);
-  httpCodeInt = atoi(&httpCode[0]);
-  debugF("Response code: ");
-  debugln(httpCodeInt);
+
+  //TODO: Implementare un feedback per il response code
   
   Serial.println();
 
@@ -707,11 +680,13 @@ void sendBulkDataToServer(char channelId[]) {
   digitalWrite(LED_BUILTIN, LOW);
 }
 
-void gethResponseCode(char *responseCode, byte responseCodeLen) {
+int gethResponseCode(byte responseCodeLen) {
   char c;
   char toFind[] = "HTTP/1.1 ";
   byte toFindLen = sizeof(toFind)/sizeof(toFind[0]) - 1;
   byte currentIndex = 0;
+  char responseCode[responseCodeLen];
+  int responseCodeInt;
 
   while (client.available()) {
     c = client.read();
@@ -729,4 +704,6 @@ void gethResponseCode(char *responseCode, byte responseCodeLen) {
     c = client.read();
     responseCode[i] = c;
   }
+  responseCodeInt = atoi(&responseCode[0]);
+  return responseCodeInt;
 }
