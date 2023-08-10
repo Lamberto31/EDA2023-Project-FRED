@@ -612,7 +612,6 @@ bool connectToServer() {
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
   debugFln("Starting connection to server...");
   client.connect(SERVER, PORT);
-  //TODO: Capire questo feedback che sembra scorretto (sembra non entrare mai anche se si connette)
   delay(100);
   if (client.connected()) {
     ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
@@ -651,6 +650,7 @@ void sendDataToServer() {
 
 void sendBulkDataToServer(char channelId[]) {
   char c;   //Store received char from server
+  //TODO: Capire se questi valori è meglio metterli qua o come define sopra
   byte httpCodeLen = 3;
   int httpCode;
   int correctHttpCode = 202;
