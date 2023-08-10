@@ -654,9 +654,6 @@ void sendBulkDataToServer(char channelId[]) {
   byte httpCodeLen = 3;
   int httpCode;
   int correctHttpCode = 202;
-
-  //Feedback
-  digitalWrite(LED_BUILTIN, HIGH);
   
   servoH.detach();
 
@@ -670,14 +667,16 @@ void sendBulkDataToServer(char channelId[]) {
   debugF("Response code: ");
   debugln(httpCode);
 
-  //TODO: Implementare un feedback per il response code
+  //Feedback
+  if (httpCode == correctHttpCode) {
+    ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
+  } else {
+    ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
+  }
   
   Serial.println();
 
   servoH.attach(PIN_SERVO_HORIZ);
-
-  //Feedback
-  digitalWrite(LED_BUILTIN, LOW);
 }
 
 int gethResponseCode(byte responseCodeLen) {
