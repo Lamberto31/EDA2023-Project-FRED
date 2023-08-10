@@ -8,6 +8,7 @@ void setup() {
   privateData pvt = {
     "SSID",
     "PWD",
+    "CHANNEL-ID",
     "API-KEY"
   };
 
