@@ -370,6 +370,7 @@ void loop() {
   }
   currentMillisMeasureToSend = millis();
   if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
+    servoH.write(SERVO_HORIZ_CENTER);
     measuredDist = measureDistance();
     //DEBUG_TEMP
     measuredFilteredDist = int(measuredDist);
@@ -382,7 +383,6 @@ void loop() {
 
     previousMillisMeasureToSend = millis();
   }
-  servoH.write(SERVO_HORIZ_CENTER);
 }
 
 // This is the function, which is called if a complete command was received
