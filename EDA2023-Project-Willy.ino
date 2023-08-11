@@ -52,6 +52,7 @@ state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 #define PORT 80
 #define PERIOD_SERVER 15000
 #define WIFI_CONNECTION_ATTEMPT_MAX 5
+#define SERVER_CONNECTION_ATTEMPT_MAX 3
 #define SEND_BUFFER_SIZE PERIOD_SERVER/PERIOD_MEASURETOSEND   //Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
 // WiFi Feedback
 #define FEEDBACK_BLINK_WIFI_NO_SHIELD 10
@@ -609,20 +610,23 @@ void printWifiStatus() {
 }
 
 bool connectToServer() {
-  ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
-  debugFln("Starting connection to server...");
-  client.connect(SERVER, PORT);
-  delay(100);
-  if (client.connected()) {
-    ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
-    debugFln("Connected to server");
-    return true;
-  } else {
-    ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
-    debugFln("Connection failed");
-    return false;
+  byte serverConnectionAttemptCount = 0;
+  while (!client.connected()) {
+    serverConnectionAttemptCount++;
+    if (serverConnectionAttemptCount > SERVER_CONNECTION_ATTEMPT_MAX) {
+      ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
+      debugFln("Connection failed");
+      return false;
+    }
+    ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
+    debugFln("Starting connection to server...");
+    client.connect(SERVER, PORT);
+    delay(100);
   }
-  // return connected;
+  // Connected
+  ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
+  debugFln("Connected to server");
+  return true;
 }
 
 void sendDataToServer() {
