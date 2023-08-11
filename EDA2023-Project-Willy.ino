@@ -112,6 +112,7 @@ char jsonToSend[10 + 50 + (51*(SEND_BUFFER_SIZE))];
 #define RET "\r\n"  //NL & CR characters
 int wifiStatus = WL_IDLE_STATUS;
 bool wifiActive = WIFI_ACTIVE;
+bool connectedToServer = false;
 WiFiEspClient client;
 unsigned long previousMillisServer;
 unsigned long currentMillisServer;
@@ -341,9 +342,9 @@ void loop() {
       if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
         jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE), getPvtDataFromEEPROM().writeKey, jsonToSend);
         if (wifiActive) {
-          if (!client.connected()) connectToServer();
+          if (!client.connected()) connectedToServer = connectToServer();
           // sendDataToServer();
-          sendBulkDataToServer(getPvtDataFromEEPROM().channelId);
+          if (connectedToServer) sendBulkDataToServer(getPvtDataFromEEPROM().channelId);
           }
           sendBufferIndex = 0;
           memset(sendBuffer, 0, sizeof(sendBuffer));
