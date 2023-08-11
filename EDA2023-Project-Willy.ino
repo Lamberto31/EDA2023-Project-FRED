@@ -51,6 +51,7 @@ state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
 #define SERVER "api.thingspeak.com"
 #define PORT 80
 #define PERIOD_SERVER 15000
+#define SERVER_HTTP_CORRECT_CODE 202
 #define WIFI_CONNECTION_ATTEMPT_MAX 5
 #define SERVER_CONNECTION_ATTEMPT_MAX 3
 #define SEND_BUFFER_SIZE PERIOD_SERVER/PERIOD_MEASURETOSEND   //Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
@@ -655,10 +656,8 @@ void sendDataToServer() {
 
 void sendBulkDataToServer(char channelId[]) {
   char c;   //Store received char from server
-  //TODO: Capire se questi valori è meglio metterli qua o come define sopra
   byte httpCodeLen = 3;
   int httpCode;
-  int correctHttpCode = 202;
   
   servoH.detach();
 
@@ -673,7 +672,7 @@ void sendBulkDataToServer(char channelId[]) {
   debugln(httpCode);
 
   //Feedback
-  if (httpCode == correctHttpCode) {
+  if (httpCode == SERVER_HTTP_CORRECT_CODE) {
     ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
   } else {
     ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
