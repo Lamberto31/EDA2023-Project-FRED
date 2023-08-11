@@ -5,7 +5,7 @@
 void setup() {
   Serial.begin(9600);
 
-  privateData pvt = {
+  PrivateData pvt = {
     "SSID",
     "PWD",
     "CHANNEL-ID",
@@ -14,7 +14,7 @@ void setup() {
 
   if(!READONLY) putPvtDataIntoEEPROM(pvt);
 
-  privateData read;
+  PrivateData read;
   read = getPvtDataFromEEPROM();
 
   Serial.println("Read custom object from EEPROM: ");

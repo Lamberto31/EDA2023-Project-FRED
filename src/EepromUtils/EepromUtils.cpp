@@ -2,12 +2,12 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 
-void putPvtDataIntoEEPROM(privateData data) {
+void putPvtDataIntoEEPROM(PrivateData data) {
   EEPROM.put(ADDRESS, data);
 }
 
-privateData getPvtDataFromEEPROM() {
-  privateData pvtData;
+PrivateData getPvtDataFromEEPROM() {
+  PrivateData pvtData;
   EEPROM.get(ADDRESS, pvtData);
   return pvtData;
 }

@@ -6,14 +6,14 @@
 #define ADDRESS 0
 #define MAX_LEN 32
 
-struct privateData {
+struct PrivateData {
   char ssid[MAX_LEN];
   char pwd[MAX_LEN];
   char channelId[MAX_LEN];
   char writeKey[MAX_LEN];
   };
 
-void putPvtDataIntoEEPROM(privateData data);
-privateData getPvtDataFromEEPROM();
+void putPvtDataIntoEEPROM(PrivateData data);
+PrivateData getPvtDataFromEEPROM();
 
 #endif

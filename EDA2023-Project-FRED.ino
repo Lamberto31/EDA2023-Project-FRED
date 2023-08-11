@@ -559,7 +559,7 @@ void preventDamage(int minDistance) {
 
 // WIFI
 void wifiInitializeConnect() {
-  privateData pvt = getPvtDataFromEEPROM();
+  PrivateData pvt = getPvtDataFromEEPROM();
 
   // ESP module initialization
   WiFi.init(&Serial);
@@ -632,7 +632,7 @@ bool connectToServer() {
 }
 
 void sendDataToServer() {
-  privateData pvt = getPvtDataFromEEPROM();
+  PrivateData pvt = getPvtDataFromEEPROM();
   //Feedback
   digitalWrite(LED_BUILTIN, HIGH);
   
