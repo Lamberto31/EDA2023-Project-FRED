@@ -5,7 +5,7 @@
 #include "WiFiEsp.h"
 
 // Custom library for states handling
-#include "src/states/states.h"
+#include "src/States/States.h"
 
 // Custom library for EEPROM memory handling
 #include "src/EepromUtils/EepromUtils.h"
