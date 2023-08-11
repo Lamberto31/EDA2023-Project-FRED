@@ -28,7 +28,7 @@
 #define PIN_MOTOR_IN1 13
 
 // States
-state robot_state = { STATE_SETUP, 0, true, DIRECTION_STOP };
+State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 1
@@ -193,22 +193,22 @@ void setup() {
   delay(1000);
   runMotors(DIRECTION_STOP, 0);
 
-  stateChange(&robot_state, STATE_FREE);
+  stateChange(&robotState, STATE_FREE);
 }
 
 void loop() {
-  switch (robot_state.current) {
+  switch (robotState.current) {
     // Free state handling
     case STATE_FREE: {
-      if (robot_state.direction == DIRECTION_FORWARD) {
+      if (robotState.direction == DIRECTION_FORWARD) {
         currentMillisUS = millis();
         if (currentMillisUS - previousMillisUS >= PERIOD_ULTRASONIC) {
           preventDamage(CUSTOM_DIST_MIN);
           previousMillisUS = millis();
         }
       }
-      if (!robot_state.cmd_executed) {
-        switch (robot_state.command) {
+      if (!robotState.cmd_executed) {
+        switch (robotState.command) {
           case IR_BUTTON_OK: {
             debugF("Distance = ");
             debuglnDecimal(measureDistance(), DECIMALS);
@@ -233,23 +233,23 @@ void loop() {
           }
           case IR_BUTTON_HASH: {
             runMotors(DIRECTION_STOP, 0);
-            stateChange(&robot_state, STATE_MEASURE);
+            stateChange(&robotState, STATE_MEASURE);
             break;
           }
           case IR_BUTTON_AST: {
             runMotors(DIRECTION_STOP, 0);
-            stateChange(&robot_state, STATE_READ);
+            stateChange(&robotState, STATE_READ);
             break;
           }
         }
-        stateCmdExecuted(&robot_state);
+        stateCmdExecuted(&robotState);
       }
       break;
     }
     // Reading state handling
     case STATE_READ: {
-      if (!robot_state.cmd_executed) {
-        switch (robot_state.command) {
+      if (!robotState.cmd_executed) {
+        switch (robotState.command) {
           case IR_BUTTON_1: {
             readCustomDistance('1');
             break;
@@ -291,23 +291,23 @@ void loop() {
             break;
           }
           case IR_BUTTON_AST: {
-            if (composeNumericDistance()) stateChange(&robot_state, STATE_SEARCH); else stateChange(&robot_state, STATE_FREE);
+            if (composeNumericDistance()) stateChange(&robotState, STATE_SEARCH); else stateChange(&robotState, STATE_FREE);
               debugF("numericCustomDist = ");
               debugln(numericCustomDist);
             break;
           }
           case IR_BUTTON_OK: {
             resetCustomDistance();
-            stateChange(&robot_state, STATE_FREE);
+            stateChange(&robotState, STATE_FREE);
             break;
           }
           case IR_BUTTON_HASH: {
             resetCustomDistance();
-            stateChange(&robot_state, STATE_MEASURE);
+            stateChange(&robotState, STATE_MEASURE);
             break;
           }
         }
-      stateCmdExecuted(&robot_state);
+      stateCmdExecuted(&robotState);
       }
       break;
     }
@@ -318,22 +318,22 @@ void loop() {
         checkDistance();
         previousMillisUS = millis();
       }
-      if (!robot_state.cmd_executed) {
-        switch (robot_state.command) {
+      if (!robotState.cmd_executed) {
+        switch (robotState.command) {
           case IR_BUTTON_OK: {
             runMotors(DIRECTION_STOP, 0);
             speedSlowFactor = 0;
-            stateChange(&robot_state, STATE_FREE);
+            stateChange(&robotState, STATE_FREE);
             break;
           }
           case IR_BUTTON_HASH: {
             runMotors(DIRECTION_STOP, 0);
             speedSlowFactor = 0;
-            stateChange(&robot_state, STATE_MEASURE);
+            stateChange(&robotState, STATE_MEASURE);
             break;
           }
         }
-        stateCmdExecuted(&robot_state);
+        stateCmdExecuted(&robotState);
       }
       break;
     }
@@ -351,20 +351,20 @@ void loop() {
           memset(sendBuffer, 0, sizeof(sendBuffer));
           previousMillisServer = millis();
         }
-      if (!robot_state.cmd_executed) {
-        switch (robot_state.command) {
+      if (!robotState.cmd_executed) {
+        switch (robotState.command) {
           case IR_BUTTON_OK: {
-            stateChange(&robot_state, STATE_FREE);
+            stateChange(&robotState, STATE_FREE);
             client.stop();
             break;
           }
           case IR_BUTTON_AST: {
-            stateChange(&robot_state, STATE_READ);
+            stateChange(&robotState, STATE_READ);
             client.stop();
             break;
           }
         }
-        stateCmdExecuted(&robot_state);
+        stateCmdExecuted(&robotState);
       }
       break;
     }
@@ -391,7 +391,7 @@ void loop() {
 void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
   if (DEBUG_ACTIVE) printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
   if (!aFlags == IRDATA_FLAGS_IS_REPEAT) {
-    stateNewCmd(&robot_state, aCommand);
+    stateNewCmd(&robotState, aCommand);
   }
 }
 
@@ -414,7 +414,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, LOW);
       analogWrite(PIN_MOTOR_ENA, 0);
       analogWrite(PIN_MOTOR_ENB, 0);
-      stateNewDirection(&robot_state, DIRECTION_STOP);
+      stateNewDirection(&robotState, DIRECTION_STOP);
       break;
     }
     case DIRECTION_FORWARD: {
@@ -425,7 +425,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, LOW);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
-      stateNewDirection(&robot_state, DIRECTION_FORWARD);
+      stateNewDirection(&robotState, DIRECTION_FORWARD);
       break;
     }
     case DIRECTION_BACKWARD: {
@@ -436,7 +436,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, HIGH);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
-      stateNewDirection(&robot_state, DIRECTION_BACKWARD);
+      stateNewDirection(&robotState, DIRECTION_BACKWARD);
       break;
     }
     case DIRECTION_RIGHT: {
@@ -447,7 +447,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, HIGH);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
-      stateNewDirection(&robot_state, DIRECTION_RIGHT);
+      stateNewDirection(&robotState, DIRECTION_RIGHT);
       break;
     }
     case DIRECTION_LEFT: {
@@ -458,7 +458,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, LOW);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
-      stateNewDirection(&robot_state, DIRECTION_LEFT);
+      stateNewDirection(&robotState, DIRECTION_LEFT);
       break;
     }
   }
@@ -484,7 +484,7 @@ double measureDistance() {
 void readCustomDistance(char digit) {
   if (customDistIdx == 3) {
     resetCustomDistance();
-    stateChange(&robot_state, STATE_FREE);
+    stateChange(&robotState, STATE_FREE);
   } else {
     customDist[customDistIdx] = digit;
     customDistIdx++;
@@ -531,16 +531,16 @@ void checkDistance() {
     runMotors(DIRECTION_STOP, 0);
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
     if (speedSlowFactor >= SLOW_FACTOR_STOP) {
-      stateChange(&robot_state, STATE_FREE);
+      stateChange(&robotState, STATE_FREE);
       speedSlowFactor = 0;
     }
   }
   // Difference greater than treshold
-  else if (diffDist > STOP_TRESHOLD && robot_state.direction != DIRECTION_FORWARD) {
+  else if (diffDist > STOP_TRESHOLD && robotState.direction != DIRECTION_FORWARD) {
     runMotors(DIRECTION_FORWARD, 255 - (speedSlowFactor * 10));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
   }
-  else if (diffDist < -STOP_TRESHOLD && robot_state.direction != DIRECTION_BACKWARD) {
+  else if (diffDist < -STOP_TRESHOLD && robotState.direction != DIRECTION_BACKWARD) {
     runMotors(DIRECTION_BACKWARD, 255 - (speedSlowFactor * 10));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
   }

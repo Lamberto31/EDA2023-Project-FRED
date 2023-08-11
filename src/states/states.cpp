@@ -1,16 +1,16 @@
 #include "states.h"
 #include <Arduino.h>
 
-void stateChange(state *st, byte dest) {
+void stateChange(State *st, byte dest) {
   st->current = dest;
 }
-void stateNewCmd(state *st, byte command) {
+void stateNewCmd(State *st, byte command) {
   st->command = command;
   st->cmd_executed = false;
 }
-void stateCmdExecuted(state *st) {
+void stateCmdExecuted(State *st) {
   st->cmd_executed = true;
 }
-void stateNewDirection(state *st, byte direction) {
+void stateNewDirection(State *st, byte direction) {
   st->direction = direction;
 }

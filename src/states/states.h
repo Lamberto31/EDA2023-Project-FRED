@@ -15,16 +15,16 @@
 #define DIRECTION_RIGHT 3
 #define DIRECTION_LEFT 4
 
-struct state {
+struct State {
   byte current;
   byte command;
   bool cmd_executed;
   byte direction;
 };
 
-void stateChange(state *st, byte dest);
-void stateNewCmd(state *st, byte command);
-void stateCmdExecuted(state *st);
-void stateNewDirection(state *st, byte direction);
+void stateChange(State *st, byte dest);
+void stateNewCmd(State *st, byte command);
+void stateCmdExecuted(State *st);
+void stateNewDirection(State *st, byte direction);
 
 #endif
