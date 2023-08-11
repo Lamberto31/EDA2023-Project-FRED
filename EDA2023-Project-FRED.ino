@@ -99,12 +99,12 @@ unsigned long previousMillisUS;
 unsigned long currentMillisUS;
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
-// dataToSend sendBuffer[5];
-dataToSend sendBuffer[SEND_BUFFER_SIZE];
+// DataToSend sendBuffer[5];
+DataToSend sendBuffer[SEND_BUFFER_SIZE];
 unsigned int sendBufferIndex = 0;
 /*10 is a little extra to avoid problems
   50 is the characters used by the body in general
-  51 is the caracters used by each dataToSend (with DECIMALS = 4)
+  51 is the characters used by each DataToSend (with DECIMALS = 4)
 */
 // char jsonToSend[310];
 char jsonToSend[10 + 50 + (51*(SEND_BUFFER_SIZE))];

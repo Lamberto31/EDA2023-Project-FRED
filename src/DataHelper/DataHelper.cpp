@@ -1,13 +1,13 @@
 #include "DataHelper.h"
 #include <Arduino.h>
 
-void insertNewData(dataToSend *dataArray, unsigned long deltaT, double field1, double field2) {
+void insertNewData(DataToSend *dataArray, unsigned long deltaT, double field1, double field2) {
   dataArray->deltaT = deltaT;
   dataArray->field1 = field1;
   dataArray->field2 = field2;
 }
 
-void jsonBuildForSend(dataToSend *dataArray, unsigned int elements, char key[], char json[]) {
+void jsonBuildForSend(DataToSend *dataArray, unsigned int elements, char key[], char json[]) {
   unsigned long deltaT;
   double field1;
   double field2;
@@ -42,7 +42,7 @@ void jsonBuildForSend(dataToSend *dataArray, unsigned int elements, char key[], 
   strcat(json, "]}");
 }
 
-void insertNewCircularData(dataToSend *dataArray, unsigned long deltaT, double field1, double field2, unsigned int elementIndex, byte elementMax) {
+void insertNewCircularData(DataToSend *dataArray, unsigned long deltaT, double field1, double field2, unsigned int elementIndex, byte elementMax) {
   if (elementIndex < elementMax)
   {
     dataArray->deltaT = deltaT;
@@ -61,7 +61,7 @@ void insertNewCircularData(dataToSend *dataArray, unsigned long deltaT, double f
   }
 }
 
-void readAndPrintData(dataToSend *dataArray, byte elements) {
+void readAndPrintData(DataToSend *dataArray, byte elements) {
   Serial.println(F("SEND BUFFER ELEMENTS"));
   Serial.print(F("[i]"));
   Serial.print(F("\tdeltaT"));
