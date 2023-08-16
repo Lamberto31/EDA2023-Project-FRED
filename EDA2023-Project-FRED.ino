@@ -177,6 +177,9 @@ void setup() {
   servoH.write(SERVO_HORIZ_CENTER + 15);
   delay(1000);
   servoH.write(SERVO_HORIZ_CENTER);
+  delay(500);
+  // servoH.detach();
+  // delay(500);
 
   // Motors
   pinMode(PIN_MOTOR_ENA, OUTPUT);
