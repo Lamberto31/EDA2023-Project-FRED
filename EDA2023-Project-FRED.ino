@@ -31,7 +31,7 @@
 State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // Functionalities active/disabled
-#define DEBUG_ACTIVE 1
+#define DEBUG_ACTIVE 0
 #define WIFI_ACTIVE 1
 
 // PARAMETERS
@@ -351,7 +351,6 @@ void loop() {
         jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE), getPvtDataFromEEPROM().writeKey, jsonToSend);
         if (wifiActive) {
           if (!client.connected()) connectedToServer = connectToServer();
-          // sendDataToServer();
           if (connectedToServer) sendBulkDataToServer(getPvtDataFromEEPROM().channelId);
           }
           sendBufferIndex = 0;
@@ -666,25 +665,6 @@ bool connectToServer() {
   ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
   debugFln("Connected to server");
   return true;
-}
-
-void sendDataToServer() {
-  PrivateData pvt = getPvtDataFromEEPROM();
-  //Feedback
-  digitalWrite(LED_BUILTIN, HIGH);
-
-  client.print("GET /update?api_key=" + String(pvt.writeKey) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: " + SERVER + RET + RET);
-
-  // if there are incoming bytes available
-  // from the server, read them and print them
-  while (client.available()) {
-    char c = client.read();
-    // Serial.write(c);
-  }
-  // Serial.println();
-
-  //Feedback
-  digitalWrite(LED_BUILTIN, LOW);
 }
 
 void sendBulkDataToServer(char channelId[]) {

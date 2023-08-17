@@ -9,8 +9,6 @@ struct DataToSend {
   double field2;
   };
 
-void insertNewData(DataToSend *dataArray, unsigned long deltaT, double field1, double field2);
-
 void jsonBuildForSend(DataToSend *dataArray, unsigned int elements, char key[], char json[]);
 
 void insertNewCircularData(DataToSend *dataArray, unsigned long deltaT, double field1, double field2, unsigned int elementIndex, byte elementMax);

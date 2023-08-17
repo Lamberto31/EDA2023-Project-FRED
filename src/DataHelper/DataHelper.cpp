@@ -1,12 +1,6 @@
 #include "DataHelper.h"
 #include <Arduino.h>
 
-void insertNewData(DataToSend *dataArray, unsigned long deltaT, double field1, double field2) {
-  dataArray->deltaT = deltaT;
-  dataArray->field1 = field1;
-  dataArray->field2 = field2;
-}
-
 void jsonBuildForSend(DataToSend *dataArray, unsigned int elements, char key[], char json[]) {
   unsigned long deltaT;
   double field1;
