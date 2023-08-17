@@ -641,8 +641,6 @@ void sendDataToServer() {
   PrivateData pvt = getPvtDataFromEEPROM();
   //Feedback
   digitalWrite(LED_BUILTIN, HIGH);
-  
-  servoH.detach();
 
   client.print("GET /update?api_key=" + String(pvt.writeKey) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
 
@@ -654,8 +652,6 @@ void sendDataToServer() {
   }
   // Serial.println();
 
-  servoH.attach(PIN_SERVO_HORIZ);
-
   //Feedback
   digitalWrite(LED_BUILTIN, LOW);
 }
@@ -664,8 +660,6 @@ void sendBulkDataToServer(char channelId[]) {
   char c;   //Store received char from server
   byte httpCodeLen = 3;
   int httpCode;
-  
-  servoH.detach();
 
   String dataLength = String(strlen(jsonToSend));
 
@@ -685,8 +679,6 @@ void sendBulkDataToServer(char channelId[]) {
   }
   
   Serial.println();
-
-  servoH.attach(PIN_SERVO_HORIZ);
 }
 
 int gethResponseCode(byte responseCodeLen) {
