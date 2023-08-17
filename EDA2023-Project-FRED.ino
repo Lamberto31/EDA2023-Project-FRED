@@ -538,38 +538,36 @@ void checkDistance() {
   // Move to the custom distance if first check
   if (firstCheck) {
     if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
-    if (diffDist >= STOP_TRESHOLD) {
-      // Just slow down
-      int speed = map(diffDist, 0, numericCustomDist + SLOW_TRESHOLD, SLOW_SPEED_MIN, 255);
-      runMotors(DIRECTION_FORWARD, speed);
-    }
-    else {
-      // Stop
-      runMotors(DIRECTION_STOP, 0);
-      firstCheck = false;
+      if (diffDist >= STOP_TRESHOLD) {
+        // Just slow down
+        int speed = map(diffDist, 0, numericCustomDist + SLOW_TRESHOLD, SLOW_SPEED_MIN, 255);
+        runMotors(DIRECTION_FORWARD, speed);
+      } else {
+        // Stop
+        runMotors(DIRECTION_STOP, 0);
+        firstCheck = false;
       }
-    }
-    else {
+    } else {
       runMotors(DIRECTION_FORWARD, 255);
     }
   }
-  
+
   // Adjust if not first check
   if (!firstCheck) {
     if (abs(diffDist) < STOP_TRESHOLD) {
       runMotors(DIRECTION_STOP, 0);
-    if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
-    if (speedSlowFactor >= SLOW_FACTOR_STOP) {
-      stateChange(&robotState, STATE_FREE);
-      speedSlowFactor = 0;
+      if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
+      if (speedSlowFactor >= SLOW_FACTOR_STOP) {
+        stateChange(&robotState, STATE_FREE);
+        speedSlowFactor = 0;
+      }
     }
-  }
     if (diffDist > STOP_TRESHOLD && robotState.direction != DIRECTION_FORWARD) {
       runMotors(DIRECTION_FORWARD, SLOW_SPEED_MIN - (speedSlowFactor * 5));
-    if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
+      if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
     } else if (diffDist < -STOP_TRESHOLD && robotState.direction != DIRECTION_BACKWARD) {
       runMotors(DIRECTION_BACKWARD, SLOW_SPEED_MIN - (speedSlowFactor * 5));
-    if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
+      if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
     }
   }
 }
@@ -585,8 +583,7 @@ void preventDamage(int minDistance) {
       // Just slow down
       int speed = map(diffDist, 0, minDistance + SLOW_TRESHOLD, 0, 255);
       runMotors(DIRECTION_FORWARD, speed);
-    }
-    else {
+    } else {
       // Stop
       runMotors(DIRECTION_STOP, 0);
     }
