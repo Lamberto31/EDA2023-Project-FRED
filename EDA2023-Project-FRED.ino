@@ -38,7 +38,8 @@ State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 // Ultrasonic
 #define DECIMALS 4  // Max value 4, it may cause buffer overflow if increased
 #define STOP_TRESHOLD 0.1
-#define STOP_SECURE_TRESHOLD 10
+#define SLOW_TRESHOLD 50
+#define SLOW_SPEED_MIN 100
 #define SLOW_FACTOR_MAX 15
 #define SLOW_FACTOR_STOP 10
 #define PERIOD_ULTRASONIC 60
@@ -93,6 +94,7 @@ volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 // Ultrasonic
 double measuredDist = 0;
 double diffDist;
+bool firstCheck = true;
 byte speedSlowFactor = 0;
 double measuredFilteredDist = 0;
 unsigned long previousMillisUS;
@@ -191,9 +193,9 @@ void setup() {
 
   // Feedback
   runMotors(DIRECTION_BACKWARD, 255);
-  delay(1000);
+  delay(500);
   runMotors(DIRECTION_FORWARD, 255);
-  delay(1000);
+  delay(500);
   runMotors(DIRECTION_STOP, 0);
 
   stateChange(&robotState, STATE_FREE);
@@ -326,12 +328,14 @@ void loop() {
           case IR_BUTTON_OK: {
             runMotors(DIRECTION_STOP, 0);
             speedSlowFactor = 0;
+            firstCheck = true;
             stateChange(&robotState, STATE_FREE);
             break;
           }
           case IR_BUTTON_HASH: {
             runMotors(DIRECTION_STOP, 0);
             speedSlowFactor = 0;
+            firstCheck = true;
             stateChange(&robotState, STATE_MEASURE);
             break;
           }
@@ -532,33 +536,61 @@ void checkDistance() {
   measuredDist = measureDistance();
   diffDist = measuredDist - numericCustomDist;
 
-  // Difference less than treshold
-  if (abs(diffDist) < STOP_TRESHOLD) {
-    runMotors(DIRECTION_STOP, 0);
+  // Move to the custom distance if first check
+  if (firstCheck) {
+    if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
+    if (diffDist >= STOP_TRESHOLD) {
+      // Just slow down
+      int speed = map(diffDist, 0, numericCustomDist + SLOW_TRESHOLD, SLOW_SPEED_MIN, 255);
+      runMotors(DIRECTION_FORWARD, speed);
+    }
+    else {
+      // Stop
+      runMotors(DIRECTION_STOP, 0);
+      firstCheck = false;
+      }
+    }
+    else {
+      runMotors(DIRECTION_FORWARD, 255);
+    }
+  }
+  
+  // Adjust if not first check
+  if (!firstCheck) {
+    if (abs(diffDist) < STOP_TRESHOLD) {
+      runMotors(DIRECTION_STOP, 0);
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
     if (speedSlowFactor >= SLOW_FACTOR_STOP) {
       stateChange(&robotState, STATE_FREE);
       speedSlowFactor = 0;
     }
   }
-  // Difference greater than treshold
-  else if (diffDist > STOP_TRESHOLD && robotState.direction != DIRECTION_FORWARD) {
-    runMotors(DIRECTION_FORWARD, 255 - (speedSlowFactor * 10));
+    if (diffDist > STOP_TRESHOLD && robotState.direction != DIRECTION_FORWARD) {
+      runMotors(DIRECTION_FORWARD, SLOW_SPEED_MIN - (speedSlowFactor * 5));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
-  } else if (diffDist < -STOP_TRESHOLD && robotState.direction != DIRECTION_BACKWARD) {
-    runMotors(DIRECTION_BACKWARD, 255 - (speedSlowFactor * 10));
+    } else if (diffDist < -STOP_TRESHOLD && robotState.direction != DIRECTION_BACKWARD) {
+      runMotors(DIRECTION_BACKWARD, SLOW_SPEED_MIN - (speedSlowFactor * 5));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
+    }
   }
 }
 
 void preventDamage(int minDistance) {
   // Measure distance and difference from custom
   measuredDist = measureDistance();
-  diffDist = measuredDist - minDistance - STOP_SECURE_TRESHOLD;
+  diffDist = measuredDist - minDistance;
 
   // Difference less than treshold
-  if (diffDist < STOP_TRESHOLD) {
-    runMotors(DIRECTION_STOP, 0);
+  if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
+    if (diffDist >= STOP_TRESHOLD) {
+      // Just slow down
+      int speed = map(diffDist, 0, minDistance + SLOW_TRESHOLD, 0, 255);
+      runMotors(DIRECTION_FORWARD, speed);
+    }
+    else {
+      // Stop
+      runMotors(DIRECTION_STOP, 0);
+    }
   }
 }
 
