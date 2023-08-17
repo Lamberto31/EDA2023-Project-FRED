@@ -93,6 +93,7 @@ volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 // Ultrasonic
 double measuredDist = 0;
 double diffDist;
+bool firstCheck = true;
 byte speedSlowFactor = 0;
 double measuredFilteredDist = 0;
 unsigned long previousMillisUS;
@@ -326,12 +327,14 @@ void loop() {
           case IR_BUTTON_OK: {
             runMotors(DIRECTION_STOP, 0);
             speedSlowFactor = 0;
+            firstCheck = true;
             stateChange(&robotState, STATE_FREE);
             break;
           }
           case IR_BUTTON_HASH: {
             runMotors(DIRECTION_STOP, 0);
             speedSlowFactor = 0;
+            firstCheck = true;
             stateChange(&robotState, STATE_MEASURE);
             break;
           }
