@@ -223,15 +223,15 @@ void loop() {
             break;
           }
           case IR_BUTTON_DOWN: {
-            runMotors(DIRECTION_BACKWARD, 255);
+            runMotors(DIRECTION_BACKWARD, 100);
             break;
           }
           case IR_BUTTON_RIGHT: {
-            runMotors(DIRECTION_RIGHT, 255);
+            runMotors(DIRECTION_RIGHT, 100);
             break;
           }
           case IR_BUTTON_LEFT: {
-            runMotors(DIRECTION_LEFT, 255);
+            runMotors(DIRECTION_LEFT, 100);
             break;
           }
           case IR_BUTTON_HASH: {
