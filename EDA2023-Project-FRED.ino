@@ -535,9 +535,25 @@ void checkDistance() {
   measuredDist = measureDistance();
   diffDist = measuredDist - numericCustomDist;
 
-  // Difference less than treshold
-  if (abs(diffDist) < STOP_TRESHOLD) {
-    runMotors(DIRECTION_STOP, 0);
+  // Move to the custom distance if first check
+  if (firstCheck) {
+    if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
+    if (diffDist >= STOP_TRESHOLD) {
+      // Just slow down
+      int speed = map(diffDist, 0, numericCustomDist + SLOW_TRESHOLD, 100, 255);
+      runMotors(DIRECTION_FORWARD, speed);
+    }
+    else {
+      // Stop
+      runMotors(DIRECTION_STOP, 0);
+      firstCheck = false;
+      }
+    }
+    else {
+      runMotors(DIRECTION_FORWARD, 255);
+    }
+  }
+  
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
     if (speedSlowFactor >= SLOW_FACTOR_STOP) {
       stateChange(&robotState, STATE_FREE);
