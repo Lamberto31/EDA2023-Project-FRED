@@ -36,7 +36,7 @@ State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // PARAMETERS
 // Ultrasonic
-#define DECIMALS 4      // Max value 4, it may cause buffer overflow if increased
+#define DECIMALS 4  // Max value 4, it may cause buffer overflow if increased
 #define STOP_TRESHOLD 0.1
 #define STOP_SECURE_TRESHOLD 10
 #define SLOW_FACTOR_MAX 15
@@ -46,7 +46,7 @@ State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 // Custom distance [cm]
 #define CUSTOM_DIST_MIN 10
 #define CUSTOM_DIST_MAX 500
-#define CUSTOM_DIST_CHAR 4    // Max value 4, it may cause buffer overflow if increased
+#define CUSTOM_DIST_CHAR 4  // Max value 4, it may cause buffer overflow if increased
 // WiFi
 #define SERVER "api.thingspeak.com"
 #define PORT 80
@@ -54,14 +54,14 @@ State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 #define SERVER_HTTP_CORRECT_CODE 202
 #define WIFI_CONNECTION_ATTEMPT_MAX 5
 #define SERVER_CONNECTION_ATTEMPT_MAX 3
-#define SEND_BUFFER_SIZE PERIOD_SERVER/PERIOD_MEASURETOSEND   //Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
+#define SEND_BUFFER_SIZE PERIOD_SERVER / PERIOD_MEASURETOSEND  //Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
 // WiFi Feedback
 #define FEEDBACK_BLINK_WIFI_NO_SHIELD 10
 #define FEEDBACK_DURATION_WIFI_NO_SHIELD 250
 #define FEEDBACK_BLINK_WIFI_CONNECTING 3
 #define FEEDBACK_DURATION_WIFI_CONNECTING 500
 #define FEEDBACK_BLINK_WIFI_CONNECTED 1
-#define FEEDBACK_DURATION_WIFI_CONNECTED 1000 
+#define FEEDBACK_DURATION_WIFI_CONNECTED 1000
 #define FEEDBACK_BLINK_WIFI_NO_CONNECTION 5
 #define FEEDBACK_DURATION_WIFI_NO_CONNECTION 250
 //Servo
@@ -107,7 +107,7 @@ unsigned int sendBufferIndex = 0;
   51 is the characters used by each DataToSend (with DECIMALS = 4)
 */
 // char jsonToSend[310];
-char jsonToSend[10 + 50 + (51*(SEND_BUFFER_SIZE))];
+char jsonToSend[10 + 50 + (51 * (SEND_BUFFER_SIZE))];
 
 // WiFi
 #define RET "\r\n"  //NL & CR characters
@@ -130,13 +130,13 @@ int numericCustomDist = 0;
 #if DEBUG_ACTIVE == 1
 #define debug(x) Serial.print(x)
 #define debugln(x) Serial.println(x)
-#define debuglnDecimal(x,n) Serial.println(x,n)
+#define debuglnDecimal(x, n) Serial.println(x, n)
 #define debugF(x) Serial.print(F(x))
 #define debugFln(x) Serial.println(F(x))
 #else
 #define debug(x)
 #define debugln(x)
-#define debuglnDecimal(x,n)
+#define debuglnDecimal(x, n)
 #define debugF(x)
 #define debugFln(x)
 #endif
@@ -383,7 +383,7 @@ void loop() {
     measuredFilteredDist = int(measuredDist);
 
     // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist);
-    insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist, sendBufferIndex, SEND_BUFFER_SIZE);
+    insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND / 1000) * sendBufferIndex, measuredDist, measuredFilteredDist, sendBufferIndex, SEND_BUFFER_SIZE);
     sendBufferIndex++;
 
     if (DEBUG_ACTIVE) readAndPrintData(&sendBuffer[0], SEND_BUFFER_SIZE);
@@ -545,8 +545,7 @@ void checkDistance() {
   else if (diffDist > STOP_TRESHOLD && robotState.direction != DIRECTION_FORWARD) {
     runMotors(DIRECTION_FORWARD, 255 - (speedSlowFactor * 10));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
-  }
-  else if (diffDist < -STOP_TRESHOLD && robotState.direction != DIRECTION_BACKWARD) {
+  } else if (diffDist < -STOP_TRESHOLD && robotState.direction != DIRECTION_BACKWARD) {
     runMotors(DIRECTION_BACKWARD, 255 - (speedSlowFactor * 10));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
   }
@@ -642,7 +641,7 @@ void sendDataToServer() {
   //Feedback
   digitalWrite(LED_BUILTIN, HIGH);
 
-  client.print("GET /update?api_key=" + String(pvt.writeKey) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: "+ SERVER + RET + RET);
+  client.print("GET /update?api_key=" + String(pvt.writeKey) + "&field1=" + String(measuredDist, DECIMALS) + "&field2=" + String(measuredFilteredDist, DECIMALS) + " HTTP/1.1" + RET + "Accept: */*" + RET + "Host: " + SERVER + RET + RET);
 
   // if there are incoming bytes available
   // from the server, read them and print them
@@ -657,15 +656,15 @@ void sendDataToServer() {
 }
 
 void sendBulkDataToServer(char channelId[]) {
-  char c;   //Store received char from server
+  char c;  //Store received char from server
   byte httpCodeLen = 3;
   int httpCode;
 
   String dataLength = String(strlen(jsonToSend));
 
-  client.print("POST /channels/"+ String(channelId) + "/bulk_update.json HTTP/1.1" + RET + "Host: " + SERVER + RET + /*"Connection: close" + RET */+ "Content-Type: application/json" + RET + "Content-Length: " + dataLength + RET + RET + jsonToSend);
+  client.print("POST /channels/" + String(channelId) + "/bulk_update.json HTTP/1.1" + RET + "Host: " + SERVER + RET + /*"Connection: close" + RET */ +"Content-Type: application/json" + RET + "Content-Length: " + dataLength + RET + RET + jsonToSend);
 
-  delay(250); //Wait to receive the response
+  delay(250);  //Wait to receive the response
   debugFln("");
   httpCode = getHttpResponseCode(httpCodeLen);
   debugF("Response code: ");
@@ -677,14 +676,14 @@ void sendBulkDataToServer(char channelId[]) {
   } else {
     ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
   }
-  
+
   Serial.println();
 }
 
 int getHttpResponseCode(byte responseCodeLen) {
   char c;
   char toFind[] = "HTTP/1.1 ";
-  byte toFindLen = sizeof(toFind)/sizeof(toFind[0]) - 1;
+  byte toFindLen = sizeof(toFind) / sizeof(toFind[0]) - 1;
   byte currentIndex = 0;
   char responseCode[responseCodeLen];
   int responseCodeInt;
