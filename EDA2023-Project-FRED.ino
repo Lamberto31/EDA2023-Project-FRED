@@ -554,19 +554,23 @@ void checkDistance() {
     }
   }
   
+  // Adjust if not first check
+  if (!firstCheck) {
+    if (abs(diffDist) < STOP_TRESHOLD) {
+      runMotors(DIRECTION_STOP, 0);
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
     if (speedSlowFactor >= SLOW_FACTOR_STOP) {
       stateChange(&robotState, STATE_FREE);
       speedSlowFactor = 0;
     }
   }
-  // Difference greater than treshold
-  else if (diffDist > STOP_TRESHOLD && robotState.direction != DIRECTION_FORWARD) {
-    runMotors(DIRECTION_FORWARD, 255 - (speedSlowFactor * 10));
+    if (diffDist > STOP_TRESHOLD && robotState.direction != DIRECTION_FORWARD) {
+      runMotors(DIRECTION_FORWARD, 100 - (speedSlowFactor * 5));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
-  } else if (diffDist < -STOP_TRESHOLD && robotState.direction != DIRECTION_BACKWARD) {
-    runMotors(DIRECTION_BACKWARD, 255 - (speedSlowFactor * 10));
+    } else if (diffDist < -STOP_TRESHOLD && robotState.direction != DIRECTION_BACKWARD) {
+      runMotors(DIRECTION_BACKWARD, 100 - (speedSlowFactor * 5));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
+    }
   }
 }
 
