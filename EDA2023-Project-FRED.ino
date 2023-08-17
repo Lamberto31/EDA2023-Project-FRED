@@ -556,16 +556,18 @@ void preventDamage(int minDistance) {
   measuredDist = measureDistance();
   diffDist = measuredDist - minDistance;
 
-  // Difference less than a value
-  if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
-    int speed = map(diffDist, 0, minDistance + SLOW_TRESHOLD, 0, 255);
-    runMotors(DIRECTION_FORWARD, speed);
-  }
-
   // Difference less than treshold
-  // if (diffDist < STOP_TRESHOLD) {
-  //   runMotors(DIRECTION_STOP, 0);
-  // }
+  if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
+    if (diffDist >= STOP_TRESHOLD) {
+      // Just slow down
+      int speed = map(diffDist, 0, minDistance + SLOW_TRESHOLD, 0, 255);
+      runMotors(DIRECTION_FORWARD, speed);
+    }
+    else {
+      // Stop
+      runMotors(DIRECTION_STOP, 0);
+    }
+  }
 }
 
 // WIFI
