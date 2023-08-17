@@ -192,9 +192,9 @@ void setup() {
 
   // Feedback
   runMotors(DIRECTION_BACKWARD, 255);
-  delay(1000);
+  delay(500);
   runMotors(DIRECTION_FORWARD, 255);
-  delay(1000);
+  delay(500);
   runMotors(DIRECTION_STOP, 0);
 
   stateChange(&robotState, STATE_FREE);
