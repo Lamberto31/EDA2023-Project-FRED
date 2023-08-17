@@ -39,6 +39,7 @@ State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 #define DECIMALS 4  // Max value 4, it may cause buffer overflow if increased
 #define STOP_TRESHOLD 0.1
 #define SLOW_TRESHOLD 50
+#define SLOW_SPEED_MIN 100
 #define SLOW_FACTOR_MAX 15
 #define SLOW_FACTOR_STOP 10
 #define PERIOD_ULTRASONIC 60
@@ -540,7 +541,7 @@ void checkDistance() {
     if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
     if (diffDist >= STOP_TRESHOLD) {
       // Just slow down
-      int speed = map(diffDist, 0, numericCustomDist + SLOW_TRESHOLD, 100, 255);
+      int speed = map(diffDist, 0, numericCustomDist + SLOW_TRESHOLD, SLOW_SPEED_MIN, 255);
       runMotors(DIRECTION_FORWARD, speed);
     }
     else {
@@ -565,10 +566,10 @@ void checkDistance() {
     }
   }
     if (diffDist > STOP_TRESHOLD && robotState.direction != DIRECTION_FORWARD) {
-      runMotors(DIRECTION_FORWARD, 100 - (speedSlowFactor * 5));
+      runMotors(DIRECTION_FORWARD, SLOW_SPEED_MIN - (speedSlowFactor * 5));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
     } else if (diffDist < -STOP_TRESHOLD && robotState.direction != DIRECTION_BACKWARD) {
-      runMotors(DIRECTION_BACKWARD, 100 - (speedSlowFactor * 5));
+      runMotors(DIRECTION_BACKWARD, SLOW_SPEED_MIN - (speedSlowFactor * 5));
     if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
     }
   }
