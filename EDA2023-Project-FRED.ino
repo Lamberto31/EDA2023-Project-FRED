@@ -38,7 +38,7 @@ State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 // Ultrasonic
 #define DECIMALS 4  // Max value 4, it may cause buffer overflow if increased
 #define STOP_TRESHOLD 0.1
-#define STOP_SECURE_TRESHOLD 10
+#define SLOW_TRESHOLD 50
 #define SLOW_FACTOR_MAX 15
 #define SLOW_FACTOR_STOP 10
 #define PERIOD_ULTRASONIC 60
@@ -554,12 +554,18 @@ void checkDistance() {
 void preventDamage(int minDistance) {
   // Measure distance and difference from custom
   measuredDist = measureDistance();
-  diffDist = measuredDist - minDistance - STOP_SECURE_TRESHOLD;
+  diffDist = measuredDist - minDistance;
+
+  // Difference less than a value
+  if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
+    int speed = map(diffDist, 0, minDistance + SLOW_TRESHOLD, 0, 255);
+    runMotors(DIRECTION_FORWARD, speed);
+  }
 
   // Difference less than treshold
-  if (diffDist < STOP_TRESHOLD) {
-    runMotors(DIRECTION_STOP, 0);
-  }
+  // if (diffDist < STOP_TRESHOLD) {
+  //   runMotors(DIRECTION_STOP, 0);
+  // }
 }
 
 // WIFI
