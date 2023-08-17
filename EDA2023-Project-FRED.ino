@@ -667,7 +667,7 @@ void sendBulkDataToServer(char channelId[]) {
 
   delay(250); //Wait to receive the response
   debugFln("");
-  httpCode = gethResponseCode(httpCodeLen);
+  httpCode = getHttpResponseCode(httpCodeLen);
   debugF("Response code: ");
   debugln(httpCode);
 
@@ -681,7 +681,7 @@ void sendBulkDataToServer(char channelId[]) {
   Serial.println();
 }
 
-int gethResponseCode(byte responseCodeLen) {
+int getHttpResponseCode(byte responseCodeLen) {
   char c;
   char toFind[] = "HTTP/1.1 ";
   byte toFindLen = sizeof(toFind)/sizeof(toFind[0]) - 1;
