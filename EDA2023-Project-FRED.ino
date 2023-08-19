@@ -56,6 +56,7 @@ State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 #define WIFI_CONNECTION_ATTEMPT_MAX 5
 #define SERVER_CONNECTION_ATTEMPT_MAX 3
 #define SEND_BUFFER_SIZE PERIOD_SERVER / PERIOD_MEASURETOSEND  //Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
+#define WIFI_WAIT_DISABLE 5000
 // WiFi Feedback
 #define FEEDBACK_BLINK_WIFI_NO_SHIELD 10
 #define FEEDBACK_DURATION_WIFI_NO_SHIELD 250
@@ -164,6 +165,7 @@ void setup() {
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
 
   // WiFi
+  wifiActive = !waitDisableWifi();
   if (wifiActive) {
     Serial.begin(9600);
     wifiInitializeConnect();
@@ -715,4 +717,32 @@ int getHttpResponseCode(byte responseCodeLen) {
   }
   responseCodeInt = atoi(&responseCode[0]);
   return responseCodeInt;
+}
+
+bool waitDisableWifi() {
+  bool wifiDisabled = WIFI_ACTIVE;
+  unsigned long previousMillisWifiDisable = millis();
+  unsigned long currentMillisWifiDisable;
+
+  digitalWrite(LED_BUILTIN, HIGH);
+
+  while (millis() - previousMillisWifiDisable < WIFI_WAIT_DISABLE) {
+    if (!robotState.cmd_executed) {
+      switch (robotState.command) {
+        case IR_BUTTON_OK: {
+          wifiDisabled = false;
+          break;
+        }
+        case IR_BUTTON_HASH: {
+          wifiDisabled = true;
+          break;
+        }
+      }
+      stateCmdExecuted(&robotState);
+      break;
+    }
+  }
+
+  digitalWrite(LED_BUILTIN, LOW);
+  return wifiDisabled;
 }
