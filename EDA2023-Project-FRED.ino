@@ -165,6 +165,7 @@ void setup() {
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
 
   // WiFi
+  wifiActive = !waitDisableWifi();
   if (wifiActive) {
     Serial.begin(9600);
     wifiInitializeConnect();
@@ -716,4 +717,32 @@ int getHttpResponseCode(byte responseCodeLen) {
   }
   responseCodeInt = atoi(&responseCode[0]);
   return responseCodeInt;
+}
+
+bool waitDisableWifi() {
+  bool wifiDisabled = false;
+  unsigned long previousMillisWifiDisable = millis();
+  unsigned long currentMillisWifiDisable;
+
+  digitalWrite(LED_BUILTIN, HIGH);
+
+  while (millis() - previousMillisWifiDisable < WIFI_WAIT_DISABLE) {
+    if (!robotState.cmd_executed) {
+      switch (robotState.command) {
+        case IR_BUTTON_OK: {
+          wifiDisabled = false;
+          break;
+        }
+        case IR_BUTTON_HASH: {
+          wifiDisabled = true;
+          break;
+        }
+      }
+      stateCmdExecuted(&robotState);
+      break;
+    }
+  }
+
+  digitalWrite(LED_BUILTIN, LOW);
+  return wifiDisabled;
 }
