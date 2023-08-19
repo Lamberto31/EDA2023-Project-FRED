@@ -720,7 +720,7 @@ int getHttpResponseCode(byte responseCodeLen) {
 }
 
 bool waitDisableWifi() {
-  bool wifiDisabled = false;
+  bool wifiDisabled = WIFI_ACTIVE;
   unsigned long previousMillisWifiDisable = millis();
   unsigned long currentMillisWifiDisable;
 
