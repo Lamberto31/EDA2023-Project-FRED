@@ -376,10 +376,6 @@ void loop() {
 
   currentMillisUS = millis();
   if (currentMillisUS - previousMillisUS >= PERIOD_ULTRASONIC) {
-    servoH.attach(PIN_SERVO_HORIZ);
-    servoH.write(SERVO_HORIZ_CENTER);
-    delay(100);
-    servoH.detach();
     measuredDist = measureDistance();
     //DEBUG_TEMP
     measuredFilteredDist = int(measuredDist);
@@ -389,6 +385,11 @@ void loop() {
   
   currentMillisMeasureToSend = millis();
   if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
+    servoH.attach(PIN_SERVO_HORIZ);
+    servoH.write(SERVO_HORIZ_CENTER);
+    delay(100);
+    servoH.detach();
+
     // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist);
     insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND / 1000) * sendBufferIndex, measuredDist, measuredFilteredDist, sendBufferIndex, SEND_BUFFER_SIZE);
     sendBufferIndex++;
