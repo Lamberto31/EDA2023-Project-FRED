@@ -95,12 +95,23 @@ volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 
 // Ultrasonic
 double measuredDist = 0;
-double diffDist;
-bool firstCheck = true;
-byte speedSlowFactor = 0;
 double measuredFilteredDist = 0;
 unsigned long previousMillisUS;
 unsigned long currentMillisUS;
+
+// Movement control
+double diffDist;
+bool firstCheck = true;
+byte speedSlowFactor = 0;
+
+// WiFi
+#define RET "\r\n"  //NL & CR characters, used to build HTTP request
+int wifiStatus = WL_IDLE_STATUS;
+bool wifiActive = WIFI_ACTIVE;
+bool connectedToServer = false;
+WiFiEspClient client;
+unsigned long previousMillisServer;
+unsigned long currentMillisServer;
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
 // DataToSend sendBuffer[5];
@@ -112,15 +123,6 @@ unsigned int sendBufferIndex = 0;
 */
 // char jsonToSend[310];
 char jsonToSend[10 + 50 + (51 * (SEND_BUFFER_SIZE))];
-
-// WiFi
-#define RET "\r\n"  //NL & CR characters, used to build HTTP request
-int wifiStatus = WL_IDLE_STATUS;
-bool wifiActive = WIFI_ACTIVE;
-bool connectedToServer = false;
-WiFiEspClient client;
-unsigned long previousMillisServer;
-unsigned long currentMillisServer;
 
 // Servomotor
 Servo servoH;
@@ -370,16 +372,16 @@ void loop() {
       break;
     }
   }
-
+  // Actions performed for each state
+  // Measure Distance
   currentMillisUS = millis();
   if (currentMillisUS - previousMillisUS >= PERIOD_ULTRASONIC) {
     measuredDist = measureDistance();
     //DEBUG_TEMP
     measuredFilteredDist = int(measuredDist);
-
     previousMillisUS = millis();
   }
-  
+  // Insert new data in sendBuffer
   currentMillisMeasureToSend = millis();
   if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
     servoH.attach(PIN_SERVO_HORIZ);
