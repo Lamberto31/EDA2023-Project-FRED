@@ -209,11 +209,7 @@ void loop() {
     // Free state handling
     case STATE_FREE: {
       if (robotState.direction == DIRECTION_FORWARD) {
-        currentMillisUS = millis();
-        if (currentMillisUS - previousMillisUS >= PERIOD_ULTRASONIC) {
-          preventDamage(CUSTOM_DIST_MIN);
-          previousMillisUS = millis();
-        }
+        preventDamage(CUSTOM_DIST_MIN);
       }
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
