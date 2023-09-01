@@ -31,32 +31,33 @@
 State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // Functionalities active/disabled
-#define DEBUG_ACTIVE 0
-#define WIFI_ACTIVE 1
+#define DEBUG_ACTIVE 1
+#define WIFI_ACTIVE 0
 
 // PARAMETERS
 // Ultrasonic
-#define DECIMALS 4  // Max value 4, it may cause buffer overflow if increased
-#define STOP_TRESHOLD 0.1
-#define SLOW_TRESHOLD 50
-#define SLOW_SPEED_MIN 100
-#define SLOW_FACTOR_MAX 15
-#define SLOW_FACTOR_STOP 10
-#define PERIOD_ULTRASONIC 60
-#define PERIOD_MEASURETOSEND 3000
+#define DECIMALS 4  // [digits] Max value 4, it may cause buffer overflow if greater
+#define PERIOD_ULTRASONIC 60  // [ms] between each distance measurement. Min value 60, may cause error on distance measure if lower
+// Movement control
+#define STOP_TRESHOLD 0.1  // [cm] Tolerance for diffDist
+#define SLOW_TRESHOLD 50  // [cm] Treshold used to go at max speed until reached
+#define SLOW_SPEED_MIN 100  // [analog] [0-255] Max value for low speed
+#define SLOW_FACTOR_MAX 15  // [adim] Max value for slowFactor to prevent too slow speed
+#define SLOW_FACTOR_STOP 10  // [adim] Min value for slowFactor to allow stop from checkDistance
 // Custom distance [cm]
-#define CUSTOM_DIST_MIN 10
-#define CUSTOM_DIST_MAX 500
-#define CUSTOM_DIST_CHAR 4  // Max value 4, it may cause buffer overflow if increased
+#define CUSTOM_DIST_MIN 10  // [cm]
+#define CUSTOM_DIST_MAX 500  // [cm]
+#define CUSTOM_DIST_CHAR 4  // [chars] Max value 4, it may cause buffer overflow if greater
 // WiFi
+#define WIFI_WAIT_DISABLE 5000  // [ms] Initial wait time to receive WiFi active/disable command from IR
 #define SERVER "api.thingspeak.com"
 #define PORT 80
-#define PERIOD_SERVER 15000
+#define PERIOD_SERVER 15000  // [ms] between each message to server. Min value 15000, may cause error response if lower (server allow one message each 15s)
 #define SERVER_HTTP_CORRECT_CODE 202
-#define WIFI_CONNECTION_ATTEMPT_MAX 5
-#define SERVER_CONNECTION_ATTEMPT_MAX 3
-#define SEND_BUFFER_SIZE PERIOD_SERVER / PERIOD_MEASURETOSEND  //Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
-#define WIFI_WAIT_DISABLE 5000
+#define WIFI_CONNECTION_ATTEMPT_MAX 5  // [attempt] Number of WiFi connection attempt before consider a failure and disable WiFi functionalities
+#define SERVER_CONNECTION_ATTEMPT_MAX 3  // [attempt] Number of TCP connection attempt to server before consider a failure and send feedback
+#define PERIOD_MEASURETOSEND 3000  // [ms] between each insertion of data into the structure. Suggested value 3000, it's ok if greater but a lower value may cause high memory consumption
+#define SEND_BUFFER_SIZE PERIOD_SERVER / PERIOD_MEASURETOSEND  // [byte] Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
 // WiFi Feedback
 #define FEEDBACK_BLINK_WIFI_NO_SHIELD 10
 #define FEEDBACK_DURATION_WIFI_NO_SHIELD 250
@@ -67,7 +68,7 @@ State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 #define FEEDBACK_BLINK_WIFI_NO_CONNECTION 5
 #define FEEDBACK_DURATION_WIFI_NO_CONNECTION 250
 //Servo
-#define SERVO_HORIZ_CENTER 100
+#define SERVO_HORIZ_CENTER 100 // [angle] [0-180] Angle considered as center for servo, it depends on the construction
 
 // IR
 // Button-Command
@@ -113,7 +114,7 @@ unsigned int sendBufferIndex = 0;
 char jsonToSend[10 + 50 + (51 * (SEND_BUFFER_SIZE))];
 
 // WiFi
-#define RET "\r\n"  //NL & CR characters
+#define RET "\r\n"  //NL & CR characters, used to build HTTP request
 int wifiStatus = WL_IDLE_STATUS;
 bool wifiActive = WIFI_ACTIVE;
 bool connectedToServer = false;
