@@ -320,11 +320,7 @@ void loop() {
     }
     // Search state handling
     case STATE_SEARCH: {
-      currentMillisUS = millis();
-      if (currentMillisUS - previousMillisUS >= PERIOD_ULTRASONIC) {
-        checkDistance();
-        previousMillisUS = millis();
-      }
+      checkDistance();
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
           case IR_BUTTON_OK: {
