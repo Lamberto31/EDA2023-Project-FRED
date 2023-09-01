@@ -218,7 +218,7 @@ void loop() {
         switch (robotState.command) {
           case IR_BUTTON_OK: {
             debugF("Distance = ");
-            debuglnDecimal(measureDistance(), DECIMALS);
+            debuglnDecimal(measuredDist, DECIMALS);
             runMotors(DIRECTION_STOP, 0);
             break;
           }
@@ -540,7 +540,6 @@ void resetCustomDistance() {
 
 void checkDistance() {
   // Measure distance and difference from custom
-  measuredDist = measureDistance();
   diffDist = measuredDist - numericCustomDist;
 
   // Move to the custom distance if first check
@@ -582,7 +581,6 @@ void checkDistance() {
 
 void preventDamage(int minDistance) {
   // Measure distance and difference from custom
-  measuredDist = measureDistance();
   diffDist = measuredDist - minDistance;
 
   // Difference less than treshold
