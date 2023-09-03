@@ -102,6 +102,10 @@ double measuredFilteredDist = 0;
 unsigned long previousMillisUS;
 unsigned long currentMillisUS;
 
+// Optical
+int opticalPulses = 0;
+int wheelRound = 0;
+
 // Movement control
 double diffDist;
 bool firstCheck = true;
@@ -205,6 +209,10 @@ void setup() {
   runMotors(DIRECTION_FORWARD, 255);
   delay(500);
   runMotors(DIRECTION_STOP, 0);
+
+  // Optical
+  delay(1000);
+  attachInterrupt(digitalPinToInterrupt(PIN_OPTICAL), countPulses, RISING);
 
   stateChange(&robotState, STATE_FREE);
 }
@@ -382,6 +390,14 @@ void loop() {
     measuredDist = measureDistance();
     //DEBUG_TEMP
     measuredFilteredDist = int(measuredDist);
+
+    //DEBUG_TEMP
+    debug("opticalPulses = ");
+    debugln(opticalPulses);
+
+    debug("wheelRound =");
+    debugln(wheelRound);
+    
     previousMillisUS = millis();
   }
   // Insert new data in sendBuffer
@@ -408,6 +424,13 @@ void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags
   if (DEBUG_ACTIVE) printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
   if (!aFlags == IRDATA_FLAGS_IS_REPEAT) {
     stateNewCmd(&robotState, aCommand);
+  }
+}
+
+void countPulses() {
+  opticalPulses++;
+  if (opticalPulses %20 == 0) {
+    wheelRound++;
   }
 }
 
