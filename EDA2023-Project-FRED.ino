@@ -16,6 +16,7 @@
 // Digital Pins
 #define PIN_ESP_TX 0
 #define PIN_ESP_RX 1
+#define PIN_OPTICAL 3
 #define PIN_ULTRASONIC_ECHO 4
 #define PIN_ULTRASONIC_TRIG 5
 #define PIN_MOTOR_ENB 6
@@ -38,6 +39,8 @@ State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 // Ultrasonic
 #define DECIMALS 4  // [digits] Max value 4, it may cause buffer overflow if greater
 #define PERIOD_ULTRASONIC 60  // [ms] between each distance measurement. Min value 60, may cause error on distance measure if lower
+// Optical
+#define WHEEL_ENCODER_HOLES 20  // Holes in wheel encoder (when counted indicates one round)
 // Movement control
 #define STOP_TRESHOLD 0.1  // [cm] Tolerance for diffDist
 #define SLOW_TRESHOLD 50  // [cm] Treshold used to go at max speed until reached
