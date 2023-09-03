@@ -103,8 +103,7 @@ unsigned long previousMillisUS;
 unsigned long currentMillisUS;
 
 // Optical
-int opticalPulses = 0;
-int wheelRound = 0;
+volatile int opticalPulses = 0;
 
 // Movement control
 double diffDist;
@@ -395,8 +394,8 @@ void loop() {
     debug("opticalPulses = ");
     debugln(opticalPulses);
 
-    debug("wheelRound =");
-    debugln(wheelRound);
+    debug("wheelRound = ");
+    debugln(opticalPulses/WHEEL_ENCODER_HOLES);
     
     previousMillisUS = millis();
   }
@@ -429,9 +428,6 @@ void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags
 
 void countPulses() {
   opticalPulses++;
-  if (opticalPulses %20 == 0) {
-    wheelRound++;
-  }
 }
 
 void ledFeedback(byte blinkNumber, unsigned int blinkDuration) {
