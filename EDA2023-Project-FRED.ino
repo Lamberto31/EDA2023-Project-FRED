@@ -241,13 +241,13 @@ void loop() {
             debugln(opticalPulses);
 
             debugF("wheelRounds = ");
-            debugln(opticalPulses/WHEEL_ENCODER_HOLES);
+            debuglnDecimal(opticalPulses/WHEEL_ENCODER_HOLES, DECIMALS);
 
             debugF("measuredRps = ");
-            debugln(measuredRps);
+            debuglnDecimal(measuredRps, DECIMALS);
 
             debugF("measuredSpeed = ");
-            debugln(measuredSpeed);
+            debuglnDecimal(measuredSpeed, DECIMALS);
 
             runMotors(DIRECTION_STOP, 0);
             break;
