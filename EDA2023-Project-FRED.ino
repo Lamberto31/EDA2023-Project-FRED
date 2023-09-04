@@ -42,7 +42,7 @@ State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 // Optical
 #define WHEEL_ENCODER_HOLES 20  // Holes in wheel encoder (when counted indicates one round)
 #define WHEEL_DIAMETER 65  //[mm] Diameter of wheel
-#define PERIOD_SPEED 240  //[ms] between each velocity measurement
+#define PERIOD_VELOCITY 240  //[ms] between each velocity measurement
 // Movement control
 #define STOP_TRESHOLD 0.1  // [cm] Tolerance for diffDist
 #define SLOW_TRESHOLD 50  // [cm] Treshold used to go at max speed until reached
@@ -107,10 +107,10 @@ unsigned long currentMillisUS;
 // Optical
 volatile int opticalPulses = 0;
 double measuredRps = 0;
-double measuredSpeed = 0;
-double measuredFilteredSpeed = 0;
-unsigned long previousMillisSpeed;
-unsigned long currentMillisSpeed;
+double measuredVelocity = 0;
+double measuredFilteredVelocity = 0;
+unsigned long previousMillisVelocity;
+unsigned long currentMillisVelocity;
 
 // Movement control
 double diffDist;
@@ -168,7 +168,7 @@ void setup() {
 
   //Start time counters
   previousMillisUS = millis();
-  previousMillisSpeed = millis();
+  previousMillisVelocity = millis();
   previousMillisMeasureToSend = millis();
   previousMillisServer = millis();
 
@@ -246,8 +246,8 @@ void loop() {
             debugF("measuredRps = ");
             debuglnDecimal(measuredRps, DECIMALS);
 
-            debugF("measuredSpeed = ");
-            debuglnDecimal(measuredSpeed, DECIMALS);
+            debugF("measuredVelocity = ");
+            debuglnDecimal(measuredVelocity, DECIMALS);
 
             runMotors(DIRECTION_STOP, 0);
             break;
@@ -414,14 +414,14 @@ void loop() {
     previousMillisUS = millis();
   }
 
-  // Measure Speed
-  currentMillisSpeed = millis();
-  if (currentMillisSpeed - previousMillisSpeed >= PERIOD_SPEED) {
-    measuredSpeed = measureSpeed(currentMillisSpeed - previousMillisSpeed);
+  // Measure Velocity
+  currentMillisVelocity = millis();
+  if (currentMillisVelocity - previousMillisVelocity >= PERIOD_VELOCITY) {
+    measuredVelocity = measureVelocity(currentMillisVelocity - previousMillisVelocity);
 
-    previousMillisSpeed = millis();
+    previousMillisVelocity = millis();
     //DEBUG_TEMP
-    measuredFilteredSpeed = int(measuredSpeed);
+    measuredFilteredVelocity = int(measuredVelocity);
   }
 
   // Insert new data in sendBuffer
@@ -639,23 +639,23 @@ void preventDamage(int minDistance) {
   }
 }
 
-// SPEED
-double measureSpeed(unsigned long deltaT) {
+// VELOCITY
+double measureVelocity(unsigned long deltaT) {
 
   int pulses = opticalPulses;
   opticalPulses = 0;
-  double speed;
+  double velocity;
 
   measuredRps = pulses / (WHEEL_ENCODER_HOLES * (deltaT * 0.001));
-  speed = PI * (WHEEL_DIAMETER * 0.1) * measuredRps;
+  velocity = PI * (WHEEL_DIAMETER * 0.1) * measuredRps;
 
   if (robotState.direction == DIRECTION_BACKWARD) {
-    speed = -1 * speed;
+    velocity = -1 * velocity;
   } else if (robotState.direction == DIRECTION_RIGHT || robotState.direction == DIRECTION_LEFT) {
-    speed = 0;
+    velocity = 0;
   }
 
-  return speed;
+  return velocity;
 }
 
 // WIFI
