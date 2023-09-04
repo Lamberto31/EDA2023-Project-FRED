@@ -41,7 +41,7 @@ State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 #define PERIOD_ULTRASONIC 60  // [ms] between each distance measurement. Min value 60, may cause error on distance measure if lower
 // Optical
 #define WHEEL_ENCODER_HOLES 20  // Holes in wheel encoder (when counted indicates one round)
-#define WHEEL_DIAMETER 55  //[mm] Diameter of wheel
+#define WHEEL_DIAMETER 65  //[mm] Diameter of wheel
 #define PERIOD_SPEED 500  //[ms] between each velocity measurement
 // Movement control
 #define STOP_TRESHOLD 0.1  // [cm] Tolerance for diffDist
