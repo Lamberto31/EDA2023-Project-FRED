@@ -9,7 +9,7 @@ void jsonBuildForSend(DataToSend *dataArray, unsigned int elements, char key[], 
   double field4;
   double field5;
 
-  char charDeltaT[2];
+  char charDeltaT[3];
   char charTempField12[8];
   char charTempField3[6];
   char charTempField45[9];
