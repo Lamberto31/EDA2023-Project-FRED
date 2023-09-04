@@ -41,6 +41,8 @@ State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 #define PERIOD_ULTRASONIC 60  // [ms] between each distance measurement. Min value 60, may cause error on distance measure if lower
 // Optical
 #define WHEEL_ENCODER_HOLES 20  // Holes in wheel encoder (when counted indicates one round)
+#define WHEEL_DIAMETER 55  //[mm] Diameter of wheel
+#define PERIOD_SPEED 500  //[ms] between each velocity measurement
 // Movement control
 #define STOP_TRESHOLD 0.1  // [cm] Tolerance for diffDist
 #define SLOW_TRESHOLD 50  // [cm] Treshold used to go at max speed until reached
@@ -104,6 +106,11 @@ unsigned long currentMillisUS;
 
 // Optical
 volatile int opticalPulses = 0;
+double measuredRps = 0;
+double measuredSpeed = 0;
+double measuredFilteredSpeed = 0;
+unsigned long previousMillisSpeed;
+unsigned long currentMillisSpeed;
 
 // Movement control
 double diffDist;
@@ -161,6 +168,7 @@ void setup() {
 
   //Start time counters
   previousMillisUS = millis();
+  previousMillisSpeed = millis();
   previousMillisMeasureToSend = millis();
   previousMillisServer = millis();
 
@@ -390,8 +398,18 @@ void loop() {
     //DEBUG_TEMP
     measuredFilteredDist = int(measuredDist);
 
+    previousMillisUS = millis();
+  }
+
+  // Measure Speed
+  currentMillisSpeed = millis();
+  if (currentMillisSpeed - previousMillisSpeed >= PERIOD_SPEED) {
+    measuredSpeed = measureSpeed(currentMillisSpeed - previousMillisSpeed);
+
+    previousMillisSpeed = millis();
     //DEBUG_TEMP
-    debug("opticalPulses = ");
+    measuredFilteredSpeed = int(measuredSpeed);
+
     debugln(opticalPulses);
 
     debug("wheelRound = ");
@@ -399,6 +417,7 @@ void loop() {
     
     previousMillisUS = millis();
   }
+
   // Insert new data in sendBuffer
   currentMillisMeasureToSend = millis();
   if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
@@ -612,6 +631,19 @@ void preventDamage(int minDistance) {
       runMotors(DIRECTION_STOP, 0);
     }
   }
+}
+
+// SPEED
+double measureSpeed(unsigned long deltaT) {
+
+  int pulses = opticalPulses;
+  opticalPulses = 0;
+  double speed;
+
+  measuredRps = pulses / (WHEEL_ENCODER_HOLES * (deltaT * 0.001));
+  speed = PI * (WHEEL_DIAMETER * 0.1) * measuredRps;
+
+  return speed;
 }
 
 // WIFI
