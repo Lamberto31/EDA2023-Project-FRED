@@ -236,6 +236,19 @@ void loop() {
           case IR_BUTTON_OK: {
             debugF("Distance = ");
             debuglnDecimal(measuredDist, DECIMALS);
+
+            debugF("opticalPulses = ");
+            debugln(opticalPulses);
+
+            debugF("wheelRounds = ");
+            debugln(opticalPulses/WHEEL_ENCODER_HOLES);
+
+            debugF("measuredRps = ");
+            debugln(measuredRps);
+
+            debugF("measuredSpeed = ");
+            debugln(measuredSpeed);
+
             runMotors(DIRECTION_STOP, 0);
             break;
           }
@@ -409,13 +422,6 @@ void loop() {
     previousMillisSpeed = millis();
     //DEBUG_TEMP
     measuredFilteredSpeed = int(measuredSpeed);
-
-    debugln(opticalPulses);
-
-    debug("wheelRound = ");
-    debugln(opticalPulses/WHEEL_ENCODER_HOLES);
-    
-    previousMillisUS = millis();
   }
 
   // Insert new data in sendBuffer
