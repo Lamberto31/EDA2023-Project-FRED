@@ -10,9 +10,9 @@ void jsonBuildForSend(DataToSend *dataArray, unsigned int elements, char key[], 
   double field5;
 
   char charDeltaT[2];
-  char charTempField12[8]
-  char charTempField3[6]
-  char charTempField45[9]
+  char charTempField12[8];
+  char charTempField3[6];
+  char charTempField45[9];
 
   strcpy(json, "{\"write_api_key\":\"");
   strcat(json, key);
@@ -40,15 +40,15 @@ void jsonBuildForSend(DataToSend *dataArray, unsigned int elements, char key[], 
     strcat(json, charTempField12);
 
     strcat(json,",\"field3\":");
-    dtostrf(field3, 8, 4, charTempField3);
+    dtostrf(field3, 6, 4, charTempField3);
     strcat(json, charTempField3);
 
     strcat(json,",\"field4\":");
-    dtostrf(field4, 8, 4, charTempField45);
+    dtostrf(field4, 9, 4, charTempField45);
     strcat(json, charTempField45);
 
     strcat(json,",\"field5\":");
-    dtostrf(field5, 8, 4, charTempField45);
+    dtostrf(field5, 9, 4, charTempField45);
     strcat(json, charTempField45);
 
     strcat(json, "}");
