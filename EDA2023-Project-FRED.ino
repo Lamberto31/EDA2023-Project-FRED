@@ -649,6 +649,12 @@ double measureSpeed(unsigned long deltaT) {
   measuredRps = pulses / (WHEEL_ENCODER_HOLES * (deltaT * 0.001));
   speed = PI * (WHEEL_DIAMETER * 0.1) * measuredRps;
 
+  if (robotState.direction == DIRECTION_BACKWARD) {
+    speed = -1 * speed;
+  } else if (robotState.direction == DIRECTION_RIGHT || robotState.direction == DIRECTION_LEFT) {
+    speed = 0;
+  }
+
   return speed;
 }
 
