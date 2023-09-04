@@ -5,9 +5,14 @@ void jsonBuildForSend(DataToSend *dataArray, unsigned int elements, char key[], 
   unsigned long deltaT;
   double field1;
   double field2;
+  double field3;
+  double field4;
+  double field5;
 
   char charDeltaT[2];
-  char charTempField[8];
+  char charTempField12[8]
+  char charTempField3[6]
+  char charTempField45[9]
 
   strcpy(json, "{\"write_api_key\":\"");
   strcat(json, key);
@@ -18,19 +23,36 @@ void jsonBuildForSend(DataToSend *dataArray, unsigned int elements, char key[], 
     deltaT = dataArray[i].deltaT;
     field1 = dataArray[i].field1;
     field2 = dataArray[i].field2;
+    field3 = dataArray[i].field3;
+    field4 = dataArray[i].field4;
+    field5 = dataArray[i].field5;
 
     strcat(json,"{\"delta_t\":");
     itoa(deltaT, charDeltaT, 10);
     strcat(json, charDeltaT);
 
     strcat(json,",\"field1\":");
-    dtostrf(field1, 8, 4, charTempField);
-    strcat(json, charTempField);
+    dtostrf(field1, 8, 4, charTempField12);
+    strcat(json, charTempField12);
 
     strcat(json,",\"field2\":");
-    dtostrf(field2, 8, 4, charTempField);
-    strcat(json, charTempField);
+    dtostrf(field2, 8, 4, charTempField12);
+    strcat(json, charTempField12);
+
+    strcat(json,",\"field3\":");
+    dtostrf(field3, 8, 4, charTempField3);
+    strcat(json, charTempField3);
+
+    strcat(json,",\"field4\":");
+    dtostrf(field4, 8, 4, charTempField45);
+    strcat(json, charTempField45);
+
+    strcat(json,",\"field5\":");
+    dtostrf(field5, 8, 4, charTempField45);
+    strcat(json, charTempField45);
+
     strcat(json, "}");
+    
     if (i < elements - 1) strcat(json, ",");
   }
   strcat(json, "]}");
