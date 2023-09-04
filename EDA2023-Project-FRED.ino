@@ -309,7 +309,7 @@ void loop() {
           case IR_BUTTON_AST: {
             if (composeNumericDistance()) stateChange(&robotState, STATE_SEARCH); else stateChange(&robotState, STATE_FREE);
               debugF("numericCustomDist = ");
-              debugFln(numericCustomDist);
+              debugln(numericCustomDist);
             break;
           }
           case IR_BUTTON_OK: {
@@ -641,7 +641,7 @@ void wifiInitializeConnect() {
     }
     ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
     debugF("Attempting to connect to WPA SSID: ");
-    debugFln(pvt.ssid);
+    debugln(pvt.ssid);
     // Connect to WPA/WPA2 network
     wifiStatus = WiFi.begin(pvt.ssid, pvt.pwd);
   }
@@ -654,17 +654,17 @@ void wifiInitializeConnect() {
 void printWifiStatus() {
   // Print the SSID of the network you're attached to
   debugF("SSID: ");
-  debugFln(WiFi.SSID());
+  debugln(WiFi.SSID());
 
   // Print your WiFi shield's IP address
   IPAddress ip = WiFi.localIP();
   debugF("IP Address: ");
-  debugFln(ip);
+  debugln(ip);
 
   // Print the received signal strength
   long rssi = WiFi.RSSI();
   debugF("Signal strength (RSSI):");
-  debugF(rssi);
+  debug(rssi);
   debugFln(" dBm");
 }
 
@@ -701,7 +701,7 @@ void sendBulkDataToServer(char channelId[]) {
   debugFln("");
   httpCode = getHttpResponseCode(httpCodeLen);
   debugF("Response code: ");
-  debugFln(httpCode);
+  debugln(httpCode);
 
   //Feedback
   if (httpCode == SERVER_HTTP_CORRECT_CODE) {
