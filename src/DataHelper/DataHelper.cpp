@@ -69,7 +69,10 @@ void readAndPrintData(DataToSend *dataArray, byte elements) {
   Serial.print(F("[i]"));
   Serial.print(F("\tdeltaT"));
   Serial.print(F("\tfield1"));
-  Serial.println(F("\tfield2"));
+  Serial.print(F("\tfield2"));
+  Serial.print(F("\tfield3"));
+  Serial.print(F("\tfield4"));
+  Serial.println(F("\tfield5"));
   for (byte i = 0; i < elements; i++)
   {
     Serial.print(F("["));
@@ -83,7 +86,16 @@ void readAndPrintData(DataToSend *dataArray, byte elements) {
     Serial.print(dataArray->field1);
 
     Serial.print(F("\t"));
-    Serial.println(dataArray->field2);
+    Serial.print(dataArray->field2);
+
+    Serial.print(F("\t"));
+    Serial.print(dataArray->field3);
+
+    Serial.print(F("\t"));
+    Serial.print(dataArray->field4);
+
+    Serial.print(F("\t"));
+    Serial.println(dataArray->field5);
     //Serial.println();
     dataArray++;
   }
