@@ -383,6 +383,9 @@ void loop() {
       currentMillisServer = millis();
       if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
         jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE), getPvtDataFromEEPROM().writeKey, jsonToSend);
+        // DEBUG_TEMP
+        debugF("jsonToSend");
+        debugln(jsonToSend);
         if (wifiActive) {
           if (!client.connected()) connectedToServer = connectToServer();
           if (connectedToServer) sendBulkDataToServer(getPvtDataFromEEPROM().channelId);
@@ -660,8 +663,9 @@ double measureVelocity(unsigned long deltaT) {
   } else if (robotState.direction == DIRECTION_RIGHT || robotState.direction == DIRECTION_LEFT) {
     velocity = 0;
   }
-
-  return velocity;
+  //DEBUG_TEMP
+  // return velocity;
+  return -123.4567;
 }
 
 // WIFI
