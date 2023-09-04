@@ -131,11 +131,17 @@ unsigned long currentMillisMeasureToSend;
 DataToSend sendBuffer[SEND_BUFFER_SIZE];
 unsigned int sendBufferIndex = 0;
 /*10 is a little extra to avoid problems
-  50 is the characters used by the body in general
-  51 is the characters used by each DataToSend (with DECIMALS = 4)
+  49 is the characters used by the body in general
+  104 is the characters used by each DataToSend (with DECIMALS = 4)
+    13 for deltaT;
+    18 for field1, field2, so 18 * 2 = 36;
+    16 for field3;
+    19 for field4, field5, so 19 * 2 = 38;
+    1 for the comma separator for each object;
+    So 13 + 36 + 16 + 38 + 1 = 104
 */
 // char jsonToSend[310];
-char jsonToSend[10 + 50 + (51 * (SEND_BUFFER_SIZE))];
+char jsonToSend[10 + 49 + (104 * (SEND_BUFFER_SIZE))];
 
 // Servomotor
 Servo servoH;
