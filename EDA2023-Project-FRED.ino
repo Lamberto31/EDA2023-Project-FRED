@@ -16,6 +16,7 @@
 // Digital Pins
 #define PIN_ESP_TX 0
 #define PIN_ESP_RX 1
+#define PIN_OPTICAL 3
 #define PIN_ULTRASONIC_ECHO 4
 #define PIN_ULTRASONIC_TRIG 5
 #define PIN_MOTOR_ENB 6
@@ -38,6 +39,10 @@ State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 // Ultrasonic
 #define DECIMALS 4  // [digits] Max value 4, it may cause buffer overflow if greater
 #define PERIOD_ULTRASONIC 60  // [ms] between each distance measurement. Min value 60, may cause error on distance measure if lower
+// Optical
+#define WHEEL_ENCODER_HOLES 20  // Holes in wheel encoder (when counted indicates one round)
+#define WHEEL_DIAMETER 65  //[mm] Diameter of wheel
+#define PERIOD_VELOCITY 240  //[ms] between each velocity measurement
 // Movement control
 #define STOP_TRESHOLD 0.1  // [cm] Tolerance for diffDist
 #define SLOW_TRESHOLD 50  // [cm] Treshold used to go at max speed until reached
@@ -99,6 +104,14 @@ double measuredFilteredDist = 0;
 unsigned long previousMillisUS;
 unsigned long currentMillisUS;
 
+// Optical
+volatile int opticalPulses = 0;
+double measuredRps = 0;
+double measuredVelocity = 0;
+double measuredFilteredVelocity = 0;
+unsigned long previousMillisVelocity;
+unsigned long currentMillisVelocity;
+
 // Movement control
 double diffDist;
 bool firstCheck = true;
@@ -155,6 +168,7 @@ void setup() {
 
   //Start time counters
   previousMillisUS = millis();
+  previousMillisVelocity = millis();
   previousMillisMeasureToSend = millis();
   previousMillisServer = millis();
 
@@ -203,6 +217,10 @@ void setup() {
   delay(500);
   runMotors(DIRECTION_STOP, 0);
 
+  // Optical
+  delay(1000);
+  attachInterrupt(digitalPinToInterrupt(PIN_OPTICAL), countPulses, RISING);
+
   stateChange(&robotState, STATE_FREE);
 }
 
@@ -218,6 +236,19 @@ void loop() {
           case IR_BUTTON_OK: {
             debugF("Distance = ");
             debuglnDecimal(measuredDist, DECIMALS);
+
+            debugF("opticalPulses = ");
+            debugln(opticalPulses);
+
+            debugF("wheelRounds = ");
+            debuglnDecimal(opticalPulses/WHEEL_ENCODER_HOLES, DECIMALS);
+
+            debugF("measuredRps = ");
+            debuglnDecimal(measuredRps, DECIMALS);
+
+            debugF("measuredVelocity = ");
+            debuglnDecimal(measuredVelocity, DECIMALS);
+
             runMotors(DIRECTION_STOP, 0);
             break;
           }
@@ -379,8 +410,20 @@ void loop() {
     measuredDist = measureDistance();
     //DEBUG_TEMP
     measuredFilteredDist = int(measuredDist);
+
     previousMillisUS = millis();
   }
+
+  // Measure Velocity
+  currentMillisVelocity = millis();
+  if (currentMillisVelocity - previousMillisVelocity >= PERIOD_VELOCITY) {
+    measuredVelocity = measureVelocity(currentMillisVelocity - previousMillisVelocity);
+
+    previousMillisVelocity = millis();
+    //DEBUG_TEMP
+    measuredFilteredVelocity = int(measuredVelocity);
+  }
+
   // Insert new data in sendBuffer
   currentMillisMeasureToSend = millis();
   if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
@@ -406,6 +449,10 @@ void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags
   if (!aFlags == IRDATA_FLAGS_IS_REPEAT) {
     stateNewCmd(&robotState, aCommand);
   }
+}
+
+void countPulses() {
+  opticalPulses++;
 }
 
 void ledFeedback(byte blinkNumber, unsigned int blinkDuration) {
@@ -590,6 +637,25 @@ void preventDamage(int minDistance) {
       runMotors(DIRECTION_STOP, 0);
     }
   }
+}
+
+// VELOCITY
+double measureVelocity(unsigned long deltaT) {
+
+  int pulses = opticalPulses;
+  opticalPulses = 0;
+  double velocity;
+
+  measuredRps = pulses / (WHEEL_ENCODER_HOLES * (deltaT * 0.001));
+  velocity = PI * (WHEEL_DIAMETER * 0.1) * measuredRps;
+
+  if (robotState.direction == DIRECTION_BACKWARD) {
+    velocity = -1 * velocity;
+  } else if (robotState.direction == DIRECTION_RIGHT || robotState.direction == DIRECTION_LEFT) {
+    velocity = 0;
+  }
+
+  return velocity;
 }
 
 // WIFI
