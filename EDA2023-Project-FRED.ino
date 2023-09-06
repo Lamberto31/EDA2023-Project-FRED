@@ -451,17 +451,13 @@ void loop() {
   }
 }
 
-// This is the function, which is called if a complete command was received
+// This is the function, which is called if a complete ir command was received
 // It runs in an ISR context with interrupts enabled
 void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
   if (DEBUG_ACTIVE) printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
   if (!aFlags == IRDATA_FLAGS_IS_REPEAT) {
     stateNewCmd(&robotState, aCommand);
   }
-}
-
-void countPulses() {
-  opticalPulses++;
 }
 
 void ledFeedback(byte blinkNumber, unsigned int blinkDuration) {
@@ -666,6 +662,10 @@ double measureVelocity(unsigned long deltaT) {
   //DEBUG_TEMP
   // return velocity;
   return -123.4567;
+}
+
+void countPulses() {
+  opticalPulses++;
 }
 
 // WIFI
