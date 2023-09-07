@@ -131,11 +131,17 @@ unsigned long currentMillisMeasureToSend;
 DataToSend sendBuffer[SEND_BUFFER_SIZE];
 unsigned int sendBufferIndex = 0;
 /*10 is a little extra to avoid problems
-  50 is the characters used by the body in general
-  51 is the characters used by each DataToSend (with DECIMALS = 4)
+  49 is the characters used by the body in general
+  104 is the characters used by each DataToSend (with DECIMALS = 4)
+    13 for deltaT;
+    18 for field1, field2, so 18 * 2 = 36;
+    16 for field3;
+    19 for field4, field5, so 19 * 2 = 38;
+    1 for the comma separator for each object;
+    So 13 + 36 + 16 + 38 + 1 = 104
 */
 // char jsonToSend[310];
-char jsonToSend[10 + 50 + (51 * (SEND_BUFFER_SIZE))];
+char jsonToSend[10 + 49 + (104 * (SEND_BUFFER_SIZE))];
 
 // Servomotor
 Servo servoH;
@@ -377,6 +383,9 @@ void loop() {
       currentMillisServer = millis();
       if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
         jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE), getPvtDataFromEEPROM().writeKey, jsonToSend);
+        // DEBUG_TEMP
+        debugF("jsonToSend");
+        debugln(jsonToSend);
         if (wifiActive) {
           if (!client.connected()) connectedToServer = connectToServer();
           if (connectedToServer) sendBulkDataToServer(getPvtDataFromEEPROM().channelId);
@@ -433,7 +442,7 @@ void loop() {
     servoH.detach();
 
     // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist);
-    insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND / 1000) * sendBufferIndex, measuredDist, measuredFilteredDist, sendBufferIndex, SEND_BUFFER_SIZE);
+    insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND / 1000) * sendBufferIndex, measuredDist, measuredFilteredDist, measuredRps, measuredVelocity, measuredFilteredVelocity, sendBufferIndex, SEND_BUFFER_SIZE);
     sendBufferIndex++;
 
     if (DEBUG_ACTIVE) readAndPrintData(&sendBuffer[0], SEND_BUFFER_SIZE);
@@ -442,17 +451,13 @@ void loop() {
   }
 }
 
-// This is the function, which is called if a complete command was received
+// This is the function, which is called if a complete ir command was received
 // It runs in an ISR context with interrupts enabled
 void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
   if (DEBUG_ACTIVE) printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
   if (!aFlags == IRDATA_FLAGS_IS_REPEAT) {
     stateNewCmd(&robotState, aCommand);
   }
-}
-
-void countPulses() {
-  opticalPulses++;
 }
 
 void ledFeedback(byte blinkNumber, unsigned int blinkDuration) {
@@ -654,8 +659,13 @@ double measureVelocity(unsigned long deltaT) {
   } else if (robotState.direction == DIRECTION_RIGHT || robotState.direction == DIRECTION_LEFT) {
     velocity = 0;
   }
+  //DEBUG_TEMP
+  // return velocity;
+  return -123.4567;
+}
 
-  return velocity;
+void countPulses() {
+  opticalPulses++;
 }
 
 // WIFI
