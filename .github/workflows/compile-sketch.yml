@@ -31,4 +31,3 @@ jobs:
             - name: IRremote
             - name: WiFiEsp
             - name: Servo
-            - name: EEPROM
