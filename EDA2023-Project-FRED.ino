@@ -32,7 +32,7 @@
 State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 
 // Functionalities active/disabled
-#define DEBUG_ACTIVE 1
+#define DEBUG_ACTIVE 0
 #define WIFI_ACTIVE 0
 
 // PARAMETERS
