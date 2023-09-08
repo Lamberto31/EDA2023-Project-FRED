@@ -455,7 +455,7 @@ void loop() {
 // It runs in an ISR context with interrupts enabled
 void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
   if (DEBUG_ACTIVE) printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
-  if (!aFlags == IRDATA_FLAGS_IS_REPEAT) {
+  if (aFlags != IRDATA_FLAGS_IS_REPEAT) {
     stateNewCmd(&robotState, aCommand);
   }
 }
@@ -711,14 +711,12 @@ void printWifiStatus() {
   debugln(WiFi.SSID());
 
   // Print your WiFi shield's IP address
-  IPAddress ip = WiFi.localIP();
   debugF("IP Address: ");
-  debugln(ip);
+  debugln(WiFi.localIP());
 
   // Print the received signal strength
-  long rssi = WiFi.RSSI();
   debugF("Signal strength (RSSI):");
-  debug(rssi);
+  debug(WiFi.RSSI());
   debugFln(" dBm");
 }
 
@@ -743,7 +741,6 @@ bool connectToServer() {
 }
 
 void sendBulkDataToServer(char channelId[]) {
-  char c;  //Store received char from server
   byte httpCodeLen = 3;
   int httpCode;
 
@@ -798,7 +795,6 @@ int getHttpResponseCode(byte responseCodeLen) {
 bool waitDisableWifi() {
   bool wifiDisabled = !WIFI_ACTIVE;
   unsigned long previousMillisWifiDisable = millis();
-  unsigned long currentMillisWifiDisable;
 
   digitalWrite(LED_BUILTIN, HIGH);
 
