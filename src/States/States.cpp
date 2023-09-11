@@ -14,3 +14,13 @@ void stateCmdExecuted(State *st) {
 void stateNewDirection(State *st, byte direction) {
   st->direction = direction;
 }
+
+void setMeasuredDist(Measurement *ms, double measuredDist, double measuredFilteredDist) {
+  ms->measuredDist = measuredDist;
+  ms->measuredFilteredDist = measuredFilteredDist;
+}
+void setMeasuredVelocity(Measurement *ms, double measuredRps, double measuredVelocity, double measuredFilteredVelocity) {
+  ms->measuredRps = measuredRps;
+  ms->measuredVelocity = measuredVelocity;
+  ms->measuredFilteredVelocity = measuredFilteredVelocity;
+}

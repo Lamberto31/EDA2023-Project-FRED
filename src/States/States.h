@@ -22,9 +22,21 @@ struct State {
   byte direction;
 };
 
+struct Measurement {
+  double measuredDist;
+  double measuredFilteredDist;
+
+  double measuredRps;
+  double measuredVelocity;
+  double measuredFilteredVelocity;
+};
+
 void stateChange(State *st, byte dest);
 void stateNewCmd(State *st, byte command);
 void stateCmdExecuted(State *st);
 void stateNewDirection(State *st, byte direction);
+
+void setMeasuredDist(Measurement *ms, double measuredDist, double measuredFilteredDist);
+void setMeasuredVelocity(Measurement *ms, double measuredRps, double measuredVelocity, double measuredFilteredVelocity);
 
 #endif
