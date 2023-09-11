@@ -58,22 +58,22 @@ void jsonBuildForSend(DataToSend *dataArray, unsigned int elements, char key[], 
   strcat(json, "]}");
 }
 
-void insertNewCircularData(DataToSend *dataArray, unsigned long deltaT, double field1, double field2, double field3, double field4, double field5, unsigned int elementIndex, byte elementMax) {
+void insertNewCircularData(DataToSend *dataArray, unsigned long deltaT, Measures ms, unsigned int elementIndex, byte elementMax) {
   if (elementIndex < elementMax)
   {
     dataArray->deltaT = deltaT;
-    dataArray->field1 = field1;
-    dataArray->field2 = field2;
-    dataArray->field3 = field3;
-    dataArray->field4 = field4;
-    dataArray->field5 = field5;
+    dataArray->field1 = ms.measuredDist;
+    dataArray->field2 = ms.measuredFilteredDist;
+    dataArray->field3 = ms.measuredRps;
+    dataArray->field4 = ms.measuredVelocity;
+    dataArray->field5 = ms.measuredFilteredVelocity;
   }
   else {
-    double tempField1 = field1;
-    double tempField2 = field2;
-    double tempField3 = field3;
-    double tempField4 = field4;
-    double tempField5 = field5;
+    double tempField1 = ms.measuredDist;;
+    double tempField2 = ms.measuredFilteredDist;
+    double tempField3 = ms.measuredRps;
+    double tempField4 = ms.measuredVelocity;
+    double tempField5 = ms.measuredFilteredVelocity;
     for (byte i = 0; i < elementMax; i++)
     {
       swapDouble(dataArray->field1, tempField1);
