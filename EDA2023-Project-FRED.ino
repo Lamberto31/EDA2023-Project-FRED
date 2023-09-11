@@ -30,6 +30,7 @@
 
 // States
 State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
+Measurement robotMeasure = {0, 0, 0, 0, 0};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 0
@@ -99,16 +100,11 @@ State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 
 // Ultrasonic
-double measuredDist = 0;
-double measuredFilteredDist = 0;
 unsigned long previousMillisUS;
 unsigned long currentMillisUS;
 
 // Optical
 volatile int opticalPulses = 0;
-double measuredRps = 0;
-double measuredVelocity = 0;
-double measuredFilteredVelocity = 0;
 unsigned long previousMillisVelocity;
 unsigned long currentMillisVelocity;
 
@@ -241,7 +237,7 @@ void loop() {
         switch (robotState.command) {
           case IR_BUTTON_OK: {
             debugF("Distance = ");
-            debuglnDecimal(measuredDist, DECIMALS);
+            debuglnDecimal(robotMeasure.measuredDist, DECIMALS);
 
             debugF("opticalPulses = ");
             debugln(opticalPulses);
@@ -250,10 +246,10 @@ void loop() {
             debuglnDecimal(opticalPulses/WHEEL_ENCODER_HOLES, DECIMALS);
 
             debugF("measuredRps = ");
-            debuglnDecimal(measuredRps, DECIMALS);
+            debuglnDecimal(robotMeasure.measuredRps, DECIMALS);
 
             debugF("measuredVelocity = ");
-            debuglnDecimal(measuredVelocity, DECIMALS);
+            debuglnDecimal(robotMeasure.measuredVelocity, DECIMALS);
 
             runMotors(DIRECTION_STOP, 0);
             break;
@@ -416,9 +412,9 @@ void loop() {
   // Measure Distance
   currentMillisUS = millis();
   if (currentMillisUS - previousMillisUS >= PERIOD_ULTRASONIC) {
-    measuredDist = measureDistance();
+    robotMeasure.measuredDist = measureDistance();
     //DEBUG_TEMP
-    measuredFilteredDist = int(measuredDist);
+    robotMeasure.measuredFilteredDist = int(robotMeasure.measuredDist);
 
     previousMillisUS = millis();
   }
@@ -426,11 +422,11 @@ void loop() {
   // Measure Velocity
   currentMillisVelocity = millis();
   if (currentMillisVelocity - previousMillisVelocity >= PERIOD_VELOCITY) {
-    measuredVelocity = measureVelocity(currentMillisVelocity - previousMillisVelocity);
+    robotMeasure.measuredVelocity = measureVelocity(currentMillisVelocity - previousMillisVelocity);
 
     previousMillisVelocity = millis();
     //DEBUG_TEMP
-    measuredFilteredVelocity = int(measuredVelocity);
+    robotMeasure.measuredFilteredVelocity = int(robotMeasure.measuredVelocity);
   }
 
   // Insert new data in sendBuffer
@@ -441,8 +437,8 @@ void loop() {
     delay(100);
     servoH.detach();
 
-    // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, measuredDist, measuredFilteredDist);
-    insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND / 1000) * sendBufferIndex, measuredDist, measuredFilteredDist, measuredRps, measuredVelocity, measuredFilteredVelocity, sendBufferIndex, SEND_BUFFER_SIZE);
+    // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, robotMeasure.measuredDist, robotMeasure.measuredFilteredDist);
+    insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND / 1000) * sendBufferIndex, robotMeasure.measuredDist, robotMeasure.measuredFilteredDist, robotMeasure.measuredRps, robotMeasure.measuredVelocity, robotMeasure.measuredFilteredVelocity, sendBufferIndex, SEND_BUFFER_SIZE);
     sendBufferIndex++;
 
     if (DEBUG_ACTIVE) readAndPrintData(&sendBuffer[0], SEND_BUFFER_SIZE);
@@ -588,7 +584,7 @@ void resetCustomDistance() {
 
 void checkDistance() {
   // Measure distance and difference from custom
-  diffDist = measuredDist - numericCustomDist;
+  diffDist = robotMeasure.measuredDist - numericCustomDist;
 
   // Move to the custom distance if first check
   if (firstCheck) {
@@ -629,7 +625,7 @@ void checkDistance() {
 
 void preventDamage(int minDistance) {
   // Measure distance and difference from custom
-  diffDist = measuredDist - minDistance;
+  diffDist = robotMeasure.measuredDist - minDistance;
 
   // Difference less than treshold
   if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
@@ -651,8 +647,8 @@ double measureVelocity(unsigned long deltaT) {
   opticalPulses = 0;
   double velocity;
 
-  measuredRps = pulses / (WHEEL_ENCODER_HOLES * (deltaT * 0.001));
-  velocity = PI * (WHEEL_DIAMETER * 0.1) * measuredRps;
+  robotMeasure.measuredRps = pulses / (WHEEL_ENCODER_HOLES * (deltaT * 0.001));
+  velocity = PI * (WHEEL_DIAMETER * 0.1) * robotMeasure.measuredRps;
 
   if (robotState.direction == DIRECTION_BACKWARD) {
     velocity = -1 * velocity;
