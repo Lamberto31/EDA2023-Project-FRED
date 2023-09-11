@@ -27,7 +27,7 @@ void setMeasuredVelocity(Measures *ms, double measuredRps, double measuredVeloci
 void printMeasures(Measures *ms) {
   Serial.println(F("LAST MEASURES"));
   Serial.print(F("Quantity"));
-  Serial.print(F("\tUnits"))
+  Serial.print(F("\tUnits"));
   Serial.print(F("\tRaw"));
   Serial.println(F("\tFiltered"));
 
