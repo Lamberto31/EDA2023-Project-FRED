@@ -236,21 +236,7 @@ void loop() {
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
           case IR_BUTTON_OK: {
-            debugF("Distance = ");
-            debuglnDecimal(robotMeasures.measuredDist, DECIMALS);
-
-            debugF("opticalPulses = ");
-            debugln(opticalPulses);
-
-            debugF("wheelRounds = ");
-            debuglnDecimal(opticalPulses/WHEEL_ENCODER_HOLES, DECIMALS);
-
-            debugF("measuredRps = ");
-            debuglnDecimal(robotMeasures.measuredRps, DECIMALS);
-
-            debugF("measuredVelocity = ");
-            debuglnDecimal(robotMeasures.measuredVelocity, DECIMALS);
-
+            if (DEBUG_ACTIVE) printMeasures(&robotMeasures);
             runMotors(DIRECTION_STOP, 0);
             break;
           }

@@ -39,4 +39,6 @@ void stateNewDirection(State *st, byte direction);
 void setMeasuredDist(Measures *ms, double measuredDist, double measuredFilteredDist);
 void setMeasuredVelocity(Measures *ms, double measuredRps, double measuredVelocity, double measuredFilteredVelocity);
 
+void printMeasures(Measures *ms);
+
 #endif
