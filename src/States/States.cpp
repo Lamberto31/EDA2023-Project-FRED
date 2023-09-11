@@ -27,20 +27,21 @@ void setMeasuredVelocity(Measures *ms, double measuredRps, double measuredVeloci
 void printMeasures(Measures *ms) {
   Serial.println(F("LAST MEASURES"));
   Serial.print(F("Quantity"));
+  Serial.print(F("\tUnits"))
   Serial.print(F("\tRaw"));
   Serial.println(F("\tFiltered"));
 
-  Serial.print(F("Distance [cm]\t"));
+  Serial.print(F("Distance\t[cm]\t"));
   Serial.print(ms->measuredDist);
   Serial.print(F("\t"));
   Serial.println(ms->measuredFilteredDist);
 
-  Serial.print(F("RPS [r/s]\t"));
+  Serial.print(F("RPS\t[r/s]\t"));
   Serial.print(ms->measuredRps);
   Serial.print(F("\t"));
   Serial.println(F("---"));
 
-  Serial.print(F("Velocity [cm/s]\t"));
+  Serial.print(F("Velocity\t[cm/s]\t"));
   Serial.print(ms->measuredVelocity);
   Serial.print(F("\t"));
   Serial.println(ms->measuredFilteredVelocity);
