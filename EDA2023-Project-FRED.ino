@@ -30,7 +30,7 @@
 
 // States
 State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
-Measurement robotMeasure = {0, 0, 0, 0, 0};
+Measures robotMeasures = {0, 0, 0, 0, 0};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 0
@@ -237,7 +237,7 @@ void loop() {
         switch (robotState.command) {
           case IR_BUTTON_OK: {
             debugF("Distance = ");
-            debuglnDecimal(robotMeasure.measuredDist, DECIMALS);
+            debuglnDecimal(robotMeasures.measuredDist, DECIMALS);
 
             debugF("opticalPulses = ");
             debugln(opticalPulses);
@@ -246,10 +246,10 @@ void loop() {
             debuglnDecimal(opticalPulses/WHEEL_ENCODER_HOLES, DECIMALS);
 
             debugF("measuredRps = ");
-            debuglnDecimal(robotMeasure.measuredRps, DECIMALS);
+            debuglnDecimal(robotMeasures.measuredRps, DECIMALS);
 
             debugF("measuredVelocity = ");
-            debuglnDecimal(robotMeasure.measuredVelocity, DECIMALS);
+            debuglnDecimal(robotMeasures.measuredVelocity, DECIMALS);
 
             runMotors(DIRECTION_STOP, 0);
             break;
@@ -412,9 +412,9 @@ void loop() {
   // Measure Distance
   currentMillisUS = millis();
   if (currentMillisUS - previousMillisUS >= PERIOD_ULTRASONIC) {
-    robotMeasure.measuredDist = measureDistance();
+    robotMeasures.measuredDist = measureDistance();
     //DEBUG_TEMP
-    robotMeasure.measuredFilteredDist = int(robotMeasure.measuredDist);
+    robotMeasures.measuredFilteredDist = int(robotMeasures.measuredDist);
 
     previousMillisUS = millis();
   }
@@ -422,11 +422,11 @@ void loop() {
   // Measure Velocity
   currentMillisVelocity = millis();
   if (currentMillisVelocity - previousMillisVelocity >= PERIOD_VELOCITY) {
-    robotMeasure.measuredVelocity = measureVelocity(currentMillisVelocity - previousMillisVelocity);
+    robotMeasures.measuredVelocity = measureVelocity(currentMillisVelocity - previousMillisVelocity);
 
     previousMillisVelocity = millis();
     //DEBUG_TEMP
-    robotMeasure.measuredFilteredVelocity = int(robotMeasure.measuredVelocity);
+    robotMeasures.measuredFilteredVelocity = int(robotMeasures.measuredVelocity);
   }
 
   // Insert new data in sendBuffer
@@ -437,8 +437,8 @@ void loop() {
     delay(100);
     servoH.detach();
 
-    // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, robotMeasure.measuredDist, robotMeasure.measuredFilteredDist);
-    insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND / 1000) * sendBufferIndex, robotMeasure, sendBufferIndex, SEND_BUFFER_SIZE);
+    // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, robotMeasures.measuredDist, robotMeasures.measuredFilteredDist);
+    insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND / 1000) * sendBufferIndex, robotMeasures, sendBufferIndex, SEND_BUFFER_SIZE);
     sendBufferIndex++;
 
     if (DEBUG_ACTIVE) readAndPrintData(&sendBuffer[0], SEND_BUFFER_SIZE);
@@ -584,7 +584,7 @@ void resetCustomDistance() {
 
 void checkDistance() {
   // Measure distance and difference from custom
-  diffDist = robotMeasure.measuredDist - numericCustomDist;
+  diffDist = robotMeasures.measuredDist - numericCustomDist;
 
   // Move to the custom distance if first check
   if (firstCheck) {
@@ -625,7 +625,7 @@ void checkDistance() {
 
 void preventDamage(int minDistance) {
   // Measure distance and difference from custom
-  diffDist = robotMeasure.measuredDist - minDistance;
+  diffDist = robotMeasures.measuredDist - minDistance;
 
   // Difference less than treshold
   if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
@@ -647,8 +647,8 @@ double measureVelocity(unsigned long deltaT) {
   opticalPulses = 0;
   double velocity;
 
-  robotMeasure.measuredRps = pulses / (WHEEL_ENCODER_HOLES * (deltaT * 0.001));
-  velocity = PI * (WHEEL_DIAMETER * 0.1) * robotMeasure.measuredRps;
+  robotMeasures.measuredRps = pulses / (WHEEL_ENCODER_HOLES * (deltaT * 0.001));
+  velocity = PI * (WHEEL_DIAMETER * 0.1) * robotMeasures.measuredRps;
 
   if (robotState.direction == DIRECTION_BACKWARD) {
     velocity = -1 * velocity;
