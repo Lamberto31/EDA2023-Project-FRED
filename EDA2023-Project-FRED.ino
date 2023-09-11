@@ -438,7 +438,7 @@ void loop() {
     servoH.detach();
 
     // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, robotMeasure.measuredDist, robotMeasure.measuredFilteredDist);
-    insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND / 1000) * sendBufferIndex, robotMeasure.measuredDist, robotMeasure.measuredFilteredDist, robotMeasure.measuredRps, robotMeasure.measuredVelocity, robotMeasure.measuredFilteredVelocity, sendBufferIndex, SEND_BUFFER_SIZE);
+    insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND / 1000) * sendBufferIndex, robotMeasure, sendBufferIndex, SEND_BUFFER_SIZE);
     sendBufferIndex++;
 
     if (DEBUG_ACTIVE) readAndPrintData(&sendBuffer[0], SEND_BUFFER_SIZE);
