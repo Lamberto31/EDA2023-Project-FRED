@@ -37,13 +37,13 @@ Measures robotMeasures = {0, 0, 0, 0, 0};
 #define WIFI_ACTIVE 0
 
 // PARAMETERS
+// Measure
+#define PERIOD_MEASURE 100  // [ms] between each measurement. Min value 60, cay cause error on ultrasonic measure if lower
 // Ultrasonic
 #define DECIMALS 4  // [digits] Max value 4, it may cause buffer overflow if greater
-#define PERIOD_ULTRASONIC 60  // [ms] between each distance measurement. Min value 60, may cause error on distance measure if lower
 // Optical
 #define WHEEL_ENCODER_HOLES 20  // Holes in wheel encoder (when counted indicates one round)
 #define WHEEL_DIAMETER 65  //[mm] Diameter of wheel
-#define PERIOD_VELOCITY 240  //[ms] between each velocity measurement
 // Movement control
 #define STOP_TRESHOLD 0.1  // [cm] Tolerance for diffDist
 #define SLOW_TRESHOLD 50  // [cm] Treshold used to go at max speed until reached
@@ -99,14 +99,12 @@ Measures robotMeasures = {0, 0, 0, 0, 0};
 // Used by TinyIRReceiver library
 volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 
-// Ultrasonic
-unsigned long previousMillisUS;
-unsigned long currentMillisUS;
+// Measure
+unsigned long previousMillisMeasure;
+unsigned long currentMillisMeasure;
 
 // Optical
 volatile int opticalPulses = 0;
-unsigned long previousMillisVelocity;
-unsigned long currentMillisVelocity;
 
 // Movement control
 double diffDist;
@@ -169,8 +167,7 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
   //Start time counters
-  previousMillisUS = millis();
-  previousMillisVelocity = millis();
+  previousMillisMeasure = millis();
   previousMillisMeasureToSend = millis();
   previousMillisServer = millis();
 
@@ -394,24 +391,11 @@ void loop() {
     }
   }
   // Actions performed for each state
-  // Measure Distance
-  currentMillisUS = millis();
-  if (currentMillisUS - previousMillisUS >= PERIOD_ULTRASONIC) {
-    robotMeasures.measuredDist = measureDistance();
-    //DEBUG_TEMP
-    robotMeasures.measuredFilteredDist = int(robotMeasures.measuredDist);
-
-    previousMillisUS = millis();
-  }
-
-  // Measure Velocity
-  currentMillisVelocity = millis();
-  if (currentMillisVelocity - previousMillisVelocity >= PERIOD_VELOCITY) {
-    robotMeasures.measuredVelocity = measureVelocity(currentMillisVelocity - previousMillisVelocity);
-
-    previousMillisVelocity = millis();
-    //DEBUG_TEMP
-    robotMeasures.measuredFilteredVelocity = int(robotMeasures.measuredVelocity);
+  // Measure
+  currentMillisMeasure = millis();
+  if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
+    measureAll(currentMillisMeasure - previousMillisMeasure);
+    previousMillisMeasure = millis();
   }
 
   // Insert new data in sendBuffer
@@ -508,6 +492,41 @@ void runMotors(byte direction, byte speed) {
       break;
     }
   }
+}
+
+// MEASURE
+void measureAll(unsigned long deltaT) {
+  double prevDistance = robotMeasures.measuredDist;
+  // double prevFilteredDistance = robotMeasures.measuredFilteredDist;
+  
+  int pulses = opticalPulses;
+  opticalPulses = 0;
+  double travelledRevolution;
+  double travelledDistance;
+
+  double speedUltrasonic;
+  double distanceOptical;
+
+  // Distance from ultrasonic
+  robotMeasures.measuredDist = measureDistance();
+  //DEBUG_TEMP
+  robotMeasures.measuredFilteredDist = int(robotMeasures.measuredDist);
+
+  // Speed from ultrasonic
+  // TODO: Capire dove salvare
+  speedUltrasonic = (prevDistance - robotMeasures.measuredDist) / (deltaT * 0.001);
+
+  // Position from optical
+  travelledRevolution = pulses / WHEEL_ENCODER_HOLES;
+  travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution;
+  // TODO: Capire dove salvare
+  distanceOptical = prevDistance - travelledDistance;
+
+  // Velocity from optical
+  robotMeasures.measuredRps = travelledRevolution / (deltaT * 0.001);
+  robotMeasures.measuredVelocity = travelledDistance / (deltaT * 0.001);
+  //DEBUG_TEMP
+  robotMeasures.measuredFilteredVelocity = int(robotMeasures.measuredVelocity);
 }
 
 // DISTANCE
