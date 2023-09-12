@@ -501,6 +501,7 @@ void measureAll(unsigned long deltaT) {
   
   int pulses = opticalPulses;
   opticalPulses = 0;
+  int direction;
   double travelledRevolution;
   double travelledDistance;
 
@@ -517,7 +518,8 @@ void measureAll(unsigned long deltaT) {
   speedUltrasonic = (prevDistance - robotMeasures.measuredDist) / (deltaT * 0.001);
 
   // Position from optical
-  travelledRevolution = pulses / WHEEL_ENCODER_HOLES;
+  direction = measureDirection();
+  travelledRevolution = (pulses / WHEEL_ENCODER_HOLES) * direction;
   travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution;
   // TODO: Capire dove salvare
   distanceOptical = prevDistance - travelledDistance;
@@ -645,21 +647,16 @@ void preventDamage(int minDistance) {
 }
 
 // VELOCITY
-double measureVelocity(unsigned long deltaT) {
+int measureDirection() {
 
-  int pulses = opticalPulses;
-  opticalPulses = 0;
-  double velocity;
-
-  robotMeasures.measuredRps = pulses / (WHEEL_ENCODER_HOLES * (deltaT * 0.001));
-  velocity = PI * (WHEEL_DIAMETER * 0.1) * robotMeasures.measuredRps;
+  int direction = 1;
 
   if (robotState.direction == DIRECTION_BACKWARD) {
-    velocity = -1 * velocity;
+    direction = -1;
   } else if (robotState.direction == DIRECTION_RIGHT || robotState.direction == DIRECTION_LEFT) {
-    velocity = 0;
+    direction = 0;
   }
-  return velocity;
+  return direction;
 }
 
 void countPulses() {
