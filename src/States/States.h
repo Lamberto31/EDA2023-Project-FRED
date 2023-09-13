@@ -25,7 +25,9 @@ struct State {
 struct Measures {
   double distanceUS;
   double distanceUSFiltered;
+  double velocityUS;
 
+  double distanceOptical;
   double rpsOptical;
   double velocityOptical;
   double velocityOpticalFiltered;

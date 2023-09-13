@@ -505,24 +505,19 @@ void measureAll(unsigned long deltaT) {
   double travelledRevolution;
   double travelledDistance;
 
-  double speedUltrasonic;
-  double distanceOptical;
-
   // Distance from ultrasonic
   robotMeasures.distanceUS = measureDistance();
   //DEBUG_TEMP
   robotMeasures.distanceUSFiltered = int(robotMeasures.distanceUS);
 
   // Speed from ultrasonic
-  // TODO: Capire dove salvare
-  speedUltrasonic = (prevDistance - robotMeasures.distanceUS) / (deltaT * 0.001);
+  robotMeasures.velocityUS = (prevDistance - robotMeasures.distanceUS) / (deltaT * 0.001);
 
   // Position from optical
   direction = measureDirection();
   travelledRevolution = (pulses / WHEEL_ENCODER_HOLES) * direction;
   travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution;
-  // TODO: Capire dove salvare
-  distanceOptical = prevDistance - travelledDistance;
+  robotMeasures.distanceOptical = prevDistance - travelledDistance;
 
   // Velocity from optical
   robotMeasures.rpsOptical = travelledRevolution / (deltaT * 0.001);

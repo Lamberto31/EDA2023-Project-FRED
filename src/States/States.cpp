@@ -22,17 +22,27 @@ void printMeasures(Measures *ms) {
   Serial.print(F("\tRaw"));
   Serial.println(F("\tFiltered"));
 
-  Serial.print(F("Distance\t[cm]\t"));
+  Serial.print(F("Distance US\t[cm]\t"));
   Serial.print(ms->distanceUS);
   Serial.print(F("\t"));
   Serial.println(ms->distanceUSFiltered);
+
+  Serial.print(F("Distance Optical\t[cm]\t"));
+  Serial.print(ms->distanceOptical);
+  Serial.print(F("\t"));
+  Serial.println(F("---"));
 
   Serial.print(F("RPS\t[r/s]\t"));
   Serial.print(ms->rpsOptical);
   Serial.print(F("\t"));
   Serial.println(F("---"));
 
-  Serial.print(F("Velocity\t[cm/s]\t"));
+  Serial.print(F("Velocity US\t[cm/s]\t"));
+  Serial.print(ms->velocityUS);
+  Serial.print(F("\t"));
+  Serial.println(F("---"));
+
+  Serial.print(F("Velocity Optical\t[cm/s]\t"));
   Serial.print(ms->velocityOptical);
   Serial.print(F("\t"));
   Serial.println(ms->velocityOpticalFiltered);
