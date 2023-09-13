@@ -12,9 +12,9 @@ void jsonBuildForSend(DataToSend *dataArray, unsigned int elements, char key[], 
   double field7;
 
   char charDeltaT[3];
-  char charTempField123[8];
-  char charTempField4[6];
-  char charTempField567[9];
+  char charDistance[8];
+  char charRps[6];
+  char charVelocity[9];
 
   strcpy(json, "{\"write_api_key\":\"");
   strcat(json, key);
@@ -36,32 +36,32 @@ void jsonBuildForSend(DataToSend *dataArray, unsigned int elements, char key[], 
     strcat(json, charDeltaT);
 
     strcat(json,",\"field1\":");
-    dtostrf(field1, 8, 4, charTempField123);
-    strcat(json, charTempField12);
+    dtostrf(field1, 8, 4, charDistance);
+    strcat(json, charDistance);
 
     strcat(json,",\"field2\":");
-    dtostrf(field2, 8, 4, charTempField123);
-    strcat(json, charTempField12);
+    dtostrf(field2, 8, 4, charDistance);
+    strcat(json, charDistance);
 
     strcat(json,",\"field3\":");
-    dtostrf(field3, 8, 4, charTempField123);
-    strcat(json, charTempField3);
+    dtostrf(field3, 8, 4, charDistance);
+    strcat(json, charDistance);
 
     strcat(json,",\"field4\":");
-    dtostrf(field4, 6, 4, charTempField4);
-    strcat(json, charTempField45);
+    dtostrf(field4, 6, 4, charRps);
+    strcat(json, charRps);
 
     strcat(json,",\"field5\":");
-    dtostrf(field5, 9, 4, charTempField567);
-    strcat(json, charTempField45);
+    dtostrf(field5, 9, 4, charVelocity);
+    strcat(json, charVelocity);
 
     strcat(json,",\"field6\":");
-    dtostrf(field6, 9, 4, charTempField567);
-    strcat(json, charTempField12);
+    dtostrf(field6, 9, 4, charVelocity);
+    strcat(json, charVelocity);
 
     strcat(json,",\"field7\":");
-    dtostrf(field7, 9, 4, charTempField567);
-    strcat(json, charTempField45);
+    dtostrf(field7, 9, 4, charVelocity);
+    strcat(json, charVelocity);
 
     strcat(json, "}");
     
