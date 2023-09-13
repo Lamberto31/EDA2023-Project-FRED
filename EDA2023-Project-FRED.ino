@@ -406,7 +406,7 @@ void loop() {
     delay(100);
     servoH.detach();
 
-    // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, robotMeasures.measuredDist, robotMeasures.measuredFilteredDist);
+    // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, robotMeasures.distanceUS, robotMeasures.distanceUSFiltered);
     insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND / 1000) * sendBufferIndex, robotMeasures, sendBufferIndex, SEND_BUFFER_SIZE);
     sendBufferIndex++;
 
@@ -496,8 +496,8 @@ void runMotors(byte direction, byte speed) {
 
 // MEASURE
 void measureAll(unsigned long deltaT) {
-  double prevDistance = robotMeasures.measuredDist;
-  // double prevFilteredDistance = robotMeasures.measuredFilteredDist;
+  double prevDistance = robotMeasures.distanceUS;
+  // double prevFilteredDistance = robotMeasures.distanceUSFiltered;
   
   int pulses = opticalPulses;
   opticalPulses = 0;
@@ -509,13 +509,13 @@ void measureAll(unsigned long deltaT) {
   double distanceOptical;
 
   // Distance from ultrasonic
-  robotMeasures.measuredDist = measureDistance();
+  robotMeasures.distanceUS = measureDistance();
   //DEBUG_TEMP
-  robotMeasures.measuredFilteredDist = int(robotMeasures.measuredDist);
+  robotMeasures.distanceUSFiltered = int(robotMeasures.distanceUS);
 
   // Speed from ultrasonic
   // TODO: Capire dove salvare
-  speedUltrasonic = (prevDistance - robotMeasures.measuredDist) / (deltaT * 0.001);
+  speedUltrasonic = (prevDistance - robotMeasures.distanceUS) / (deltaT * 0.001);
 
   // Position from optical
   direction = measureDirection();
@@ -525,10 +525,10 @@ void measureAll(unsigned long deltaT) {
   distanceOptical = prevDistance - travelledDistance;
 
   // Velocity from optical
-  robotMeasures.measuredRps = travelledRevolution / (deltaT * 0.001);
-  robotMeasures.measuredVelocity = travelledDistance / (deltaT * 0.001);
+  robotMeasures.rpsOptical = travelledRevolution / (deltaT * 0.001);
+  robotMeasures.velocityOptical = travelledDistance / (deltaT * 0.001);
   //DEBUG_TEMP
-  robotMeasures.measuredFilteredVelocity = int(robotMeasures.measuredVelocity);
+  robotMeasures.velocityOpticalFiltered = int(robotMeasures.velocityOptical);
 }
 
 // DISTANCE
@@ -590,7 +590,7 @@ void resetCustomDistance() {
 
 void checkDistance() {
   // Measure distance and difference from custom
-  diffDist = robotMeasures.measuredDist - numericCustomDist;
+  diffDist = robotMeasures.distanceUS - numericCustomDist;
 
   // Move to the custom distance if first check
   if (firstCheck) {
@@ -631,7 +631,7 @@ void checkDistance() {
 
 void preventDamage(int minDistance) {
   // Measure distance and difference from custom
-  diffDist = robotMeasures.measuredDist - minDistance;
+  diffDist = robotMeasures.distanceUS - minDistance;
 
   // Difference less than treshold
   if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {

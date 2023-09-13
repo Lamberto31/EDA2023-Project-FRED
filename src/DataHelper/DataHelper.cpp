@@ -62,18 +62,18 @@ void insertNewCircularData(DataToSend *dataArray, unsigned long deltaT, Measures
   if (elementIndex < elementMax)
   {
     dataArray->deltaT = deltaT;
-    dataArray->field1 = ms.measuredDist;
-    dataArray->field2 = ms.measuredFilteredDist;
-    dataArray->field3 = ms.measuredRps;
-    dataArray->field4 = ms.measuredVelocity;
-    dataArray->field5 = ms.measuredFilteredVelocity;
+    dataArray->field1 = ms.distanceUS;
+    dataArray->field2 = ms.distanceUSFiltered;
+    dataArray->field3 = ms.rpsOptical;
+    dataArray->field4 = ms.velocityOptical;
+    dataArray->field5 = ms.velocityOpticalFiltered;
   }
   else {
-    double tempField1 = ms.measuredDist;;
-    double tempField2 = ms.measuredFilteredDist;
-    double tempField3 = ms.measuredRps;
-    double tempField4 = ms.measuredVelocity;
-    double tempField5 = ms.measuredFilteredVelocity;
+    double tempField1 = ms.distanceUS;;
+    double tempField2 = ms.distanceUSFiltered;
+    double tempField3 = ms.rpsOptical;
+    double tempField4 = ms.velocityOptical;
+    double tempField5 = ms.velocityOpticalFiltered;
     for (byte i = 0; i < elementMax; i++)
     {
       swapDouble(dataArray->field1, tempField1);
