@@ -516,7 +516,7 @@ void measureAll(unsigned long deltaT) {
   direction = measureDirection();
   travelledRevolution = (pulses / WHEEL_ENCODER_HOLES);
   travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution * direction;
-  robotMeasures.distanceOptical = prevDistance - travelledDistance;
+  robotMeasures.distanceOptical = travelledDistance + prevDistance;
 
   // Velocity from optical
   robotMeasures.rpsOptical = travelledRevolution / (deltaT * 0.001);
@@ -643,10 +643,10 @@ void preventDamage(int minDistance) {
 // VELOCITY
 int measureDirection() {
 
-  int direction = 1;
+  int direction = -1;
 
   if (robotState.direction == DIRECTION_BACKWARD) {
-    direction = -1;
+    direction = 1;
   } else if (robotState.direction == DIRECTION_RIGHT || robotState.direction == DIRECTION_LEFT) {
     direction = 0;
   }
