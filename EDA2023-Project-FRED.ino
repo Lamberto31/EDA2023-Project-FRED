@@ -509,8 +509,8 @@ void measureAll(unsigned long deltaT) {
   //DEBUG_TEMP
   robotMeasures.distanceUSFiltered = int(robotMeasures.distanceUS);
 
-  // Speed from ultrasonic
-  robotMeasures.velocityUS = (prevDistance - robotMeasures.distanceUS) / (deltaT * 0.001);
+  // Velocity from ultrasonic
+  robotMeasures.velocityUS = (robotMeasures.distanceUS - prevDistance) / (deltaT * 0.001);
 
   // Position from optical
   direction = measureDirection();
