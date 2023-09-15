@@ -63,7 +63,8 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0};
 #define WIFI_CONNECTION_ATTEMPT_MAX 5  // [attempt] Number of WiFi connection attempt before consider a failure and disable WiFi functionalities
 #define SERVER_CONNECTION_ATTEMPT_MAX 3  // [attempt] Number of TCP connection attempt to server before consider a failure and send feedback
 #define PERIOD_MEASURETOSEND 3000  // [ms] between each insertion of data into the structure. Suggested value 3000, it's ok if greater but a lower value may cause high memory consumption
-#define SEND_BUFFER_SIZE PERIOD_SERVER / PERIOD_MEASURETOSEND  // [byte] Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
+//#define SEND_BUFFER_SIZE PERIOD_SERVER / PERIOD_MEASURETOSEND  // [byte] Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
+#define SEND_BUFFER_SIZE 3
 // WiFi Feedback
 #define FEEDBACK_BLINK_WIFI_NO_SHIELD 10
 #define FEEDBACK_DURATION_WIFI_NO_SHIELD 250
@@ -735,7 +736,9 @@ void sendBulkDataToServer(char channelId[]) {
 
   String dataLength = String(strlen(jsonToSend));
 
-  client.print("POST /channels/" + String(channelId) + "/bulk_update.json HTTP/1.1" + RET + "Host: " + SERVER + RET + /*"Connection: close" + RET */ +"Content-Type: application/json" + RET + "Content-Length: " + dataLength + RET + RET + jsonToSend);
+  client.print(F("POST /channels/2219976/bulk_update.json HTTP/1.1\r\nHost: api.thingspeak.com\r\nContent-Type: application/json\r\nContent-Length: "));
+  client.print(dataLength + RET + RET); 
+  client.print(jsonToSend);
 
   delay(250);  //Wait to receive the response
   debugFln("");
