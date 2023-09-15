@@ -514,7 +514,7 @@ void measureAll(unsigned long deltaT) {
 
   // Position from optical
   direction = measureDirection();
-  travelledRevolution = (pulses / WHEEL_ENCODER_HOLES);
+  travelledRevolution = (pulses / (double)WHEEL_ENCODER_HOLES);
   travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution * direction;
   robotMeasures.distanceOptical = travelledDistance + prevDistance;
 
