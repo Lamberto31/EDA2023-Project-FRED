@@ -135,7 +135,6 @@ unsigned int sendBufferIndex = 0;
     1 for the comma separator for each object;
     So 13 + 54 + 16 + 57 + 1 = 141
 */
-char jsonToSend[10 + 49 + (141 * (SEND_BUFFER_SIZE))];
 
 // Servomotor
 Servo servoH;
@@ -361,9 +360,6 @@ void loop() {
     case STATE_MEASURE: {
       currentMillisServer = millis();
       if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
-        jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE), getPvtDataFromEEPROM().writeKey, jsonToSend);
-        debugF("JSON: ");
-        debugln(jsonToSend);
         if (wifiActive) {
           if (!client.connected()) connectedToServer = connectToServer();
           if (connectedToServer) sendBulkDataToServer(getPvtDataFromEEPROM().channelId);
@@ -733,6 +729,12 @@ bool connectToServer() {
 void sendBulkDataToServer(char channelId[]) {
   byte httpCodeLen = 3;
   int httpCode;
+
+  char jsonToSend[10 + 49 + (141 * (SEND_BUFFER_SIZE))];
+
+  jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE), getPvtDataFromEEPROM().writeKey, jsonToSend);
+  debugF("JSON: ");
+  debugln(jsonToSend);
 
   String dataLength = String(strlen(jsonToSend));
 
