@@ -2,7 +2,6 @@
 #define NO_LED_FEEDBACK_CODE  // Defined here because the library requires it
 #include "TinyIRReceiver.hpp"
 #include <Servo.h>
-#include "WiFiEsp.h"
 
 // Custom library for states handling
 #include "src/States/States.h"
@@ -14,8 +13,6 @@
 #include "src/DataHelper/DataHelper.h"
 
 // Digital Pins
-#define PIN_ESP_TX 0
-#define PIN_ESP_RX 1
 #define PIN_OPTICAL 3
 #define PIN_ULTRASONIC_ECHO 4
 #define PIN_ULTRASONIC_TRIG 5
@@ -34,7 +31,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 0
-#define WIFI_ACTIVE 0
+// #define BLUETOOTH_ACTIVE 0 TODO?
 
 // PARAMETERS
 // Measure
@@ -54,26 +51,12 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0};
 #define CUSTOM_DIST_MIN 10  // [cm]
 #define CUSTOM_DIST_MAX 500  // [cm]
 #define CUSTOM_DIST_CHAR 4  // [chars] Max value 4, it may cause buffer overflow if greater
-// WiFi
-#define WIFI_WAIT_DISABLE 5000  // [ms] Initial wait time to receive WiFi active/disable command from IR
-#define SERVER "api.thingspeak.com"
-#define PORT 80
+// Bluetooth TODO?
 #define PERIOD_SERVER 15000  // [ms] between each message to server. Min value 15000, may cause error response if lower (server allow one message each 15s)
-#define SERVER_HTTP_CORRECT_CODE 202
-#define WIFI_CONNECTION_ATTEMPT_MAX 5  // [attempt] Number of WiFi connection attempt before consider a failure and disable WiFi functionalities
-#define SERVER_CONNECTION_ATTEMPT_MAX 3  // [attempt] Number of TCP connection attempt to server before consider a failure and send feedback
+
 #define PERIOD_MEASURETOSEND 3000  // [ms] between each insertion of data into the structure. Suggested value 3000, it's ok if greater but a lower value may cause high memory consumption
-//#define SEND_BUFFER_SIZE PERIOD_SERVER / PERIOD_MEASURETOSEND  // [byte] Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
-#define SEND_BUFFER_SIZE 3
-// WiFi Feedback
-#define FEEDBACK_BLINK_WIFI_NO_SHIELD 10
-#define FEEDBACK_DURATION_WIFI_NO_SHIELD 250
-#define FEEDBACK_BLINK_WIFI_CONNECTING 3
-#define FEEDBACK_DURATION_WIFI_CONNECTING 500
-#define FEEDBACK_BLINK_WIFI_CONNECTED 1
-#define FEEDBACK_DURATION_WIFI_CONNECTED 1000
-#define FEEDBACK_BLINK_WIFI_NO_CONNECTION 5
-#define FEEDBACK_DURATION_WIFI_NO_CONNECTION 250
+#define SEND_BUFFER_SIZE PERIOD_SERVER / PERIOD_MEASURETOSEND  // [byte] Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
+// Bluetooth Feedback TODO?
 //Servo
 #define SERVO_HORIZ_CENTER 100 // [angle] [0-180] Angle considered as center for servo, it depends on the construction
 
@@ -112,29 +95,12 @@ double diffDist;
 bool firstCheck = true;
 byte speedSlowFactor = 0;
 
-// WiFi
-#define RET "\r\n"  //NL & CR characters, used to build HTTP request
-int wifiStatus = WL_IDLE_STATUS;
-bool wifiActive = WIFI_ACTIVE;
-bool connectedToServer = false;
-WiFiEspClient client;
-unsigned long previousMillisServer;
-unsigned long currentMillisServer;
+// Bluetooth TODO?
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
 // DataToSend sendBuffer[5];
 DataToSend sendBuffer[SEND_BUFFER_SIZE];
 unsigned int sendBufferIndex = 0;
-/*10 is a little extra to avoid problems
-  49 is the characters used by the body in general
-  104 is the characters used by each DataToSend (with DECIMALS = 4)
-    13 for deltaT;
-    18 for field1, field2, field6 so 18 * 3 = 54;
-    16 for field3;
-    19 for field4, field5, field7 so 19 * 3 = 57;
-    1 for the comma separator for each object;
-    So 13 + 54 + 16 + 57 + 1 = 141
-*/
 
 // Servomotor
 Servo servoH;
@@ -168,7 +134,6 @@ void setup() {
   //Start time counters
   previousMillisMeasure = millis();
   previousMillisMeasureToSend = millis();
-  previousMillisServer = millis();
 
   // IR Receiver
   if (!initPCIInterruptForTinyReceiver()) {
@@ -179,12 +144,7 @@ void setup() {
   pinMode(PIN_ULTRASONIC_TRIG, OUTPUT);
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
 
-  // WiFi
-  wifiActive = !waitDisableWifi();
-  if (wifiActive) {
-    Serial.begin(9600);
-    wifiInitializeConnect();
-  }
+  // Bluetooth TODO?
 
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
@@ -358,26 +318,16 @@ void loop() {
     }
     // Measure state handling
     case STATE_MEASURE: {
-      currentMillisServer = millis();
-      if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
-        if (wifiActive) {
-          if (!client.connected()) connectedToServer = connectToServer();
-          if (connectedToServer) sendBulkDataToServer(getPvtDataFromEEPROM().channelId);
-          }
-          sendBufferIndex = 0;
-          memset(sendBuffer, 0, sizeof(sendBuffer));
-          previousMillisServer = millis();
-        }
+      sendBufferIndex = 0;
+      memset(sendBuffer, 0, sizeof(sendBuffer));
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
           case IR_BUTTON_OK: {
             stateChange(&robotState, STATE_FREE);
-            client.stop();
             break;
           }
           case IR_BUTTON_AST: {
             stateChange(&robotState, STATE_READ);
-            client.stop();
             break;
           }
         }
@@ -654,161 +604,4 @@ void countPulses() {
   opticalPulses++;
 }
 
-// WIFI
-void wifiInitializeConnect() {
-  PrivateData pvt = getPvtDataFromEEPROM();
-
-  // ESP module initialization
-  WiFi.init(&Serial);
-
-  // Check if module is connected
-  if (WiFi.status() == WL_NO_SHIELD) {
-    ledFeedback(FEEDBACK_BLINK_WIFI_NO_SHIELD, FEEDBACK_DURATION_WIFI_NO_SHIELD);
-    wifiActive = 0;
-    debugFln("WiFi shield not present and WiFi disabled");
-    return;
-  }
-
-  // Connect to WiFi network
-  byte wifiConnectionAttemptCount = 0;
-  while (wifiStatus != WL_CONNECTED) {
-    wifiConnectionAttemptCount++;
-    if (wifiConnectionAttemptCount > WIFI_CONNECTION_ATTEMPT_MAX) {
-      ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
-      wifiActive = 0;
-      debugFln("WiFi connection failed and WiFi disabled");
-      return;
-    }
-    ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
-    debugF("Attempting to connect to WPA SSID: ");
-    debugln(pvt.ssid);
-    // Connect to WPA/WPA2 network
-    wifiStatus = WiFi.begin(pvt.ssid, pvt.pwd);
-  }
-  // Connected
-  ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
-  debugFln("You're connected to the network");
-  if (DEBUG_ACTIVE) printWifiStatus();
-}
-
-void printWifiStatus() {
-  // Print the SSID of the network you're attached to
-  debugF("SSID: ");
-  debugln(WiFi.SSID());
-
-  // Print your WiFi shield's IP address
-  debugF("IP Address: ");
-  debugln(WiFi.localIP());
-
-  // Print the received signal strength
-  debugF("Signal strength (RSSI):");
-  debug(WiFi.RSSI());
-  debugFln(" dBm");
-}
-
-bool connectToServer() {
-  byte serverConnectionAttemptCount = 0;
-  while (!client.connected()) {
-    serverConnectionAttemptCount++;
-    if (serverConnectionAttemptCount > SERVER_CONNECTION_ATTEMPT_MAX) {
-      ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
-      debugFln("Connection failed");
-      return false;
-    }
-    ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTING, FEEDBACK_DURATION_WIFI_CONNECTING);
-    debugFln("Starting connection to server...");
-    client.connect(SERVER, PORT);
-    delay(100);
-  }
-  // Connected
-  ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
-  debugFln("Connected to server");
-  return true;
-}
-
-void sendBulkDataToServer(char channelId[]) {
-  byte httpCodeLen = 3;
-  int httpCode;
-
-  char jsonToSend[10 + 49 + (141 * (SEND_BUFFER_SIZE))];
-
-  jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE), getPvtDataFromEEPROM().writeKey, jsonToSend);
-  debugF("JSON: ");
-  debugln(jsonToSend);
-
-  String dataLength = String(strlen(jsonToSend));
-
-  client.print(F("POST /channels/2219976/bulk_update.json HTTP/1.1\r\nHost: api.thingspeak.com\r\nContent-Type: application/json\r\nContent-Length: "));
-  client.print(dataLength + RET + RET); 
-  client.print(jsonToSend);
-
-  delay(250);  //Wait to receive the response
-  debugFln("");
-  httpCode = getHttpResponseCode(httpCodeLen);
-  debugF("Response code: ");
-  debugln(httpCode);
-
-  //Feedback
-  if (httpCode == SERVER_HTTP_CORRECT_CODE) {
-    ledFeedback(FEEDBACK_BLINK_WIFI_CONNECTED, FEEDBACK_DURATION_WIFI_CONNECTED);
-  } else {
-    ledFeedback(FEEDBACK_BLINK_WIFI_NO_CONNECTION, FEEDBACK_DURATION_WIFI_NO_CONNECTION);
-  }
-
-  Serial.println();
-}
-
-int getHttpResponseCode(byte responseCodeLen) {
-  char c;
-  char toFind[] = "HTTP/1.1 ";
-  byte toFindLen = sizeof(toFind) / sizeof(toFind[0]) - 1;
-  byte currentIndex = 0;
-  char responseCode[responseCodeLen];
-  int responseCodeInt;
-
-  while (client.available()) {
-    c = client.read();
-    if (c == toFind[currentIndex]) {
-      currentIndex++;
-    } else {
-      currentIndex = 0;
-    }
-    if (currentIndex == toFindLen) {
-      break;
-    }
-  }
-  // questo o salvare risposta meglio
-  for (byte i = 0; i < responseCodeLen; i++) {
-    c = client.read();
-    responseCode[i] = c;
-  }
-  responseCodeInt = atoi(&responseCode[0]);
-  return responseCodeInt;
-}
-
-bool waitDisableWifi() {
-  bool wifiDisabled = !WIFI_ACTIVE;
-  unsigned long previousMillisWifiDisable = millis();
-
-  digitalWrite(LED_BUILTIN, HIGH);
-
-  while (millis() - previousMillisWifiDisable < WIFI_WAIT_DISABLE) {
-    if (!robotState.cmd_executed) {
-      switch (robotState.command) {
-        case IR_BUTTON_OK: {
-          wifiDisabled = false;
-          break;
-        }
-        case IR_BUTTON_HASH: {
-          wifiDisabled = true;
-          break;
-        }
-      }
-      stateCmdExecuted(&robotState);
-      break;
-    }
-  }
-
-  digitalWrite(LED_BUILTIN, LOW);
-  return wifiDisabled;
-}
+// BLUETOOTH TODO?
