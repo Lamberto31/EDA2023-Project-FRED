@@ -12,6 +12,8 @@ struct DataToSend {
   double field3;
   double field4;
   double field5;
+  double field6;
+  double field7;
   };
 
 void jsonBuildForSend(DataToSend *dataArray, unsigned int elements, char key[], char json[]);

@@ -8,11 +8,13 @@ void jsonBuildForSend(DataToSend *dataArray, unsigned int elements, char key[], 
   double field3;
   double field4;
   double field5;
+  double field6;
+  double field7;
 
   char charDeltaT[3];
-  char charTempField12[8];
-  char charTempField3[6];
-  char charTempField45[9];
+  char charDistance[8];
+  char charRps[6];
+  char charVelocity[9];
 
   strcpy(json, "{\"write_api_key\":\"");
   strcat(json, key);
@@ -26,30 +28,40 @@ void jsonBuildForSend(DataToSend *dataArray, unsigned int elements, char key[], 
     field3 = dataArray[i].field3;
     field4 = dataArray[i].field4;
     field5 = dataArray[i].field5;
+    field6 = dataArray[i].field6;
+    field7 = dataArray[i].field7;
 
     strcat(json,"{\"delta_t\":");
     itoa(deltaT, charDeltaT, 10);
     strcat(json, charDeltaT);
 
     strcat(json,",\"field1\":");
-    dtostrf(field1, 8, 4, charTempField12);
-    strcat(json, charTempField12);
+    dtostrf(field1, 8, 4, charDistance);
+    strcat(json, charDistance);
 
     strcat(json,",\"field2\":");
-    dtostrf(field2, 8, 4, charTempField12);
-    strcat(json, charTempField12);
+    dtostrf(field2, 8, 4, charDistance);
+    strcat(json, charDistance);
 
     strcat(json,",\"field3\":");
-    dtostrf(field3, 6, 4, charTempField3);
-    strcat(json, charTempField3);
+    dtostrf(field3, 8, 4, charDistance);
+    strcat(json, charDistance);
 
     strcat(json,",\"field4\":");
-    dtostrf(field4, 9, 4, charTempField45);
-    strcat(json, charTempField45);
+    dtostrf(field4, 6, 4, charRps);
+    strcat(json, charRps);
 
     strcat(json,",\"field5\":");
-    dtostrf(field5, 9, 4, charTempField45);
-    strcat(json, charTempField45);
+    dtostrf(field5, 9, 4, charVelocity);
+    strcat(json, charVelocity);
+
+    strcat(json,",\"field6\":");
+    dtostrf(field6, 9, 4, charVelocity);
+    strcat(json, charVelocity);
+
+    strcat(json,",\"field7\":");
+    dtostrf(field7, 9, 4, charVelocity);
+    strcat(json, charVelocity);
 
     strcat(json, "}");
     
@@ -62,18 +74,22 @@ void insertNewCircularData(DataToSend *dataArray, unsigned long deltaT, Measures
   if (elementIndex < elementMax)
   {
     dataArray->deltaT = deltaT;
-    dataArray->field1 = ms.measuredDist;
-    dataArray->field2 = ms.measuredFilteredDist;
-    dataArray->field3 = ms.measuredRps;
-    dataArray->field4 = ms.measuredVelocity;
-    dataArray->field5 = ms.measuredFilteredVelocity;
+    dataArray->field1 = ms.distanceUS;
+    dataArray->field2 = ms.distanceOptical;
+    dataArray->field3 = ms.distanceUSFiltered;
+    dataArray->field4 = ms.rpsOptical;
+    dataArray->field5 = ms.velocityUS;
+    dataArray->field6 = ms.velocityOptical;
+    dataArray->field7 = ms.velocityOpticalFiltered;
   }
   else {
-    double tempField1 = ms.measuredDist;;
-    double tempField2 = ms.measuredFilteredDist;
-    double tempField3 = ms.measuredRps;
-    double tempField4 = ms.measuredVelocity;
-    double tempField5 = ms.measuredFilteredVelocity;
+    double tempField1 = ms.distanceUS;;
+    double tempField2 = ms.distanceOptical;
+    double tempField3 = ms.distanceUSFiltered;
+    double tempField4 = ms.rpsOptical;
+    double tempField5 = ms.velocityUS;
+    double tempField6 = ms.velocityOptical;
+    double tempField7 = ms.velocityOpticalFiltered;
     for (byte i = 0; i < elementMax; i++)
     {
       swapDouble(dataArray->field1, tempField1);
@@ -81,6 +97,8 @@ void insertNewCircularData(DataToSend *dataArray, unsigned long deltaT, Measures
       swapDouble(dataArray->field3, tempField3);
       swapDouble(dataArray->field4, tempField4);
       swapDouble(dataArray->field5, tempField5);
+      swapDouble(dataArray->field6, tempField6);
+      swapDouble(dataArray->field7, tempField7);
       dataArray--;
     }
   }
@@ -94,7 +112,9 @@ void readAndPrintData(DataToSend *dataArray, byte elements) {
   Serial.print(F("\tfield2"));
   Serial.print(F("\tfield3"));
   Serial.print(F("\tfield4"));
-  Serial.println(F("\tfield5"));
+  Serial.print(F("\tfield5"));
+  Serial.print(F("\tfield6"));
+  Serial.println(F("\tfield7"));
   for (byte i = 0; i < elements; i++)
   {
     Serial.print(F("["));
@@ -117,7 +137,13 @@ void readAndPrintData(DataToSend *dataArray, byte elements) {
     Serial.print(dataArray->field4);
 
     Serial.print(F("\t"));
-    Serial.println(dataArray->field5);
+    Serial.print(dataArray->field5);
+
+    Serial.print(F("\t"));
+    Serial.print(dataArray->field6);
+
+    Serial.print(F("\t"));
+    Serial.println(dataArray->field7);
     //Serial.println();
     dataArray++;
   }

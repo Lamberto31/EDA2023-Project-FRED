@@ -30,20 +30,20 @@
 
 // States
 State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
-Measures robotMeasures = {0, 0, 0, 0, 0};
+Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 0
 #define WIFI_ACTIVE 0
 
 // PARAMETERS
+// Measure
+#define PERIOD_MEASURE 100  // [ms] between each measurement. Min value 60, cay cause error on ultrasonic measure if lower
 // Ultrasonic
 #define DECIMALS 4  // [digits] Max value 4, it may cause buffer overflow if greater
-#define PERIOD_ULTRASONIC 60  // [ms] between each distance measurement. Min value 60, may cause error on distance measure if lower
 // Optical
 #define WHEEL_ENCODER_HOLES 20  // Holes in wheel encoder (when counted indicates one round)
 #define WHEEL_DIAMETER 65  //[mm] Diameter of wheel
-#define PERIOD_VELOCITY 240  //[ms] between each velocity measurement
 // Movement control
 #define STOP_TRESHOLD 0.1  // [cm] Tolerance for diffDist
 #define SLOW_TRESHOLD 50  // [cm] Treshold used to go at max speed until reached
@@ -63,7 +63,8 @@ Measures robotMeasures = {0, 0, 0, 0, 0};
 #define WIFI_CONNECTION_ATTEMPT_MAX 5  // [attempt] Number of WiFi connection attempt before consider a failure and disable WiFi functionalities
 #define SERVER_CONNECTION_ATTEMPT_MAX 3  // [attempt] Number of TCP connection attempt to server before consider a failure and send feedback
 #define PERIOD_MEASURETOSEND 3000  // [ms] between each insertion of data into the structure. Suggested value 3000, it's ok if greater but a lower value may cause high memory consumption
-#define SEND_BUFFER_SIZE PERIOD_SERVER / PERIOD_MEASURETOSEND  // [byte] Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
+//#define SEND_BUFFER_SIZE PERIOD_SERVER / PERIOD_MEASURETOSEND  // [byte] Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
+#define SEND_BUFFER_SIZE 3
 // WiFi Feedback
 #define FEEDBACK_BLINK_WIFI_NO_SHIELD 10
 #define FEEDBACK_DURATION_WIFI_NO_SHIELD 250
@@ -99,14 +100,12 @@ Measures robotMeasures = {0, 0, 0, 0, 0};
 // Used by TinyIRReceiver library
 volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 
-// Ultrasonic
-unsigned long previousMillisUS;
-unsigned long currentMillisUS;
+// Measure
+unsigned long previousMillisMeasure;
+unsigned long currentMillisMeasure;
 
 // Optical
 volatile int opticalPulses = 0;
-unsigned long previousMillisVelocity;
-unsigned long currentMillisVelocity;
 
 // Movement control
 double diffDist;
@@ -130,14 +129,12 @@ unsigned int sendBufferIndex = 0;
   49 is the characters used by the body in general
   104 is the characters used by each DataToSend (with DECIMALS = 4)
     13 for deltaT;
-    18 for field1, field2, so 18 * 2 = 36;
+    18 for field1, field2, field6 so 18 * 3 = 54;
     16 for field3;
-    19 for field4, field5, so 19 * 2 = 38;
+    19 for field4, field5, field7 so 19 * 3 = 57;
     1 for the comma separator for each object;
-    So 13 + 36 + 16 + 38 + 1 = 104
+    So 13 + 54 + 16 + 57 + 1 = 141
 */
-// char jsonToSend[310];
-char jsonToSend[10 + 49 + (104 * (SEND_BUFFER_SIZE))];
 
 // Servomotor
 Servo servoH;
@@ -169,8 +166,7 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
   //Start time counters
-  previousMillisUS = millis();
-  previousMillisVelocity = millis();
+  previousMillisMeasure = millis();
   previousMillisMeasureToSend = millis();
   previousMillisServer = millis();
 
@@ -364,9 +360,6 @@ void loop() {
     case STATE_MEASURE: {
       currentMillisServer = millis();
       if (currentMillisServer - previousMillisServer >= PERIOD_SERVER) {
-        jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE), getPvtDataFromEEPROM().writeKey, jsonToSend);
-        debugF("JSON: ");
-        debugln(jsonToSend);
         if (wifiActive) {
           if (!client.connected()) connectedToServer = connectToServer();
           if (connectedToServer) sendBulkDataToServer(getPvtDataFromEEPROM().channelId);
@@ -394,24 +387,11 @@ void loop() {
     }
   }
   // Actions performed for each state
-  // Measure Distance
-  currentMillisUS = millis();
-  if (currentMillisUS - previousMillisUS >= PERIOD_ULTRASONIC) {
-    robotMeasures.measuredDist = measureDistance();
-    //DEBUG_TEMP
-    robotMeasures.measuredFilteredDist = int(robotMeasures.measuredDist);
-
-    previousMillisUS = millis();
-  }
-
-  // Measure Velocity
-  currentMillisVelocity = millis();
-  if (currentMillisVelocity - previousMillisVelocity >= PERIOD_VELOCITY) {
-    robotMeasures.measuredVelocity = measureVelocity(currentMillisVelocity - previousMillisVelocity);
-
-    previousMillisVelocity = millis();
-    //DEBUG_TEMP
-    robotMeasures.measuredFilteredVelocity = int(robotMeasures.measuredVelocity);
+  // Measure
+  currentMillisMeasure = millis();
+  if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
+    measureAll(currentMillisMeasure - previousMillisMeasure);
+    previousMillisMeasure = millis();
   }
 
   // Insert new data in sendBuffer
@@ -422,7 +402,7 @@ void loop() {
     delay(100);
     servoH.detach();
 
-    // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, robotMeasures.measuredDist, robotMeasures.measuredFilteredDist);
+    // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, robotMeasures.distanceUS, robotMeasures.distanceUSFiltered);
     insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND / 1000) * sendBufferIndex, robotMeasures, sendBufferIndex, SEND_BUFFER_SIZE);
     sendBufferIndex++;
 
@@ -510,6 +490,38 @@ void runMotors(byte direction, byte speed) {
   }
 }
 
+// MEASURE
+void measureAll(unsigned long deltaT) {
+  double prevDistance = robotMeasures.distanceUS;
+  // double prevFilteredDistance = robotMeasures.distanceUSFiltered;
+  
+  int pulses = opticalPulses;
+  opticalPulses = 0;
+  int direction;
+  double travelledRevolution;
+  double travelledDistance;
+
+  // Distance from ultrasonic
+  robotMeasures.distanceUS = measureDistance();
+  //DEBUG_TEMP
+  robotMeasures.distanceUSFiltered = int(robotMeasures.distanceUS);
+
+  // Velocity from ultrasonic
+  robotMeasures.velocityUS = (robotMeasures.distanceUS - prevDistance) / (deltaT * 0.001);
+
+  // Position from optical
+  direction = measureDirection();
+  travelledRevolution = (pulses / (double)WHEEL_ENCODER_HOLES);
+  travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution * direction;
+  robotMeasures.distanceOptical = travelledDistance + prevDistance;
+
+  // Velocity from optical
+  robotMeasures.rpsOptical = travelledRevolution / (deltaT * 0.001);
+  robotMeasures.velocityOptical = travelledDistance / (deltaT * 0.001);
+  //DEBUG_TEMP
+  robotMeasures.velocityOpticalFiltered = int(robotMeasures.velocityOptical);
+}
+
 // DISTANCE
 double measureDistance() {
   long tripTime;
@@ -569,7 +581,7 @@ void resetCustomDistance() {
 
 void checkDistance() {
   // Measure distance and difference from custom
-  diffDist = robotMeasures.measuredDist - numericCustomDist;
+  diffDist = robotMeasures.distanceUS - numericCustomDist;
 
   // Move to the custom distance if first check
   if (firstCheck) {
@@ -610,7 +622,7 @@ void checkDistance() {
 
 void preventDamage(int minDistance) {
   // Measure distance and difference from custom
-  diffDist = robotMeasures.measuredDist - minDistance;
+  diffDist = robotMeasures.distanceUS - minDistance;
 
   // Difference less than treshold
   if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
@@ -626,21 +638,16 @@ void preventDamage(int minDistance) {
 }
 
 // VELOCITY
-double measureVelocity(unsigned long deltaT) {
+int measureDirection() {
 
-  int pulses = opticalPulses;
-  opticalPulses = 0;
-  double velocity;
-
-  robotMeasures.measuredRps = pulses / (WHEEL_ENCODER_HOLES * (deltaT * 0.001));
-  velocity = PI * (WHEEL_DIAMETER * 0.1) * robotMeasures.measuredRps;
+  int direction = -1;
 
   if (robotState.direction == DIRECTION_BACKWARD) {
-    velocity = -1 * velocity;
+    direction = 1;
   } else if (robotState.direction == DIRECTION_RIGHT || robotState.direction == DIRECTION_LEFT) {
-    velocity = 0;
+    direction = 0;
   }
-  return velocity;
+  return direction;
 }
 
 void countPulses() {
@@ -723,9 +730,17 @@ void sendBulkDataToServer(char channelId[]) {
   byte httpCodeLen = 3;
   int httpCode;
 
+  char jsonToSend[10 + 49 + (141 * (SEND_BUFFER_SIZE))];
+
+  jsonBuildForSend(&sendBuffer[0], min(sendBufferIndex, SEND_BUFFER_SIZE), getPvtDataFromEEPROM().writeKey, jsonToSend);
+  debugF("JSON: ");
+  debugln(jsonToSend);
+
   String dataLength = String(strlen(jsonToSend));
 
-  client.print("POST /channels/" + String(channelId) + "/bulk_update.json HTTP/1.1" + RET + "Host: " + SERVER + RET + /*"Connection: close" + RET */ +"Content-Type: application/json" + RET + "Content-Length: " + dataLength + RET + RET + jsonToSend);
+  client.print(F("POST /channels/2219976/bulk_update.json HTTP/1.1\r\nHost: api.thingspeak.com\r\nContent-Type: application/json\r\nContent-Length: "));
+  client.print(dataLength + RET + RET); 
+  client.print(jsonToSend);
 
   delay(250);  //Wait to receive the response
   debugFln("");

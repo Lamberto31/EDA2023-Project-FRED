@@ -23,21 +23,20 @@ struct State {
 };
 
 struct Measures {
-  double measuredDist;
-  double measuredFilteredDist;
+  double distanceUS;
+  double distanceUSFiltered;
+  double velocityUS;
 
-  double measuredRps;
-  double measuredVelocity;
-  double measuredFilteredVelocity;
+  double distanceOptical;
+  double rpsOptical;
+  double velocityOptical;
+  double velocityOpticalFiltered;
 };
 
 void stateChange(State *st, byte dest);
 void stateNewCmd(State *st, byte command);
 void stateCmdExecuted(State *st);
 void stateNewDirection(State *st, byte direction);
-
-void setMeasuredDist(Measures *ms, double measuredDist, double measuredFilteredDist);
-void setMeasuredVelocity(Measures *ms, double measuredRps, double measuredVelocity, double measuredFilteredVelocity);
 
 void printMeasures(Measures *ms);
 
