@@ -173,6 +173,7 @@ void setup() {
   delay(1000);
   servoH.write(SERVO_HORIZ_CENTER);
   delay(500);
+  // TODO: Ora che non c'è il WiFi forse posso lasciarlo attaccato?
   servoH.detach();
   delay(500);
 
@@ -333,6 +334,7 @@ void loop() {
       break;
     }
     // Measure state handling
+    // TODO: Capire che fare di questo stato
     case STATE_MEASURE: {
       sendBufferIndex = 0;
       memset(sendBuffer, 0, sizeof(sendBuffer));
@@ -362,6 +364,12 @@ void loop() {
 
   // Send measure with Bluetooth
   if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
+    // TODO: Capire se serve sempre attach/detach o no
+    servoH.attach(PIN_SERVO_HORIZ);
+    servoH.write(SERVO_HORIZ_CENTER);
+    delay(100);
+    servoH.detach();
+
     bluetoothSendMeasure();
     previousMillisMeasureToSend = millis();
   }
@@ -370,11 +378,6 @@ void loop() {
   // Insert new data in sendBuffer
   currentMillisMeasureToSend = millis();
   if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
-    servoH.attach(PIN_SERVO_HORIZ);
-    servoH.write(SERVO_HORIZ_CENTER);
-    delay(100);
-    servoH.detach();
-
     // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, robotMeasures.distanceUS, robotMeasures.distanceUSFiltered);
     insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND / 1000) * sendBufferIndex, robotMeasures, sendBufferIndex, SEND_BUFFER_SIZE);
     sendBufferIndex++;
