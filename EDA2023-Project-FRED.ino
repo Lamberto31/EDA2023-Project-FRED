@@ -13,6 +13,9 @@
 #include "src/DataHelper/DataHelper.h"
 
 // Digital Pins
+#define PIN_HC05_TX 0
+#define PIN_HC05_RX 1
+#define PIN_BLUETOOTH_STATE 2
 #define PIN_OPTICAL 3
 #define PIN_ULTRASONIC_ECHO 4
 #define PIN_ULTRASONIC_TRIG 5
