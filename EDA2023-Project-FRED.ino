@@ -57,6 +57,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0};
 // Bluetooth TODO?
 #define BLUETOOTH_WAIT_CHANGE 5000  // [ms] Initial wait time to receive Bluetooth active/disable command from IR
 #define BLUETOOTH_WAIT_CONNECTION 10000  // [ms] Wait time to receive Bluetooth connection
+#define PERIOD_BLUETOOTH 1000  // [ms] between each message to Bluetooth. Min value 1000, may cause error response if lower (TODO: TEST vari valori)
 // TODO: CAPIRE SE SERVE
 #define PERIOD_SERVER 15000  // [ms] between each message to server. Min value 15000, may cause error response if lower (server allow one message each 15s)
 #define PERIOD_MEASURETOSEND 3000  // [ms] between each insertion of data into the structure. Suggested value 3000, it's ok if greater but a lower value may cause high memory consumption
@@ -357,6 +358,12 @@ void loop() {
   if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
     measureAll(currentMillisMeasure - previousMillisMeasure);
     previousMillisMeasure = millis();
+  }
+
+  // Send measure with Bluetooth
+  if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
+    bluetoothSendMeasure();
+    previousMillisMeasureToSend = millis();
   }
 
   // TODO: CAPIRE SE SERVE
@@ -664,4 +671,32 @@ bool bluetoothConnection() {
 
   digitalWrite(LED_BUILTIN, LOW);
   return bluetoothConn;
+}
+
+void bluetoothSendMeasure() {
+  //BDT: Bluetooth Data Transmission
+  Serial.println(F("BDT 1.0 START"));
+
+  Serial.print(F("Distance_US:"));
+  Serial.println(robotMeasures.distanceUS);
+
+  Serial.print(F("Distance_US_Filtered:"));
+  Serial.println(robotMeasures.distanceUSFiltered);
+
+  Serial.print(F("Distance_OPT:"));
+  Serial.println(robotMeasures.distanceOptical);
+
+  Serial.print(F("Rev_per_second:"));
+  Serial.println(robotMeasures.rpsOptical);
+
+  Serial.print(F("Velocity_US:"));
+  Serial.println(robotMeasures.velocityUS);
+
+  Serial.print(F("Velocity_OPT:"));
+  Serial.println(robotMeasures.velocityOptical);
+
+  Serial.print(F("Velocity_OPT_Filtered:"));
+  Serial.println(robotMeasures.velocityOpticalFiltered);
+
+  Serial.println(F("BDT 1.0 END"));
 }
