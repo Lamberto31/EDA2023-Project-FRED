@@ -44,6 +44,9 @@ measures = {
     "field7": 0
     }
 
+# Init list of dataToSend
+dataToSend =  []
+
 
 # MAIN LOOP: receive data from Bluetooth and send to remote server via WiFi
 while True:
@@ -61,3 +64,5 @@ while True:
                 insertDataInDict(recv)
                 if "END" in recv:
                     measures["created_at"] = int(time.time())
+                    dataToSend.append(measures)
+                    break
