@@ -57,8 +57,8 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0};
 // Bluetooth TODO?
 #define BLUETOOTH_WAIT_CHANGE 5000  // [ms] Initial wait time to receive Bluetooth active/disable command from IR
 #define BLUETOOTH_WAIT_CONNECTION 10000  // [ms] Wait time to receive Bluetooth connection
+// TODO: CAPIRE SE SERVE
 #define PERIOD_SERVER 15000  // [ms] between each message to server. Min value 15000, may cause error response if lower (server allow one message each 15s)
-
 #define PERIOD_MEASURETOSEND 3000  // [ms] between each insertion of data into the structure. Suggested value 3000, it's ok if greater but a lower value may cause high memory consumption
 #define SEND_BUFFER_SIZE PERIOD_SERVER / PERIOD_MEASURETOSEND  // [byte] Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
 // Bluetooth Feedback TODO?
@@ -105,6 +105,7 @@ bool bluetoothActive = BLUETOOTH_ACTIVE;
 bool bluetoothConnected = false;
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
+// TODO: CAPIRE SE SERVE
 // DataToSend sendBuffer[5];
 DataToSend sendBuffer[SEND_BUFFER_SIZE];
 unsigned int sendBufferIndex = 0;
@@ -358,6 +359,7 @@ void loop() {
     previousMillisMeasure = millis();
   }
 
+  // TODO: CAPIRE SE SERVE
   // Insert new data in sendBuffer
   currentMillisMeasureToSend = millis();
   if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
