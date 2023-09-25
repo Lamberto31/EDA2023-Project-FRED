@@ -1,5 +1,24 @@
 import serial
 import time
+# FUNCTION DEFINITION
+def insertDataInDict(recvData):
+    data = recvData.split(":")
+    if data[0] == "Distance_US":
+        measures["field1"] = data[1]
+    elif data[0] == "Distance_US_Filtered":
+        measures["field2"] = data[1]
+    elif data[0] == "Distance_OPT":
+        measures["field3"] = data[1]
+    elif data[0] == "Rev_per_second":
+        measures["field4"] = data[1]
+    elif data[0] == "Velocity_US":
+        measures["field5"] = data[1]
+    elif data[0] == "Velocity_OPT":
+        measures["field6"] = data[1]
+    elif data[0] == "Velocity_OPT_Filtered":
+        measures["field7"] = data[1]
+
+
 # INITIAL CONFIGURATION
 # Serial connection configuration TODO: capire se è corretta e inserire porta giusta (dopo configurazione bluetooth)
 ser = serial.Serial(
@@ -12,6 +31,19 @@ ser = serial.Serial(
 
 # Check if the serial connection is open
 ser.isOpen()
+
+# Init dictionary that contains measures (declared as field as in the remote server)
+measures = {
+    "created_at": 0,
+    "field1": 0,
+    "field2": 0,
+    "field3": 0,
+    "field4": 0,
+    "field5": 0,
+    "field6": 0,
+    "field7": 0
+    }
+
 
 # MAIN LOOP: receive data from Bluetooth and send to remote server via WiFi
 while True:
@@ -26,5 +58,6 @@ while True:
             while True:
                 recv = ser.readline()
                 print(str(recv, 'utf-8'))
+                insertDataInDict(recv)
                 if "END" in recv:
-                    break
+                    measures["created_at"] = int(time.time())
