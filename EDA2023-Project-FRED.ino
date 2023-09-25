@@ -34,7 +34,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 0
-// #define BLUETOOTH_ACTIVE 0 TODO?
+#define BLUETOOTH_ACTIVE 1
 
 // PARAMETERS
 // Measure
@@ -55,6 +55,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0};
 #define CUSTOM_DIST_MAX 500  // [cm]
 #define CUSTOM_DIST_CHAR 4  // [chars] Max value 4, it may cause buffer overflow if greater
 // Bluetooth TODO?
+#define BLUETOOTH_WAIT_CHANGE 5000  // [ms] Initial wait time to receive Bluetooth active/disable command from IR
 #define PERIOD_SERVER 15000  // [ms] between each message to server. Min value 15000, may cause error response if lower (server allow one message each 15s)
 
 #define PERIOD_MEASURETOSEND 3000  // [ms] between each insertion of data into the structure. Suggested value 3000, it's ok if greater but a lower value may cause high memory consumption
@@ -99,6 +100,7 @@ bool firstCheck = true;
 byte speedSlowFactor = 0;
 
 // Bluetooth TODO?
+bool bluetoothActive = BLUETOOTH_ACTIVE;
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
 // DataToSend sendBuffer[5];
@@ -129,7 +131,7 @@ int numericCustomDist = 0;
 #endif
 
 void setup() {
-  if (DEBUG_ACTIVE) Serial.begin(9600);
+  if (DEBUG_ACTIVE || BLUETOOTH_ACTIVE) Serial.begin(9600);
 
   // Feedback led
   pinMode(LED_BUILTIN, OUTPUT);
@@ -147,7 +149,10 @@ void setup() {
   pinMode(PIN_ULTRASONIC_TRIG, OUTPUT);
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
 
-  // Bluetooth TODO?
+  // Bluetooth
+  bluetoothActive = waitChangeBluetooth();
+  if (bluetoothActive) {
+  }
 
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
@@ -608,3 +613,30 @@ void countPulses() {
 }
 
 // BLUETOOTH TODO?
+bool waitChangeBluetooth() {
+  bool bluetoothAct = BLUETOOTH_ACTIVE;
+  unsigned long previousMillisBluetoothChange = millis();
+
+  digitalWrite(LED_BUILTIN, HIGH);
+
+  while (millis() - previousMillisBluetoothChange < BLUETOOTH_WAIT_CHANGE) {
+    if (!robotState.cmd_executed) {
+      switch (robotState.command) {
+        // If OK keep the current choice
+        case IR_BUTTON_OK: {
+          break;
+        }
+        // If # change the choice
+        case IR_BUTTON_HASH: {
+          bluetoothAct = !bluetoothAct;
+          break;
+        }
+      }
+      stateCmdExecuted(&robotState);
+      break;
+    }
+  }
+
+  digitalWrite(LED_BUILTIN, LOW);
+  return bluetoothAct;
+}
