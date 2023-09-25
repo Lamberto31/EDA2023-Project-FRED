@@ -56,6 +56,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0};
 #define CUSTOM_DIST_CHAR 4  // [chars] Max value 4, it may cause buffer overflow if greater
 // Bluetooth TODO?
 #define BLUETOOTH_WAIT_CHANGE 5000  // [ms] Initial wait time to receive Bluetooth active/disable command from IR
+#define BLUETOOTH_WAIT_CONNECTION 10000  // [ms] Wait time to receive Bluetooth connection
 #define PERIOD_SERVER 15000  // [ms] between each message to server. Min value 15000, may cause error response if lower (server allow one message each 15s)
 
 #define PERIOD_MEASURETOSEND 3000  // [ms] between each insertion of data into the structure. Suggested value 3000, it's ok if greater but a lower value may cause high memory consumption
@@ -101,6 +102,7 @@ byte speedSlowFactor = 0;
 
 // Bluetooth TODO?
 bool bluetoothActive = BLUETOOTH_ACTIVE;
+bool bluetoothConnected = false;
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
 // DataToSend sendBuffer[5];
@@ -150,8 +152,12 @@ void setup() {
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
 
   // Bluetooth
+  pinMode(PIN_BLUETOOTH_STATE, INPUT);
   bluetoothActive = waitChangeBluetooth();
+  delay(1000);
   if (bluetoothActive) {
+    if (!Serial) Serial.begin(9600);
+    bluetoothConnection();
   }
 
   // Servomotor
@@ -639,4 +645,21 @@ bool waitChangeBluetooth() {
 
   digitalWrite(LED_BUILTIN, LOW);
   return bluetoothAct;
+}
+
+bool bluetoothConnection() {
+  bool bluetoothConn = bluetoothConnected;
+  unsigned long previousMillisBluetoothConnected = millis();
+
+  digitalWrite(LED_BUILTIN, HIGH);
+
+  while (millis() - previousMillisBluetoothConnected < BLUETOOTH_WAIT_CONNECTION) {
+    if (digitalRead(PIN_BLUETOOTH_STATE) == HIGH) {
+      bluetoothConn = true;
+      break;
+    }
+  }
+
+  digitalWrite(LED_BUILTIN, LOW);
+  return bluetoothConn;
 }
