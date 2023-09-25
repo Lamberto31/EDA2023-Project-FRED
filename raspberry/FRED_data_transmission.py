@@ -1,5 +1,8 @@
 import serial
 import time
+# PARAMETER DEFINITION
+PERIOD_SERVER = 15 # seconds
+
 # FUNCTION DEFINITION
 def insertDataInDict(recvData):
     data = recvData.split(":")
@@ -66,3 +69,6 @@ while True:
                     measures["created_at"] = int(time.time())
                     dataToSend.append(measures)
                     break
+    
+    # SEND DATA TO REMOTE SERVER
+    # TODO: Implementare invio misure via WiFi al server remoto ogni 15 secondi e se ci sono dati
