@@ -51,6 +51,8 @@ measures = {
 
 # Init list of dataToSend
 dataToSend =  []
+# Init last execution time
+lastSendToServer = time.time()
 
 
 # MAIN LOOP: receive data from Bluetooth and send to remote server via WiFi
@@ -73,6 +75,9 @@ while True:
                     break
     
     # SEND DATA TO REMOTE SERVER
+    # Do it every PERIOD_SERVER seconds
+    if time.time() - lastSendToServer >= PERIOD_SERVER:
+        lastSendToServer = time.time()
     # TODO: Implementare invio misure via WiFi al server remoto ogni 15 secondi e se ci sono dati
     # TODO: Convertire dataToSend in JSON
     # TODO: Costruire intestaione HTTP (solo una volta la parte iniziale, poi solo lunghezza payload e payload)
