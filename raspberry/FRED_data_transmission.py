@@ -85,7 +85,7 @@ while True:
     
     # SEND DATA TO REMOTE SERVER
     # Do it every PERIOD_SERVER seconds
-    if time.time() - lastSendToServer >= PERIOD_SERVER:
+    if time.time() - lastSendToServer >= PERIOD_SERVER and dataToSend:
         # Build json to send
         jsonDict["updates"] = dataToSend
         print(jsonDict)
@@ -100,6 +100,5 @@ while True:
 
         # Reset timer
         lastSendToServer = time.time()
-    # TODO: Implementare controllo ogni 15 secondi e SE CI SONO DATI
     # TODO: Implementare lettura nascosta channel id e api key
     
