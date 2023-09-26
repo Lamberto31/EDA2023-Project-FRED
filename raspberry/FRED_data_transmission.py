@@ -59,13 +59,13 @@ while True:
         # Read data
         recv = ser.readline()
         # If contains "START" it's a BDT messagge
-        if "START" in recv:
+        if "START" in str(recv):
             print(str(recv, 'utf-8'))
             while True:
                 recv = ser.readline()
                 print(str(recv, 'utf-8'))
-                insertDataInDict(recv)
-                if "END" in recv:
+                insertDataInDict(str(recv))
+                if "END" in str(recv):
                     measures["created_at"] = int(time.time())
                     dataToSend.append(measures)
                     break
