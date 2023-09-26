@@ -1,10 +1,14 @@
 import serial
 import time
 import requests
+from decouple import config
 
 # PARAMETER DEFINITION
 PERIOD_SERVER = 15 # seconds
-API_KEY = "TODO"
+
+# GET SECRET VALUE
+API_KEY = config('API_KEY')
+CHANNEL_ID = config('CHANNEL_ID')
 
 # FUNCTION DEFINITION
 def insertDataInDict(recvData):
@@ -91,7 +95,7 @@ while True:
         print(jsonDict)
 
         # Send data
-        r = requests.post("https://api.thingspeak.com/channels/TODO/bulk_update.json", json=jsonDict)
+        r = requests.post("https://api.thingspeak.com/channels/"+ CHANNEL_ID +"/bulk_update.json", json=jsonDict)
         print(r.status_code, r.reason)
 
         # Reset data
@@ -100,5 +104,4 @@ while True:
 
         # Reset timer
         lastSendToServer = time.time()
-    # TODO: Implementare lettura nascosta channel id e api key
     
