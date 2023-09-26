@@ -94,6 +94,10 @@ while True:
         r = requests.post("https://api.thingspeak.com/channels/TODO/bulk_update.json", json=jsonDict)
         print(r.status_code, r.reason)
 
+        # Reset data
+        dataToSend = []
+        jsonDict["updates"] = dataToSend
+
         # Reset timer
         lastSendToServer = time.time()
     # TODO: Implementare controllo ogni 15 secondi e SE CI SONO DATI
