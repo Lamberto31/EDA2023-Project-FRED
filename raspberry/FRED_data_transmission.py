@@ -1,6 +1,6 @@
 import serial
 import time
-import json
+import requests
 
 # PARAMETER DEFINITION
 PERIOD_SERVER = 15 # seconds
@@ -88,9 +88,14 @@ while True:
     if time.time() - lastSendToServer >= PERIOD_SERVER:
         # Build json to send
         jsonDict["updates"] = dataToSend
-        jsonData = json.dumps(jsonDict)
-        print(jsonData)
+        print(jsonDict)
+
+        # Send data
+        r = requests.post("https://api.thingspeak.com/channels/TODO/bulk_update.json", json=jsonDict)
+        print(r.status_code, r.reason)
+
+        # Reset timer
         lastSendToServer = time.time()
-    # TODO: Implementare invio misure via WiFi al server remoto ogni 15 secondi e se ci sono dati
-    # TODO: Costruire intestaione HTTP (solo una volta la parte iniziale, poi solo lunghezza payload e payload)
+    # TODO: Implementare controllo ogni 15 secondi e SE CI SONO DATI
+    # TODO: Implementare lettura nascosta channel id e api key
     
