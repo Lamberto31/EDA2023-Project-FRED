@@ -69,7 +69,7 @@ while True:
                 insertDataInDict(recv)
                 if "END" in str(recv):
                     measures["created_at"] = int(time.time())
-                    dataToSend.append(measures)
+                    dataToSend.append(measures.copy())
                     break
     
     # SEND DATA TO REMOTE SERVER
