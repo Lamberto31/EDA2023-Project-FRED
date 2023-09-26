@@ -1,7 +1,10 @@
 import serial
 import time
+import json
+
 # PARAMETER DEFINITION
 PERIOD_SERVER = 15 # seconds
+API_KEY = "TODO"
 
 # FUNCTION DEFINITION
 def insertDataInDict(recvData):
@@ -51,6 +54,12 @@ measures = {
 
 # Init list of dataToSend
 dataToSend =  []
+
+# Init json to send
+jsonDict = {}
+jsonDict["write_api_key"] = API_KEY
+jsonDict["updates"] = dataToSend
+
 # Init last execution time
 lastSendToServer = time.time()
 
@@ -77,8 +86,11 @@ while True:
     # SEND DATA TO REMOTE SERVER
     # Do it every PERIOD_SERVER seconds
     if time.time() - lastSendToServer >= PERIOD_SERVER:
+        # Build json to send
+        jsonDict["updates"] = dataToSend
+        jsonData = json.dumps(jsonDict)
+        print(jsonData)
         lastSendToServer = time.time()
     # TODO: Implementare invio misure via WiFi al server remoto ogni 15 secondi e se ci sono dati
-    # TODO: Convertire dataToSend in JSON
     # TODO: Costruire intestaione HTTP (solo una volta la parte iniziale, poi solo lunghezza payload e payload)
     
