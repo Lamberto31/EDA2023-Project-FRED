@@ -5,7 +5,9 @@ PERIOD_SERVER = 15 # seconds
 
 # FUNCTION DEFINITION
 def insertDataInDict(recvData):
-    data = recvData.split(":")
+    decoded = recvData.decode('utf-8')
+    clean = decoded[0:-2]
+    data = clean.split(":")
     if data[0] == "Distance_US":
         measures["field1"] = data[1]
     elif data[0] == "Distance_US_Filtered":
@@ -64,7 +66,7 @@ while True:
             while True:
                 recv = ser.readline()
                 print(str(recv, 'utf-8'))
-                insertDataInDict(str(recv))
+                insertDataInDict(recv)
                 if "END" in str(recv):
                     measures["created_at"] = int(time.time())
                     dataToSend.append(measures)
