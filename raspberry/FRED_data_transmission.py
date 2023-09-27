@@ -30,7 +30,6 @@ def insertDataInDict(recvData):
     elif data[0] == "Velocity_OPT_Filtered":
         measures["field7"] = data[1]
 
-
 # INITIAL CONFIGURATION
 # Serial connection configuration
 ser = serial.Serial(
@@ -47,7 +46,6 @@ if (ser.isOpen()):
 else:
     print("Serial connection not started, try again")
     exit()
-    
 
 # Init dictionary that contains measures (declared as field as in the remote server)
 measures = {
@@ -62,7 +60,7 @@ measures = {
     }
 
 # Init list of dataToSend
-dataToSend =  []
+dataToSend = []
 
 # Init json to send
 jsonDict = {}
@@ -71,7 +69,6 @@ jsonDict["updates"] = dataToSend
 
 # Init last execution time
 lastSendToServer = time.time()
-
 
 # MAIN LOOP: receive data from Bluetooth and send to remote server via WiFi
 while True:
