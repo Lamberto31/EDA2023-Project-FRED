@@ -41,9 +41,13 @@ ser = serial.Serial(
     bytesize=serial.EIGHTBITS,
 )
 
-# Check if the serial connection is open
+# Check if the serial connection is open, if not stop execution
 if (ser.isOpen()):
     print("Serial connection started")
+else:
+    print("Serial connection not started, try again")
+    exit()
+    
 
 # Init dictionary that contains measures (declared as field as in the remote server)
 measures = {
