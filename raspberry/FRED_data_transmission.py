@@ -88,7 +88,7 @@ while True:
                     break
     
     # SEND DATA TO REMOTE SERVER
-    # Do it every PERIOD_SERVER seconds
+    # Do it every PERIOD_SERVER seconds and if dataToSend is not empty
     if time.time() - lastSendToServer >= PERIOD_SERVER and dataToSend:
         # Build json to send
         jsonDict["updates"] = dataToSend
@@ -99,6 +99,7 @@ while True:
         print(r.status_code, r.reason)
 
         # Reset data
+        # TODO: Capire se fare reset sempre o solo se status_code 202
         dataToSend = []
         jsonDict["updates"] = dataToSend
 
