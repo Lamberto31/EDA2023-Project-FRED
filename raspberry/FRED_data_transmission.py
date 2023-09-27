@@ -42,7 +42,8 @@ ser = serial.Serial(
 )
 
 # Check if the serial connection is open
-ser.isOpen()
+if (ser.isOpen()):
+    print("Serial connection started")
 
 # Init dictionary that contains measures (declared as field as in the remote server)
 measures = {
