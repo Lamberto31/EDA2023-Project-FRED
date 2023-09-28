@@ -58,7 +58,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0};
 #define BLUETOOTH_WAIT_CHANGE 5000  // [ms] Initial wait time to receive Bluetooth active/disable command from IR
 #define BLUETOOTH_WAIT_CONNECTION 10000  // [ms] Wait time to receive Bluetooth connection
 #define PERIOD_BLUETOOTH 1000  // [ms] between each message to Bluetooth. Min value 1000, may cause error response if lower (TODO: TEST vari valori)
-// TODO: CAPIRE SE SERVE
+// TODO: CAPIRE SE SERVE O COME MODIFICARE (in particolare il SEND_BUFFER_SIZE)
 #define PERIOD_SERVER 15000  // [ms] between each message to server. Min value 15000, may cause error response if lower (server allow one message each 15s)
 #define PERIOD_MEASURETOSEND 3000  // [ms] between each insertion of data into the structure. Suggested value 3000, it's ok if greater but a lower value may cause high memory consumption
 #define SEND_BUFFER_SIZE PERIOD_SERVER / PERIOD_MEASURETOSEND  // [byte] Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
@@ -101,12 +101,12 @@ double diffDist;
 bool firstCheck = true;
 byte speedSlowFactor = 0;
 
-// Bluetooth TODO?
+// Bluetooth
 bool bluetoothActive = BLUETOOTH_ACTIVE;
 bool bluetoothConnected = false;
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
-// TODO: CAPIRE SE SERVE
+// TODO: CAPIRE SE SERVE PER MANDARE PIU' MISURE VIA BLUETOOTH
 // DataToSend sendBuffer[5];
 DataToSend sendBuffer[SEND_BUFFER_SIZE];
 unsigned int sendBufferIndex = 0;
@@ -156,6 +156,7 @@ void setup() {
   // Bluetooth
   pinMode(PIN_BLUETOOTH_STATE, INPUT);
   bluetoothActive = waitChangeBluetooth();
+  // TODO: Capire se questo delay serve e così lungo
   delay(1000);
   if (bluetoothActive) {
     if (!Serial) Serial.begin(9600);
@@ -370,6 +371,7 @@ void loop() {
     delay(100);
     servoH.detach();
 
+    // TODO: Capire se serve controllo su effettiva presenza di misure da inviare
     bluetoothSendMeasure();
     previousMillisMeasureToSend = millis();
   }
