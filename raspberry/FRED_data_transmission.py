@@ -36,6 +36,13 @@ def insertDataInDict(recvData):
 def debugStamp(str):
     if DEBUG:
         print(str)
+
+# Print dataToSend in tabular format
+def printDataToSend():
+    print("\nDATA TO SEND")
+    print("created_at\tfield1\tfield2\tfield3\tfield4\tfield5\tfield6\tfield7\n")
+    for i in range(0, len(dataToSend)):
+        print(str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\n")
 # INITIAL CONFIGURATION
 # Serial connection configuration
 ser = serial.Serial(
@@ -93,6 +100,8 @@ while True:
                 if "END" in str(recv):
                     measures["created_at"] = int(time.time())
                     dataToSend.append(measures.copy())
+                    if(DEBUG):
+                        printDataToSend()
                     break
     
     # SEND DATA TO REMOTE SERVER
