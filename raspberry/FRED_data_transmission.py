@@ -5,7 +5,12 @@ from decouple import config
 
 # INITIAL DEFINITIONS
 # Functionalities active/disabled
-DEBUG = True
+
+# DEBUG can be 3 value: None, Default, Full
+# None: none
+# Default: only essential
+# Full: all, also the BDT message
+DEBUG = "Default"
 
 # Parameters Definition
 PERIOD_SERVER = 15 # seconds
@@ -36,16 +41,17 @@ def insertDataInDict(recvData):
         measures["field7"] = data[1]
 
 # Conditional print
-def debugStamp(str):
-    if DEBUG:
+def debugStamp(str, level="Default"):
+    if DEBUG == level:
         print(str)
 
 # Print dataToSend in tabular format
-def printDataToSend():
-    print("\nDATA TO SEND")
-    print("created_at\tfield1\tfield2\tfield3\tfield4\tfield5\tfield6\tfield7\n")
-    for i in range(0, len(dataToSend)):
-        print(str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\n")
+def stampDataToSend():
+    if DEBUG == "Default":
+        print("\nDATA TO SEND")
+        print("N.\tcreated_at\tfield1\tfield2\tfield3\tfield4\tfield5\tfield6\tfield7\n")
+        for i in range(0, len(dataToSend)):
+            print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\n")
 
 # INITIAL CONFIGURATION
 # Serial connection configuration
@@ -59,9 +65,9 @@ ser = serial.Serial(
 
 # Check if the serial connection is open, if not stop execution
 if (ser.isOpen()):
-    print("Serial connection started")
+    debugStamp("Serial connection started")
 else:
-    print("Serial connection not started, try again")
+    debugStamp("Serial connection not started, try again")
     exit()
 
 # Init dictionary that contains measures (declared as field as in the remote server)
@@ -88,7 +94,7 @@ jsonDict["updates"] = dataToSend
 lastSendToServer = time.time()
 
 # MAIN LOOP: receive data from Bluetooth and send to remote server via WiFi
-print("Starting main loop")
+debugStamp("Starting main loop")
 while True:
     # RECEIVE DATA FROM BLUETOOTH
     # Check if there are incoming data
@@ -97,30 +103,30 @@ while True:
         recv = ser.readline()
         # If contains "START" it's a BDT messagge
         if "START" in str(recv):
-            print("New BDT message START")
-            debugStamp(str(recv, 'utf-8'))
+            debugStamp("New BDT message START")
+            debugStamp(str(recv, 'utf-8'), "Full")
             while True:
                 recv = ser.readline()
-                debugStamp(str(recv, 'utf-8'))
+                debugStamp(str(recv, 'utf-8'), "Full")
                 insertDataInDict(recv)
                 if "END" in str(recv):
-                    print("New BDT message END")
+                    debugStamp("New BDT message END")
                     measures["created_at"] = int(time.time())
                     dataToSend.append(measures.copy())
-                    if(DEBUG):
-                        printDataToSend()
+                    stampDataToSend()
                     break
     
     # SEND DATA TO REMOTE SERVER
     # Do it every PERIOD_SERVER seconds and if dataToSend is not empty
     if time.time() - lastSendToServer >= PERIOD_SERVER and dataToSend:
+        debugStamp("Sending " + str(len(dataToSend)) + " measures to remote server")
         # Build json to send
         jsonDict["updates"] = dataToSend
-        print(jsonDict)
+        debugStamp(jsonDict, "Full")
 
         # Send data
         r = requests.post("https://api.thingspeak.com/channels/"+ CHANNEL_ID +"/bulk_update.json", json=jsonDict)
-        print(r.status_code, r.reason)
+        debugStamp(str(r.status_code) + " " + str(r.reason))
 
         # Reset data
         # TODO: Capire se fare reset sempre o solo se status_code 202
