@@ -7,7 +7,7 @@ import argparse
 # INITIAL DEFINITIONS
 # Functionalities active/disabled
 
-# DEBUG can be 3 value: None, Default, Full
+# DEBUG can be 3 value: None, Default, Full. Can be passed as argument (int from 0 to 2)
 # None: none
 # Default: only essential
 # Full: all, also the BDT message
@@ -21,8 +21,12 @@ API_KEY = config('API_KEY')
 CHANNEL_ID = config('CHANNEL_ID')
 
 # Parser
-parser = argparse.ArgumentParser("FRED_data_transmission")
-parser.add_argument("--debug", "-d",  help="An integer that define a debug level:0 is none, 1 is default, 2 is full. If not passed it will be a code-defined value", type=int, choices=[0, 1, 2], default=1)
+parser = argparse.ArgumentParser("FRED_data_transmission", description= "Script used to receive BDT from FRED and send them to remote server.")
+parser.add_argument("--debug", "-d",  help="An integer that define a debug level:\n\
+                    0 is none\n\
+                    1 is default\n\
+                    2 is full.\n\
+                    If not passed it will be a code-defined value", type=int, choices=[0, 1, 2], default=1)
 args = parser.parse_args()
 
 # FUNCTIONS DEFINITION
