@@ -3,6 +3,9 @@ import time
 import requests
 from decouple import config
 
+# FUNCTIONALITIES ACTIVE/DISABLED
+DEBUG = True
+
 # PARAMETER DEFINITION
 PERIOD_SERVER = 15 # seconds
 
@@ -30,6 +33,9 @@ def insertDataInDict(recvData):
     elif data[0] == "Velocity_OPT_Filtered":
         measures["field7"] = data[1]
 
+def debugStamp(str):
+    if DEBUG:
+        print(str)
 # INITIAL CONFIGURATION
 # Serial connection configuration
 ser = serial.Serial(
@@ -79,10 +85,10 @@ while True:
         recv = ser.readline()
         # If contains "START" it's a BDT messagge
         if "START" in str(recv):
-            print(str(recv, 'utf-8'))
+            debugStamp(str(recv, 'utf-8'))
             while True:
                 recv = ser.readline()
-                print(str(recv, 'utf-8'))
+                debugStamp(str(recv, 'utf-8'))
                 insertDataInDict(recv)
                 if "END" in str(recv):
                     measures["created_at"] = int(time.time())
