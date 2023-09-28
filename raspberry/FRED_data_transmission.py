@@ -2,6 +2,7 @@ import serial
 import time
 import requests
 from decouple import config
+import argparse
 
 # INITIAL DEFINITIONS
 # Functionalities active/disabled
@@ -18,6 +19,11 @@ PERIOD_SERVER = 15 # seconds
 # Get secret values from .env file
 API_KEY = config('API_KEY')
 CHANNEL_ID = config('CHANNEL_ID')
+
+# Parser
+parser = argparse.ArgumentParser("FRED_data_transmission")
+parser.add_argument("--debug", "-d",  help="An integer that define a debug level:0 is none, 1 is default, 2 is full. If not passed it will be a code-defined value", type=int, choices=[0, 1, 2], default=1)
+args = parser.parse_args()
 
 # FUNCTIONS DEFINITION
 # Insert received data in stored measures
@@ -53,7 +59,20 @@ def stampDataToSend():
         for i in range(0, len(dataToSend)):
             print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\n")
 
+# Interpret input arguments
+def interpretDebugArguments():
+    if args.debug == 0:
+        DEBUG = "None"
+    elif args.debug == 1:
+        DEBUG = "Default"
+    elif args.debug == 2:
+        DEBUG = "Full"
+    return DEBUG
+
 # INITIAL CONFIGURATION
+# Interpret input arguments
+DEBUG = interpretDebugArguments()
+
 # Serial connection configuration
 ser = serial.Serial(
     port='/dev/rfcomm1',
