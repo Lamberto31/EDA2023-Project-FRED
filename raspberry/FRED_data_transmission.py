@@ -48,7 +48,11 @@ def insertDataInDict(recvData):
 
 # Conditional print
 def debugStamp(str, level="Default"):
-    if DEBUG == level:
+    if DEBUG == "None":
+        return
+    elif DEBUG == "Full":
+        print(str)
+    elif DEBUG == level:
         print(str)
 
 # Print dataToSend in tabular format
