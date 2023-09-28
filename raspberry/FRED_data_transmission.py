@@ -157,6 +157,7 @@ while True:
 
         # Reset data
         # TODO: Capire se fare reset sempre o solo se status_code 202
+        # TODO: Capire se salvare le misure non inviate in un file e procedere dopo con l'API che permette di mandare csv
         dataToSend = []
         jsonDict["updates"] = dataToSend
 
