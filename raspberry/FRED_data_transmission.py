@@ -3,17 +3,19 @@ import time
 import requests
 from decouple import config
 
-# FUNCTIONALITIES ACTIVE/DISABLED
+# INITIAL DEFINITIONS
+# Functionalities active/disabled
 DEBUG = True
 
-# PARAMETER DEFINITION
+# Parameters Definition
 PERIOD_SERVER = 15 # seconds
 
-# GET SECRET VALUE
+# Get secret values from .env file
 API_KEY = config('API_KEY')
 CHANNEL_ID = config('CHANNEL_ID')
 
-# FUNCTION DEFINITION
+# FUNCTIONS DEFINITION
+# Insert received data in stored measures
 def insertDataInDict(recvData):
     decoded = recvData.decode('utf-8')
     clean = decoded[0:-2]
@@ -33,6 +35,7 @@ def insertDataInDict(recvData):
     elif data[0] == "Velocity_OPT_Filtered":
         measures["field7"] = data[1]
 
+# Conditional print
 def debugStamp(str):
     if DEBUG:
         print(str)
@@ -43,6 +46,7 @@ def printDataToSend():
     print("created_at\tfield1\tfield2\tfield3\tfield4\tfield5\tfield6\tfield7\n")
     for i in range(0, len(dataToSend)):
         print(str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\n")
+
 # INITIAL CONFIGURATION
 # Serial connection configuration
 ser = serial.Serial(
@@ -84,6 +88,7 @@ jsonDict["updates"] = dataToSend
 lastSendToServer = time.time()
 
 # MAIN LOOP: receive data from Bluetooth and send to remote server via WiFi
+print("Starting main loop")
 while True:
     # RECEIVE DATA FROM BLUETOOTH
     # Check if there are incoming data
@@ -92,12 +97,14 @@ while True:
         recv = ser.readline()
         # If contains "START" it's a BDT messagge
         if "START" in str(recv):
+            print("New BDT message START")
             debugStamp(str(recv, 'utf-8'))
             while True:
                 recv = ser.readline()
                 debugStamp(str(recv, 'utf-8'))
                 insertDataInDict(recv)
                 if "END" in str(recv):
+                    print("New BDT message END")
                     measures["created_at"] = int(time.time())
                     dataToSend.append(measures.copy())
                     if(DEBUG):
