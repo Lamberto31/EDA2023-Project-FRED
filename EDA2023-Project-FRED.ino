@@ -173,9 +173,6 @@ void setup() {
   delay(1000);
   servoH.write(SERVO_HORIZ_CENTER);
   delay(500);
-  // TODO: Ora che non c'è il WiFi forse posso lasciarlo attaccato?
-  servoH.detach();
-  delay(500);
 
   // Motors
   pinMode(PIN_MOTOR_ENA, OUTPUT);
@@ -364,11 +361,7 @@ void loop() {
 
   // Send measure with Bluetooth
   if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
-    // TODO: Capire se serve sempre attach/detach o no
-    servoH.attach(PIN_SERVO_HORIZ);
     servoH.write(SERVO_HORIZ_CENTER);
-    delay(100);
-    servoH.detach();
 
     // TODO: Capire se serve controllo su effettiva presenza di misure da inviare
     bluetoothSendMeasure();
