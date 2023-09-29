@@ -155,8 +155,8 @@ void setup() {
   // Bluetooth
   pinMode(PIN_BLUETOOTH_STATE, INPUT);
   bluetoothActive = waitChangeBluetooth();
-  // TODO: Perchè questo delay serve e così lungo?
-  delay(1000);
+  // Delay to see difference between waitChangeBluetooth and bluetoothConnection (in terms of led feedback)
+  delay(500);
   if (bluetoothActive) {
     if (!Serial) Serial.begin(9600);
     bluetoothConnection();
