@@ -31,6 +31,8 @@ struct Measures {
   double rpsOptical;
   double velocityOptical;
   double velocityOpticalFiltered;
+
+  bool sent;
 };
 
 void stateChange(State *st, byte dest);

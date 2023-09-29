@@ -30,7 +30,7 @@
 
 // States
 State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
-Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0};
+Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 0
@@ -363,8 +363,7 @@ void loop() {
   if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
     servoH.write(SERVO_HORIZ_CENTER);
 
-    // TODO: Capire se serve controllo su effettiva presenza di misure da inviare
-    bluetoothSendMeasure();
+    if (bluetoothActive && !robotMeasures.sent) bluetoothSendMeasure();
     previousMillisMeasureToSend = millis();
   }
 
@@ -462,6 +461,7 @@ void runMotors(byte direction, byte speed) {
 
 // MEASURE
 void measureAll(unsigned long deltaT) {
+  robotMeasures.sent = false;
   double prevDistance = robotMeasures.distanceUS;
   // double prevFilteredDistance = robotMeasures.distanceUSFiltered;
   
@@ -696,4 +696,6 @@ void bluetoothSendMeasure() {
   Serial.println(robotMeasures.velocityOpticalFiltered);
 
   Serial.println(F("BDT 1.0 END"));
+
+  robotMeasures.sent = true;
 }
