@@ -159,7 +159,7 @@ void setup() {
   delay(500);
   if (bluetoothActive) {
     if (!Serial) Serial.begin(9600);
-    bluetoothConnection();
+    bluetoothConnected = bluetoothConnection();
   }
 
   // Servomotor
@@ -368,7 +368,7 @@ void loop() {
     delay(100);
     servoH.detach();
 
-    if (bluetoothActive && !robotMeasures.sent) bluetoothSendMeasure();
+    if (bluetoothConnected && !robotMeasures.sent) bluetoothSendMeasure();
     previousMillisMeasureToSend = millis();
   }
 
