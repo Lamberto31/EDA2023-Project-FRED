@@ -173,6 +173,8 @@ void setup() {
   delay(1000);
   servoH.write(SERVO_HORIZ_CENTER);
   delay(500);
+  servoH.detach();
+  delay(500);
 
   // Motors
   pinMode(PIN_MOTOR_ENA, OUTPUT);
@@ -361,7 +363,10 @@ void loop() {
 
   // Send measure with Bluetooth
   if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
+    servoH.attach(PIN_SERVO_HORIZ);
     servoH.write(SERVO_HORIZ_CENTER);
+    delay(100);
+    servoH.detach();
 
     if (bluetoothActive && !robotMeasures.sent) bluetoothSendMeasure();
     previousMillisMeasureToSend = millis();
