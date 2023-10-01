@@ -16,8 +16,6 @@ struct DataToSend {
   double field7;
   };
 
-void jsonBuildForSend(DataToSend *dataArray, unsigned int elements, char key[], char json[]);
-
 void insertNewCircularData(DataToSend *dataArray, unsigned long deltaT, Measures ms, unsigned int elementIndex, byte elementMax);
 
 void swapDouble(double &a, double &b);
