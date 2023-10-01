@@ -138,7 +138,7 @@ while True:
                 insertDataInDict(recv)
                 if "END" in str(recv):
                     debugStamp("New BDT message END")
-                    measures["created_at"] = int(time.time())
+                    measures["created_at"] = int(time.time()*1000)  # milliseconds
                     dataToSend.append(measures.copy())
                     stampDataToSend()
                     break
