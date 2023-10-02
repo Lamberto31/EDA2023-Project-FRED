@@ -61,7 +61,7 @@ def debugStamp(str, level="Default"):
 
 # Print dataToSend in tabular format
 def stampDataToSend():
-    if DEBUG == "Default":
+    if DEBUG == "Default" or DEBUG == "Full":
         print("\nDATA TO SEND")
         print("N.\tcreated_at\tfield1\tfield2\tfield3\tfield4\tfield5\tfield6\tfield7\n")
         for i in range(0, len(dataToSend)):
