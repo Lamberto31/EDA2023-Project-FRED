@@ -3,6 +3,7 @@ import time
 import requests
 from decouple import config
 import argparse
+import csv
 
 # INITIAL DEFINITIONS
 # Functionalities active/disabled
@@ -28,6 +29,11 @@ parser.add_argument("--debug", "-d",  help="An integer that define a debug level
                     2 is full.\n\
                     If not passed it will be a code-defined value", type=int, choices=[0, 1, 2], default=1)
 args = parser.parse_args()
+
+# CSV file
+# Init csv file
+csvFile = open('data.csv', mode='a', newline='')
+csvWriter = csv.writer(csvFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
 # FUNCTIONS DEFINITION
 # Insert received data in stored measures
@@ -158,6 +164,10 @@ while True:
         # Send data
         r = requests.post("https://api.thingspeak.com/channels/"+ CHANNEL_ID +"/bulk_update.json", json=jsonDict)
         debugStamp(str(r.status_code) + " " + str(r.reason))
+
+        # Write data to csv
+        csvWriter.writerow(jsonDict["updates"])
+        csvFile.flush()  # flush the buffer to ensure data is written to the file
 
         # Reset data
         dataToSend = []
