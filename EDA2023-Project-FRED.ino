@@ -159,7 +159,7 @@ void setup() {
   delay(500);
   if (bluetoothActive) {
     if (!Serial) Serial.begin(9600);
-    bluetoothConnection();
+    bluetoothConnected = bluetoothConnection(false);
   }
 
   // Servomotor
@@ -172,6 +172,8 @@ void setup() {
   servoH.write(SERVO_HORIZ_CENTER + 15);
   delay(1000);
   servoH.write(SERVO_HORIZ_CENTER);
+  delay(500);
+  servoH.detach();
   delay(500);
 
   // Motors
@@ -361,9 +363,13 @@ void loop() {
 
   // Send measure with Bluetooth
   if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
+    servoH.attach(PIN_SERVO_HORIZ);
     servoH.write(SERVO_HORIZ_CENTER);
+    delay(100);
+    servoH.detach();
 
-    if (bluetoothActive && !robotMeasures.sent) bluetoothSendMeasure();
+    bluetoothConnection(true);
+    if (bluetoothConnected && !robotMeasures.sent) bluetoothSendMeasure();
     previousMillisMeasureToSend = millis();
   }
 
@@ -653,11 +659,16 @@ bool waitChangeBluetooth() {
   return bluetoothAct;
 }
 
-bool bluetoothConnection() {
+bool bluetoothConnection(bool justCheck) {
   bool bluetoothConn = bluetoothConnected;
   unsigned long previousMillisBluetoothConnected = millis();
 
   digitalWrite(LED_BUILTIN, HIGH);
+
+  if (justCheck) {
+    bluetoothConn = digitalRead(PIN_BLUETOOTH_STATE) == HIGH;
+    return bluetoothConn;
+  }
 
   while (millis() - previousMillisBluetoothConnected < BLUETOOTH_WAIT_CONNECTION) {
     if (digitalRead(PIN_BLUETOOTH_STATE) == HIGH) {

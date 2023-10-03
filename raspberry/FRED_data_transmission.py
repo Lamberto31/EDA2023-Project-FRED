@@ -61,7 +61,7 @@ def debugStamp(str, level="Default"):
 
 # Print dataToSend in tabular format
 def stampDataToSend():
-    if DEBUG == "Default":
+    if DEBUG == "Default" or DEBUG == "Full":
         print("\nDATA TO SEND")
         print("N.\tcreated_at\tfield1\tfield2\tfield3\tfield4\tfield5\tfield6\tfield7\n")
         for i in range(0, len(dataToSend)):
@@ -138,7 +138,11 @@ while True:
                 insertDataInDict(recv)
                 if "END" in str(recv):
                     debugStamp("New BDT message END")
-                    measures["created_at"] = int(time.time())
+                    measures["created_at"] = int(time.time())  # seconds
+                    # Check if the last measure has the same timestamp of the new one, if so don't add it
+                    # TODO_DOPO: Per ora scarto le misure, da capire cosa farci dopo aver visto il filtraggio
+                    if (dataToSend and dataToSend[-1]["created_at"] == measures["created_at"]):
+                        break
                     dataToSend.append(measures.copy())
                     stampDataToSend()
                     break
