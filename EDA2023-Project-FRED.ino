@@ -633,11 +633,24 @@ bool bluetoothConnection(bool justCheck) {
     return bluetoothConnected;
   }
 
+  // Wait BLUETOOTH_WAIT_CONNECTION seconds for connection or skip if OK button pressed
+  bool skip = false;
   while (millis() - previousMillisBluetoothConnected < BLUETOOTH_WAIT_CONNECTION) {
     if (digitalRead(PIN_BLUETOOTH_STATE) == HIGH) {
       bluetoothConnected = true;
       break;
     }
+    if (!robotState.cmd_executed) {
+      switch (robotState.command) {
+        // If OK go ahead without wait for connection
+        case IR_BUTTON_OK: {
+          skip = true;
+          break;
+        }
+      }
+      stateCmdExecuted(&robotState);
+    }
+    if (skip) break;
   }
 
   digitalWrite(LED_BUILTIN, LOW);
