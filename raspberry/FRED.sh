@@ -1,18 +1,17 @@
 #!/bin/bash
 
-
-
+# Usage and help definition
 usage="$(basename "$0") [-h] -- program that check if rfcomm connection is defined and then execute python script.\n
     \tIf a connection is not defined, you need to execute this script with sudo permission and then execute it again without sudo permission.\n
     \tIf a connection is already defined you can execute this script without sudo permission.\n
     \tOptions:\n
         \t\t-h  show this help text"
 
+# Check if option -h is passed
 if [ "$1" == "-h" ]; then
   echo -e $usage
   exit 0
 fi
-
 
 # Mac of HC-05 bluetooth module
 mac="00:22:04:01:17:C7"
