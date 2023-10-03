@@ -25,7 +25,7 @@ if ! rfcomm | grep -q $mac; then
         echo "Please run as root to execute rfcomm bind, exiting..."
         exit 1
     fi
-    sudo rfcomm bind 1 $mac
+    rfcomm bind 1 $mac
 
     # Check again to see if command has been correctly executed
     if ! rfcomm | grep -q $mac; then
