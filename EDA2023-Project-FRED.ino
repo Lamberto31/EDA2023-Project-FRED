@@ -627,20 +627,21 @@ bool bluetoothConnection(bool justCheck) {
 
   digitalWrite(LED_BUILTIN, HIGH);
 
+  // Just check if connected
   if (justCheck) {
-    bluetoothConn = digitalRead(PIN_BLUETOOTH_STATE) == HIGH;
-    return bluetoothConn;
+    bluetoothConnected = digitalRead(PIN_BLUETOOTH_STATE) == HIGH;
+    return bluetoothConnected;
   }
 
   while (millis() - previousMillisBluetoothConnected < BLUETOOTH_WAIT_CONNECTION) {
     if (digitalRead(PIN_BLUETOOTH_STATE) == HIGH) {
-      bluetoothConn = true;
+      bluetoothConnected = true;
       break;
     }
   }
 
   digitalWrite(LED_BUILTIN, LOW);
-  return bluetoothConn;
+  return bluetoothConnected;
 }
 
 void bluetoothSendMeasure() {
