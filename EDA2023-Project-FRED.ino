@@ -34,7 +34,6 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 0
-#define BLUETOOTH_ACTIVE 1
 
 // PARAMETERS
 // Measure
@@ -55,7 +54,6 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 #define CUSTOM_DIST_MAX 500  // [cm]
 #define CUSTOM_DIST_CHAR 4  // [chars] Max value 4, it may cause buffer overflow if greater
 // Bluetooth
-#define BLUETOOTH_WAIT_CHANGE 5000  // [ms] Initial wait time to receive Bluetooth active/disable command from IR
 #define BLUETOOTH_WAIT_CONNECTION 10000  // [ms] Wait time to receive Bluetooth connection
 #define PERIOD_BLUETOOTH 500  // [ms] between each message to Bluetooth. Min value 1000, may cause error response if lower
 // TODO_CAPIRE: SERVE O COME MODIFICARE (in particolare il SEND_BUFFER_SIZE che potrebbe diventare PERIOD_BLUETOOTH / PERIOD_MEASURE )
@@ -101,7 +99,6 @@ bool firstCheck = true;
 byte speedSlowFactor = 0;
 
 // Bluetooth
-bool bluetoothActive = BLUETOOTH_ACTIVE;
 bool bluetoothConnected = false;
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
@@ -134,7 +131,7 @@ int numericCustomDist = 0;
 #endif
 
 void setup() {
-  if (DEBUG_ACTIVE || BLUETOOTH_ACTIVE) Serial.begin(9600);
+  if (DEBUG_ACTIVE) Serial.begin(9600);
 
   // Feedback led
   pinMode(LED_BUILTIN, OUTPUT);
@@ -154,13 +151,7 @@ void setup() {
 
   // Bluetooth
   pinMode(PIN_BLUETOOTH_STATE, INPUT);
-  bluetoothActive = waitChangeBluetooth();
-  // Delay to see difference between waitChangeBluetooth and bluetoothConnection (in terms of led feedback)
-  delay(500);
-  if (bluetoothActive) {
-    if (!Serial) Serial.begin(9600);
-    bluetoothConnected = bluetoothConnection(false);
-  }
+  bluetoothConnected = bluetoothConnection(false);
 
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
@@ -631,36 +622,7 @@ void countPulses() {
 }
 
 // BLUETOOTH
-bool waitChangeBluetooth() {
-  bool bluetoothAct = BLUETOOTH_ACTIVE;
-  unsigned long previousMillisBluetoothChange = millis();
-
-  digitalWrite(LED_BUILTIN, HIGH);
-
-  while (millis() - previousMillisBluetoothChange < BLUETOOTH_WAIT_CHANGE) {
-    if (!robotState.cmd_executed) {
-      switch (robotState.command) {
-        // If OK keep the current choice
-        case IR_BUTTON_OK: {
-          break;
-        }
-        // If # change the choice
-        case IR_BUTTON_HASH: {
-          bluetoothAct = !bluetoothAct;
-          break;
-        }
-      }
-      stateCmdExecuted(&robotState);
-      break;
-    }
-  }
-
-  digitalWrite(LED_BUILTIN, LOW);
-  return bluetoothAct;
-}
-
 bool bluetoothConnection(bool justCheck) {
-  bool bluetoothConn = bluetoothConnected;
   unsigned long previousMillisBluetoothConnected = millis();
 
   digitalWrite(LED_BUILTIN, HIGH);
