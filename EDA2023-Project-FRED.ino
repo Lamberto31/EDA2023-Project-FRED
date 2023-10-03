@@ -131,7 +131,7 @@ int numericCustomDist = 0;
 #endif
 
 void setup() {
-  if (DEBUG_ACTIVE) Serial.begin(9600);
+  Serial.begin(9600);
 
   // Feedback led
   pinMode(LED_BUILTIN, OUTPUT);
