@@ -151,6 +151,7 @@ void setup() {
 
   // Bluetooth
   pinMode(PIN_BLUETOOTH_STATE, INPUT);
+  delay(500);
   bluetoothConnected = bluetoothConnection(true);
 
   // Servomotor
