@@ -151,7 +151,7 @@ void setup() {
 
   // Bluetooth
   pinMode(PIN_BLUETOOTH_STATE, INPUT);
-  bluetoothConnected = bluetoothConnection(false);
+  bluetoothConnected = bluetoothConnection(true);
 
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
@@ -359,7 +359,7 @@ void loop() {
     delay(100);
     servoH.detach();
 
-    bluetoothConnection(true);
+    bluetoothConnection(false);
     if (bluetoothConnected && !robotMeasures.sent) bluetoothSendMeasure();
     previousMillisMeasureToSend = millis();
   }
@@ -622,12 +622,12 @@ void countPulses() {
 }
 
 // BLUETOOTH
-bool bluetoothConnection(bool justCheck) {
+bool bluetoothConnection(bool waitConnection) {
 
   digitalWrite(LED_BUILTIN, HIGH);
 
-  // If not justCheck wait BLUETOOTH_WAIT_CONNECTION seconds for connection or skip if OK button pressed
-  if (!justCheck) {
+  // If waitConnection true => wait BLUETOOTH_WAIT_CONNECTION seconds for connection or skip if OK button pressed
+  if (waitConnection) {
     unsigned long previousMillisBluetoothConnected = millis();
     bool skip = false;
     while (millis() - previousMillisBluetoothConnected < BLUETOOTH_WAIT_CONNECTION) {
