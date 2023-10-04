@@ -43,9 +43,9 @@ def insertDataInDict(recvData):
     data = clean.split(":")
     if data[0] == "Distance_US":
         measures["field1"] = data[1]
-    elif data[0] == "Distance_US_Filtered":
-        measures["field2"] = data[1]
     elif data[0] == "Distance_OPT":
+        measures["field2"] = data[1]
+    elif data[0] == "Distance_US_Filtered":
         measures["field3"] = data[1]
     elif data[0] == "Rev_per_second":
         measures["field4"] = data[1]
