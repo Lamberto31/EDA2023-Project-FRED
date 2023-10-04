@@ -61,6 +61,11 @@ if not checkValidCsv(data[0]):
     print("Please provide a valid CSV file.")
     sys.exit(1)
 
+# Check if the CSV file is not empty
+if len(data) == 1:
+    print("The CSV file is empty.")
+    sys.exit(1)
+
 # Extract the x and ys data from the CSV file
 timestamps = np.array([row[0] for row in data][1:], int)
 fields = np.array([row[1:] for row in data][1:], float)
