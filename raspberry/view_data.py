@@ -3,10 +3,19 @@ import matplotlib.pyplot as plt
 import matplotlib
 import os
 import numpy as np
+import sys
+
+# Get the file path from the terminal arguments
+filePath = sys.argv[1]
+
+# Extract the file name from the file path
+fileName = os.path.basename(filePath)
+
+# Extract file name withtout extension
+fileNameNoExt = os.path.splitext(fileName)[0]
 
 # Open the CSV file and read the data
-# TODO: rendere dinamico il nome del file tramite terminale
-with open(os.path.join("./logs","FRED_log_2023-10-04T18:07:17.csv"), 'r') as file:
+with open(os.path.join("./logs",fileName), 'r') as file:
     reader = csv.reader(file)
     data = list(reader)
 
@@ -31,5 +40,4 @@ for i in range(len(fields[0])):
 
 # Show the plot
 plt.show()
-# TODO: rendere dinamico anche il nome del file (facile dopo aver estratto il nome passato da terminale)
-plt.savefig("./logs/FRED_log_2023-10-04T18:07:17.png")
+plt.savefig("./logs/" + fileNameNoExt + ".png")
