@@ -5,6 +5,11 @@ import os
 import numpy as np
 import sys
 
+# Check if the number of arguments is correct
+if len(sys.argv) != 2:
+    print("Please provide exactly one argument for the file path.")
+    sys.exit(1)
+
 # Get the file path from the terminal arguments
 filePath = sys.argv[1]
 
