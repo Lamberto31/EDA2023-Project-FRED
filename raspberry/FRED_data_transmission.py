@@ -30,11 +30,6 @@ parser.add_argument("--debug", "-d",  help="An integer that define a debug level
                     If not passed it will be a code-defined value", type=int, choices=[0, 1, 2], default=1)
 args = parser.parse_args()
 
-# CSV file
-# Init csv file
-csvFile = open('data.csv', mode='a', newline='')
-csvWriter = csv.writer(csvFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-
 # FUNCTIONS DEFINITION
 # Insert received data in stored measures
 def insertDataInDict(recvData):
@@ -123,6 +118,12 @@ jsonDict = {}
 jsonDict["write_api_key"] = API_KEY
 jsonDict["updates"] = dataToSend
 
+# CSV file
+# Init csv file
+csvFile = open('data.csv', mode='a')
+csvWriter = csv.DictWriter(csvFile, fieldnames=measures.keys())
+csvWriter.writeheader()
+
 # Init last execution time
 lastSendToServer = time.time()
 
@@ -166,8 +167,8 @@ while True:
         debugStamp(str(r.status_code) + " " + str(r.reason))
 
         # Write data to csv
-        csvWriter.writerow(jsonDict["updates"])
-        csvFile.flush()  # flush the buffer to ensure data is written to the file
+        csvWriter.writerows(dataToSend)
+        csvFile.flush()
 
         # Reset data
         dataToSend = []
