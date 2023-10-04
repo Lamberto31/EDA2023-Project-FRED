@@ -5,6 +5,7 @@ from decouple import config
 import argparse
 import csv
 import datetime
+import os
 
 # INITIAL DEFINITIONS
 # Functionalities active/disabled
@@ -126,7 +127,7 @@ timestamp = datetime.datetime.now().replace(microsecond=0).isoformat()
 csvFileName = "FRED_log_" + timestamp + ".csv"
 
 # Create file and write header
-csvFile = open(csvFileName, mode='w')
+csvFile = open(os.path.join("./logs", csvFileName), mode='w')
 csvWriter = csv.DictWriter(csvFile, fieldnames=measures.keys())
 csvWriter.writeheader()
 csvFile.flush()

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Change to the directory where the csv files are located
+cd ./logs
+
 # Loop through all csv files with "FRED_log" in the name
 for file in FRED_log*.csv; do
     # Count the number of lines in the file
