@@ -123,7 +123,7 @@ jsonDict["updates"] = dataToSend
 # Init csv file
 # Create file name
 timestamp = datetime.datetime.now().replace(microsecond=0).isoformat()
-csvFileName = "FRED_data_" + timestamp + ".csv"
+csvFileName = "FRED_log_" + timestamp + ".csv"
 
 # Create file and write header
 csvFile = open(csvFileName, mode='w')
