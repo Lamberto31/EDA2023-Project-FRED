@@ -4,6 +4,7 @@ import requests
 from decouple import config
 import argparse
 import csv
+import datetime
 
 # INITIAL DEFINITIONS
 # Functionalities active/disabled
@@ -120,9 +121,15 @@ jsonDict["updates"] = dataToSend
 
 # CSV file
 # Init csv file
-csvFile = open('data.csv', mode='a')
+# Create file name
+timestamp = datetime.datetime.now().replace(microsecond=0).isoformat()
+csvFileName = "FRED_data_" + timestamp + ".csv"
+
+# Create file and write header
+csvFile = open(csvFileName, mode='w')
 csvWriter = csv.DictWriter(csvFile, fieldnames=measures.keys())
 csvWriter.writeheader()
+csvFile.flush()
 
 # Init last execution time
 lastSendToServer = time.time()
