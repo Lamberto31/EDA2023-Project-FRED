@@ -27,52 +27,53 @@ def checkValidCsv(headers):
         return False
     return True
 
-# Check if the number of arguments is correct
+# CHECK if the number of arguments is correct
 if len(sys.argv) != 2:
     print("Please provide exactly one argument for the file path.")
     sys.exit(1)
 
-# Get the file path from the terminal arguments
+# GET the file path from the terminal arguments
 filePath = sys.argv[1]
 
-# Check if filePath exists
+# CHECK if filePath exists
 if not os.path.exists(filePath):
     print("Please provide a valid file path.")
     sys.exit(1)
 
-# Extract the file name from the file path
+# GET the file name from the file path
 fileName = os.path.basename(filePath)
 
-# Split file name and extension
+# GET file name and extension
 fileNameSplitted = os.path.splitext(fileName)
 
-# Check if the file is a CSV file
+# CHECK if the file is a CSV file
 if fileNameSplitted[1] != ".csv":
     print("Please provide a CSV file.")
     sys.exit(1)
 
-# Open the CSV file and read the data
+# GET data from the CSV file
 with open(os.path.join("./logs",fileName), 'r') as file:
     reader = csv.reader(file)
     data = list(reader)
 
-# Check if the CSV file is valid
+# CHECK if the CSV file is valid
 if not checkValidCsv(data[0]):
     print("Please provide a valid CSV file.")
     sys.exit(1)
 
-# Check if the CSV file is not empty
+# CHECK if the CSV file is not empty
 if len(data) == 1:
-    print("The CSV file is empty.")
+    print("Please provide a non-empty CSV file.")
     sys.exit(1)
 
-# Extract the x and ys data from the CSV file
+# GET the x and ys from data
 timestamps = np.array([row[0] for row in data][1:], int)
 fields = np.array([row[1:] for row in data][1:], float)
 
 # Normalize the timestamps
 x = np.interp(timestamps, (timestamps[0], timestamps[-1]), (1, len(timestamps)))
 
+# Set the backend to Agg in order to save the plot as png
 matplotlib.use('Agg')
 
 # Plot the time series
@@ -85,6 +86,6 @@ for i in range(len(fields[0])):
     # plt.xticks([])
     plt.legend()
 
-# Show the plot
+# Show and save the plot
 plt.show()
 plt.savefig("./logs/" + fileNameSplitted[0] + ".png")
