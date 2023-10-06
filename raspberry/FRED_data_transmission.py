@@ -104,8 +104,8 @@ WIFI = interpretWifiArguments()
 
 # Print initial configuration
 print("Functionalities configuration")
-print("DEBUG: " + DEBUG)
-print("WIFI: " + str(WIFI))
+print("DEBUG: " + DEBUG + " (" + str(args.debug) + ")")
+print("WIFI: " + str(WIFI) + " (" + str(args.wifi) + ")")
 
 # Serial connection configuration
 ser = serial.Serial(
