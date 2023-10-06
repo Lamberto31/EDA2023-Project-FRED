@@ -103,9 +103,9 @@ DEBUG = interpretDebugArguments()
 WIFI = interpretWifiArguments()
 
 # Print initial configuration
-debugStamp("Initial configuration")
-debugStamp("DEBUG: " + DEBUG)
-debugStamp("WIFI: " + str(WIFI))
+print("Functionalities configuration")
+print("DEBUG: " + DEBUG)
+print("WIFI: " + str(WIFI))
 
 # Serial connection configuration
 ser = serial.Serial(
