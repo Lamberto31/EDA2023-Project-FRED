@@ -15,6 +15,10 @@ import os
 # Default: only essential
 # Full: all, also the BDT message
 DEBUG = "Default"
+# WIFI can be 2 value: False, True. Can be passed as argument (int from 0 to 1)
+# False: disable wifi connection
+# True: enable wifi connection
+WIFI = True
 
 # Parameters Definition
 PERIOD_SERVER = 15 # seconds
@@ -29,7 +33,12 @@ parser.add_argument("--debug", "-d",  help="An integer that define a debug level
                     0 is none\n\
                     1 is default\n\
                     2 is full.\n\
-                    If not passed it will be a code-defined value", type=int, choices=[0, 1, 2], default=1)
+                    If not passed it will be a code-defined value\
+                    ", type=int, choices=[0, 1, 2], default=1)
+parser.add_argument("--wifi", "-w", help="Enable/disable wifi connection:\
+                    0 is disable\
+                    1 is enable\
+                    ", type=int, choices=[0, 1], default=1)
 args = parser.parse_args()
 
 # FUNCTIONS DEFINITION
@@ -71,6 +80,7 @@ def stampDataToSend():
             print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\n")
 
 # Interpret input arguments
+#DEBUG
 def interpretDebugArguments():
     if args.debug == 0:
         DEBUG = "None"
@@ -79,10 +89,23 @@ def interpretDebugArguments():
     elif args.debug == 2:
         DEBUG = "Full"
     return DEBUG
+#WIFI
+def interpretWifiArguments():
+    if args.wifi == 0:
+        WIFI = False
+    elif args.wifi == 1:
+        WIFI = True
+    return WIFI
 
 # INITIAL CONFIGURATION
 # Interpret input arguments
 DEBUG = interpretDebugArguments()
+WIFI = interpretWifiArguments()
+
+# Print initial configuration
+print("Functionalities configuration")
+print("DEBUG: " + DEBUG + " (" + str(args.debug) + ")")
+print("WIFI: " + str(WIFI) + " (" + str(args.wifi) + ")")
 
 # Serial connection configuration
 ser = serial.Serial(
@@ -171,8 +194,9 @@ while True:
         debugStamp(jsonDict, "Full")
 
         # Send data
-        r = requests.post("https://api.thingspeak.com/channels/"+ CHANNEL_ID +"/bulk_update.json", json=jsonDict)
-        debugStamp(str(r.status_code) + " " + str(r.reason))
+        if WIFI:
+            r = requests.post("https://api.thingspeak.com/channels/"+ CHANNEL_ID +"/bulk_update.json", json=jsonDict)
+            debugStamp(str(r.status_code) + " " + str(r.reason))
 
         # Write data to csv
         csvWriter.writerows(dataToSend)
