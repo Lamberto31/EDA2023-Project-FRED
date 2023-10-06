@@ -3,6 +3,9 @@ import time
 import requests
 from decouple import config
 import argparse
+import csv
+import datetime
+import os
 
 # INITIAL DEFINITIONS
 # Functionalities active/disabled
@@ -37,9 +40,9 @@ def insertDataInDict(recvData):
     data = clean.split(":")
     if data[0] == "Distance_US":
         measures["field1"] = data[1]
-    elif data[0] == "Distance_US_Filtered":
-        measures["field2"] = data[1]
     elif data[0] == "Distance_OPT":
+        measures["field2"] = data[1]
+    elif data[0] == "Distance_US_Filtered":
         measures["field3"] = data[1]
     elif data[0] == "Rev_per_second":
         measures["field4"] = data[1]
@@ -117,6 +120,18 @@ jsonDict = {}
 jsonDict["write_api_key"] = API_KEY
 jsonDict["updates"] = dataToSend
 
+# CSV file
+# Init csv file
+# Create file name
+timestamp = datetime.datetime.now().replace(microsecond=0).isoformat()
+csvFileName = "FRED_log_" + timestamp + ".csv"
+
+# Create file and write header
+csvFile = open(os.path.join("./logs", csvFileName), mode='w')
+csvWriter = csv.DictWriter(csvFile, fieldnames=measures.keys())
+csvWriter.writeheader()
+csvFile.flush()
+
 # Init last execution time
 lastSendToServer = time.time()
 
@@ -158,6 +173,10 @@ while True:
         # Send data
         r = requests.post("https://api.thingspeak.com/channels/"+ CHANNEL_ID +"/bulk_update.json", json=jsonDict)
         debugStamp(str(r.status_code) + " " + str(r.reason))
+
+        # Write data to csv
+        csvWriter.writerows(dataToSend)
+        csvFile.flush()
 
         # Reset data
         dataToSend = []
