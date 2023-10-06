@@ -2,7 +2,6 @@
 name: Compile Sketch
 
 on:
-  - push
   - pull_request
 
 env:
