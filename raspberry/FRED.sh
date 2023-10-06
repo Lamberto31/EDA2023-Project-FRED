@@ -2,13 +2,21 @@
 
 # USAGE AND ARGUMENTS
 # Usage and help definition
-usage="$(basename "$0") [-h] [-d {0,1,2}] [-w {0,1}] -- program that check if rfcomm connection is defined and then execute python script.\n
-    \tIf a connection is not defined, you need to execute this script with sudo permission and then execute it again without sudo permission.\n
-    \tIf a connection is already defined you can execute this script without sudo permission.\n
-    \tOptions:\n
-        \t\t-h, --help:\t show this help text\n
-        \t\t-d, --debug:\t enable debug mode for python script, 0 for none, 1 for default, 2 for full\n
-        \t\t-w, --wifi:\t enable wifi mode for python script, 0 for disable, 2 for enable"
+usage="Usage:\n
+        \t$(basename "$0") [options]\n
+            \tProgram that check if rfcomm connection is defined and then execute python script:\n
+            \t- If a connection is not defined, you need to execute this script with sudo permission and then execute it again without sudo permission.\n
+            \t- If a connection is already defined you can execute this script without sudo permission.\n
+    Options:\n
+        \t-h, --help\t\t show this help text\n
+        \t-d, --debug {0,1,2}\t enable debug mode for python script, 0 for none, 1 for default, 2 for full\n
+        \t-w, --wifi {0,1}\t enable wifi mode for python script, 0 for disable, 2 for enable\n
+    Note:\n
+        \tIf you want to pass optional arguments it's necessary to do with space! See the examples\n
+    Examples:\n
+        \t./FRED.sh -d 2\t\t Correct!\n
+        \t./FRED.sh -d 2 -w 1\t Correct!\n
+        \t./FRED.sh -d2\t\t Wrong!\n"
 
 # Default arguments
 HELP=0
