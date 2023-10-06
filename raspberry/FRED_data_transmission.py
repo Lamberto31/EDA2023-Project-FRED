@@ -102,6 +102,11 @@ def interpretWifiArguments():
 DEBUG = interpretDebugArguments()
 WIFI = interpretWifiArguments()
 
+# Print initial configuration
+debugStamp("Initial configuration")
+debugStamp("DEBUG: " + DEBUG)
+debugStamp("WIFI: " + str(WIFI))
+
 # Serial connection configuration
 ser = serial.Serial(
     port='/dev/rfcomm1',
@@ -189,8 +194,9 @@ while True:
         debugStamp(jsonDict, "Full")
 
         # Send data
-        r = requests.post("https://api.thingspeak.com/channels/"+ CHANNEL_ID +"/bulk_update.json", json=jsonDict)
-        debugStamp(str(r.status_code) + " " + str(r.reason))
+        if WIFI:
+            r = requests.post("https://api.thingspeak.com/channels/"+ CHANNEL_ID +"/bulk_update.json", json=jsonDict)
+            debugStamp(str(r.status_code) + " " + str(r.reason))
 
         # Write data to csv
         csvWriter.writerows(dataToSend)
