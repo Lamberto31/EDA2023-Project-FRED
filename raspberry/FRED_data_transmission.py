@@ -6,6 +6,7 @@ import argparse
 import csv
 import datetime
 import os
+import subprocess as sp
 
 # INITIAL DEFINITIONS
 # Functionalities active/disabled
@@ -40,6 +41,9 @@ parser.add_argument("--wifi", "-w", help="Enable/disable wifi connection:\
                     1 is enable\
                     ", type=int, choices=[0, 1], default=1)
 args = parser.parse_args()
+
+# Connection status
+connected = False
 
 # FUNCTIONS DEFINITION
 # Insert received data in stored measures
@@ -164,27 +168,37 @@ while True:
     # RECEIVE DATA FROM BLUETOOTH
     # Check if there are incoming data
     try:
-        if ser.inWaiting() > 0:
-            # Read data
-            recv = ser.readline()
-            # If contains "START" it's a BDT messagge
-            if "START" in str(recv):
-                debugStamp("New BDT message START")
-                debugStamp(str(recv, 'utf-8'), "Full")
-                while True:
-                    recv = ser.readline()
+        # Check if bluetooth device is connected
+        if "XX:XX:XX:XX:XX:XX" in sp.getoutput("hcitool con").split():
+            if not connected:
+                connected = True
+                debugStamp("Bluetooth device connected")
+            if ser.inWaiting() > 0:
+                # Read data
+                recv = ser.readline()
+                # If contains "START" it's a BDT messagge
+                if "START" in str(recv):
+                    debugStamp("New BDT message START")
                     debugStamp(str(recv, 'utf-8'), "Full")
-                    insertDataInDict(recv)
-                    if "END" in str(recv):
-                        debugStamp("New BDT message END")
-                        measures["created_at"] = int(time.time())  # seconds
-                        # Check if the last measure has the same timestamp of the new one, if so don't add it
-                        # TODO_DOPO: Per ora scarto le misure, da capire cosa farci dopo aver visto il filtraggio
-                        if (dataToSend and dataToSend[-1]["created_at"] == measures["created_at"]):
+                    while True:
+                        recv = ser.readline()
+                        debugStamp(str(recv, 'utf-8'), "Full")
+                        insertDataInDict(recv)
+                        if "END" in str(recv):
+                            debugStamp("New BDT message END")
+                            measures["created_at"] = int(time.time())  # seconds
+                            # Check if the last measure has the same timestamp of the new one, if so don't add it
+                            # TODO_DOPO: Per ora scarto le misure, da capire cosa farci dopo aver visto il filtraggio
+                            if (dataToSend and dataToSend[-1]["created_at"] == measures["created_at"]):
+                                break
+                            dataToSend.append(measures.copy())
+                            stampDataToSend()
                             break
-                        dataToSend.append(measures.copy())
-                        stampDataToSend()
-                        break
+        else:
+            if connected:
+                connected = False
+                debugStamp("Bluetooth device disconnected")
+
     except Exception as e:
         debugStamp("Error: " + str(e))
     
