@@ -163,27 +163,30 @@ debugStamp("Starting main loop")
 while True:
     # RECEIVE DATA FROM BLUETOOTH
     # Check if there are incoming data
-    if ser.inWaiting() > 0:
-        # Read data
-        recv = ser.readline()
-        # If contains "START" it's a BDT messagge
-        if "START" in str(recv):
-            debugStamp("New BDT message START")
-            debugStamp(str(recv, 'utf-8'), "Full")
-            while True:
-                recv = ser.readline()
+    try:
+        if ser.inWaiting() > 0:
+            # Read data
+            recv = ser.readline()
+            # If contains "START" it's a BDT messagge
+            if "START" in str(recv):
+                debugStamp("New BDT message START")
                 debugStamp(str(recv, 'utf-8'), "Full")
-                insertDataInDict(recv)
-                if "END" in str(recv):
-                    debugStamp("New BDT message END")
-                    measures["created_at"] = int(time.time())  # seconds
-                    # Check if the last measure has the same timestamp of the new one, if so don't add it
-                    # TODO_DOPO: Per ora scarto le misure, da capire cosa farci dopo aver visto il filtraggio
-                    if (dataToSend and dataToSend[-1]["created_at"] == measures["created_at"]):
+                while True:
+                    recv = ser.readline()
+                    debugStamp(str(recv, 'utf-8'), "Full")
+                    insertDataInDict(recv)
+                    if "END" in str(recv):
+                        debugStamp("New BDT message END")
+                        measures["created_at"] = int(time.time())  # seconds
+                        # Check if the last measure has the same timestamp of the new one, if so don't add it
+                        # TODO_DOPO: Per ora scarto le misure, da capire cosa farci dopo aver visto il filtraggio
+                        if (dataToSend and dataToSend[-1]["created_at"] == measures["created_at"]):
+                            break
+                        dataToSend.append(measures.copy())
+                        stampDataToSend()
                         break
-                    dataToSend.append(measures.copy())
-                    stampDataToSend()
-                    break
+    except Exception as e:
+        debugStamp("Error: " + str(e))
     
     # SEND DATA TO REMOTE SERVER
     # Do it every PERIOD_SERVER seconds and if dataToSend is not empty
