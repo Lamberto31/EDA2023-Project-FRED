@@ -658,25 +658,25 @@ void bluetoothSendMeasure() {
   Serial.println(F("BDT 1.0 START"));
 
   Serial.print(F("Distance_US:"));
-  Serial.println(robotMeasures.distanceUS);
+  Serial.println(robotMeasures.distanceUS, DECIMALS);
 
   Serial.print(F("Distance_US_Filtered:"));
-  Serial.println(robotMeasures.distanceUSFiltered);
+  Serial.println(robotMeasures.distanceUSFiltered, DECIMALS);
 
   Serial.print(F("Distance_OPT:"));
-  Serial.println(robotMeasures.distanceOptical);
+  Serial.println(robotMeasures.distanceOptical, DECIMALS);
 
   Serial.print(F("Rev_per_second:"));
-  Serial.println(robotMeasures.rpsOptical);
+  Serial.println(robotMeasures.rpsOptical, DECIMALS);
 
   Serial.print(F("Velocity_US:"));
-  Serial.println(robotMeasures.velocityUS);
+  Serial.println(robotMeasures.velocityUS, DECIMALS);
 
   Serial.print(F("Velocity_OPT:"));
-  Serial.println(robotMeasures.velocityOptical);
+  Serial.println(robotMeasures.velocityOptical, DECIMALS);
 
   Serial.print(F("Velocity_OPT_Filtered:"));
-  Serial.println(robotMeasures.velocityOpticalFiltered);
+  Serial.println(robotMeasures.velocityOpticalFiltered, DECIMALS);
 
   Serial.println(F("BDT 1.0 END"));
 
