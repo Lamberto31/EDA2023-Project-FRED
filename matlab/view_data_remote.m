@@ -5,11 +5,13 @@ credentialFile = 'credentials.csv';
 % Number of values to show
 numPoints = 37;
 
+
 %% EXTRACT CREDENTIALS
 opts = detectImportOptions("credentials.csv");
 T = readtable("credentials.csv", opts);
 channelID = T.channelid;
 readAPIKey = string(T.readapiky);
+
 
 %% FIELDS %%
 % Position
@@ -73,3 +75,4 @@ hplot4 = plot(time4, rps, '-*', 'DisplayName', 'Optical');
 title('RPS');
 legend(hplot4);
 grid(ax3,'on')
+
