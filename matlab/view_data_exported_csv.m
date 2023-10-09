@@ -15,7 +15,7 @@ opts = detectImportOptions(path);
 T = readtable(path, opts);
 
 % Get the last numPoints rows
-M = M(max(1,(end-(numPoints - 1))):end, :);
+T = T(max(1,(end-(numPoints - 1))):end, :);
 
 % Convert created_at to datetime (inputformat like "2023-10-09T09:49:20+02:00")
 timestampDate = datetime(T.created_at,'InputFormat','yyyy-MM-dd''T''HH:mm:ssXXX','TimeZone','Europe/Zurich');
