@@ -43,7 +43,10 @@ parser.add_argument("--wifi", "-w", help="Enable/disable wifi connection:\
 args = parser.parse_args()
 
 # Connection status
+# Check if the connection is established
 connected = False
+# Check if the connection is lost (after a first connection!)
+disconnected = False
 
 # FUNCTIONS DEFINITION
 # Insert received data in stored measures
@@ -168,7 +171,7 @@ while True:
     # RECEIVE DATA FROM BLUETOOTH
     # Check if there are incoming data
     try:
-        if ser.in_waiting > 0:
+        if not disconnected and ser.in_waiting > 0:
             # Check if the connection is established
             if not connected:
                 debugStamp("Bluetooth connection established")
@@ -197,11 +200,12 @@ while True:
         # If there is an error, handle the closing of the program
         if connected:
             connected = False
+            disconnected = True
             debugStamp("Bluetooth connection lost, run the script again")
         else:
             debugStamp("Bluetooth connection not established, run the script again")
-        ser.close()
-        exit()
+            ser.close()
+            exit()
     
     # SEND DATA TO REMOTE SERVER
     # Do it every PERIOD_SERVER seconds and if dataToSend is not empty
@@ -226,4 +230,10 @@ while True:
 
         # Reset timer
         lastSendToServer = time.time()
+
+        # Close program if disconnected but after sending data
+        if disconnected:
+            debugStamp("Data sent, now the script can be closed")
+            ser.close()
+            exit()
     
