@@ -15,9 +15,7 @@ opts = detectImportOptions(path);
 M = readmatrix(path, opts);
 
 % Get the last numPoints rows
-if numPoints < height(M)
-    M = M(end-(numPoints - 1):end, :);
-end
+M = M(max(1,(end-(numPoints - 1))):end, :);
 
 % Extract timestamp and convert from epoch to datetime
 timestampEpoch = M(:,1);
