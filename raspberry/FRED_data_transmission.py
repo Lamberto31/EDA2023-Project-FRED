@@ -168,7 +168,7 @@ while True:
     # RECEIVE DATA FROM BLUETOOTH
     # Check if there are incoming data
     try:
-        if ser.inWaiting() > 0:
+        if ser.in_waiting > 0:
             if not connected:
                 debugStamp("Bluetooth connection established")
                 connected = True
