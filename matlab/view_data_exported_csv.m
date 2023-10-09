@@ -36,7 +36,7 @@ hplot5 = plot(timestampDate, T.field5, '-o', 'DisplayName', 'US');
 hplot6 = plot(timestampDate, T.field6, '-*', 'DisplayName', 'Optical');
 hplot7 = plot(timestampDate, T.field7, '-pentagram', 'DisplayName', 'Filtered');
 title('Velocity');
-legend([hplot1, hplot2, hplot3]);
+legend([hplot5, hplot6, hplot7]);
 grid(ax2,'on')
 hold off
 
