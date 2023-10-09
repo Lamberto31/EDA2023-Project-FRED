@@ -3,7 +3,7 @@
 credentialFile = 'credentials.csv';
 
 % Number of values to show
-numPoints = 37;
+numPoints = 50;
 
 
 %% EXTRACT CREDENTIALS
