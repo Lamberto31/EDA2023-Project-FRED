@@ -8,6 +8,7 @@ csvName = 'FRED_log_2023-10-06T17_39_04.csv';
 % Number of values to show
 numPoints = 50;
 
+
 %% GET DATA FROM CSV%%
 path = strcat(logsPath,csvName);
 opts = detectImportOptions(path);
