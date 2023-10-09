@@ -39,7 +39,7 @@ hplot6 = plot(timestampDate, M(:,7), '-*', 'DisplayName', 'Optical');
 hplot7 = plot(timestampDate, M(:,8), '-pentagram', 'DisplayName', 'Filtered');
 title('Velocity');
 legend([hplot1, hplot2, hplot3]);
-grid(ax1,'on')
+grid(ax2,'on')
 hold off
 
 % Rps
