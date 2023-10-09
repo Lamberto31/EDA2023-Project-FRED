@@ -6,7 +6,6 @@ import argparse
 import csv
 import datetime
 import os
-import subprocess as sp
 
 # INITIAL DEFINITIONS
 # Functionalities active/disabled
@@ -16,6 +15,7 @@ import subprocess as sp
 # Default: only essential
 # Full: all, also the BDT message
 DEBUG = "Default"
+
 # WIFI can be 2 value: False, True. Can be passed as argument (int from 0 to 1)
 # False: disable wifi connection
 # True: enable wifi connection
@@ -84,7 +84,7 @@ def stampDataToSend():
             print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\n")
 
 # Interpret input arguments
-#DEBUG
+# DEBUG
 def interpretDebugArguments():
     if args.debug == 0:
         DEBUG = "None"
@@ -93,7 +93,7 @@ def interpretDebugArguments():
     elif args.debug == 2:
         DEBUG = "Full"
     return DEBUG
-#WIFI
+# WIFI
 def interpretWifiArguments():
     if args.wifi == 0:
         WIFI = False
@@ -169,6 +169,7 @@ while True:
     # Check if there are incoming data
     try:
         if ser.in_waiting > 0:
+            # Check if the connection is established
             if not connected:
                 debugStamp("Bluetooth connection established")
                 connected = True
@@ -193,6 +194,7 @@ while True:
                         stampDataToSend()
                         break
     except Exception as e:
+        # If there is an error, handle the closing of the program
         if connected:
             connected = False
             debugStamp("Bluetooth connection lost, run the script again")
