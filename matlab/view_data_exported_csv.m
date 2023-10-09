@@ -5,10 +5,19 @@ logsPath = './logs/';
 % Name of csv file with extension
 csvName = 'feeds.csv';
 
+% Number of values to show
+numPoints = 50;
+
 %% GET DATA FROM CSV%%
 path = strcat(logsPath,csvName);
 opts = detectImportOptions(path);
 T = readtable(path, opts);
+
+% Get the last numPoints rows
+if numPoints < height(T)
+    T = T(end-(numPoints - 1):end, :);
+end
+
 
 % Convert created_at to datetime (inputformat like "2023-10-09T09:49:20+02:00")
 timestampDate = datetime(T.created_at,'InputFormat','yyyy-MM-dd''T''HH:mm:ssXXX','TimeZone','Europe/Zurich');

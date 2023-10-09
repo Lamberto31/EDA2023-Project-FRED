@@ -5,11 +5,18 @@ logsPath = '../raspberry/logs/';
 % Name of csv file with extension
 csvName = 'FRED_log_2023-10-06T17_39_04.csv';
 
+% Number of values to show
+numPoints = 50;
 
 %% GET DATA FROM CSV%%
 path = strcat(logsPath,csvName);
 opts = detectImportOptions(path);
 M = readmatrix(path, opts);
+
+% Get the last numPoints rows
+if numPoints < height(M)
+    M = M(end-(numPoints - 1):end, :);
+end
 
 % Extract timestamp and convert from epoch to datetime
 timestampEpoch = M(:,1);
