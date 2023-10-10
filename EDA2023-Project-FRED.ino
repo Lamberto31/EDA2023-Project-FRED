@@ -37,8 +37,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 
 // PARAMETERS
 // Measure
-#define PERIOD_MEASURE 100  // [ms] between each measurement. Min value 60, cay cause error on ultrasonic measure if lower
-// Ultrasonic
+#define PERIOD_MEASURE 100  // [ms] between each measurement. Min value 60, may cause error on ultrasonic measure if lower
 #define DECIMALS 4  // [digits] Max value 4, it may cause buffer overflow if greater
 // Optical
 #define WHEEL_ENCODER_HOLES 20  // Holes in wheel encoder (when counted indicates one round)
@@ -46,7 +45,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 // Movement control
 #define STOP_TRESHOLD 0.1  // [cm] Tolerance for diffDist
 #define SLOW_TRESHOLD 50  // [cm] Treshold used to go at max speed until reached
-#define SLOW_SPEED_MIN 100  // [analog] [0-255] Max value for low speed
+#define SLOW_SPEED_MIN 100  // [analog] [0-255] Min value for low speed
 #define SLOW_FACTOR_MAX 15  // [adim] Max value for slowFactor to prevent too slow speed
 #define SLOW_FACTOR_STOP 10  // [adim] Min value for slowFactor to allow stop from checkDistance
 // Custom distance [cm]
@@ -325,7 +324,7 @@ void loop() {
       break;
     }
     // Measure state handling
-    // TODO: Capire che fare di questo stato
+    // TODO: Capire che fare di questo stato, al momento non fa più nulla
     case STATE_MEASURE: {
       sendBufferIndex = 0;
       memset(sendBuffer, 0, sizeof(sendBuffer));
@@ -383,11 +382,13 @@ void loop() {
 // It runs in an ISR context with interrupts enabled
 void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
   if (DEBUG_ACTIVE) printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
+  // Ignore repeat commands
   if (aFlags != IRDATA_FLAGS_IS_REPEAT) {
     stateNewCmd(&robotState, aCommand);
   }
 }
 
+// TODO_CAPIRE: senza WiFi non serve più, la tolgo?
 void ledFeedback(byte blinkNumber, unsigned int blinkDuration) {
   for (byte blinkCount = 0; blinkCount < blinkNumber; blinkCount++) {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -627,7 +628,7 @@ bool bluetoothConnection(bool waitConnection) {
 
   digitalWrite(LED_BUILTIN, HIGH);
 
-  // If waitConnection true => wait BLUETOOTH_WAIT_CONNECTION seconds for connection or skip if OK button pressed
+  // If waitConnection true => wait BLUETOOTH_WAIT_CONNECTION ms for connection or skip if OK button pressed
   if (waitConnection) {
     unsigned long previousMillisBluetoothConnected = millis();
     bool skip = false;
