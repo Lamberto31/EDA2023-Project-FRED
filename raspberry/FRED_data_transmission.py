@@ -201,7 +201,7 @@ while True:
         if connected:
             connected = False
             disconnected = True
-            debugStamp("Bluetooth connection lost, run the script again")
+            debugStamp("Bluetooth connection lost, waiting for data to send and then close the script")
         else:
             debugStamp("Bluetooth connection not established, run the script again")
             ser.close()
