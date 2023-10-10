@@ -691,3 +691,12 @@ void bluetoothSendMeasure() {
 
   robotMeasures.sent = true;
 }
+
+void bluetoothSendInfo(char* variable, int value) {
+  //BDT: Bluetooth Data Transmission
+  Serial.println(F("BDT 1.0 INFO"));
+
+  Serial.print(variable);
+  Serial.print(F(": "));
+  Serial.println(value);
+}
