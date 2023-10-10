@@ -196,6 +196,10 @@ while True:
                         dataToSend.append(measures.copy())
                         stampDataToSend()
                         break
+            # If contains "INFO" it's a INFO messagge
+            elif "INFO" in str(recv):
+                debugStamp("New INFO message")
+                debugStamp(str(recv, 'utf-8'))
     except Exception as e:
         # If there is an error, handle the closing of the program
         if connected:
