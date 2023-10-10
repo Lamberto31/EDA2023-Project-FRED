@@ -110,8 +110,7 @@ unsigned int sendBufferIndex = 0;
 Servo servoH;
 
 // Custom distance [cm]
-// TODO: fare con memset?
-char customDist[CUSTOM_DIST_CHAR] = "000";
+char customDist[CUSTOM_DIST_CHAR];
 byte customDistIdx = 0;
 int numericCustomDist = 0;
 
@@ -148,6 +147,9 @@ void setup() {
   // Ultrasonic
   pinMode(PIN_ULTRASONIC_TRIG, OUTPUT);
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
+
+  // Distance
+  memset(customDist, '0', sizeof(customDist));
 
   // Bluetooth
   pinMode(PIN_BLUETOOTH_STATE, INPUT);
@@ -543,10 +545,7 @@ bool composeNumericDistance() {
 }
 
 void resetCustomDistance() {
-  // TODO: fare con memset?
-  customDist[0] = '0';
-  customDist[1] = '0';
-  customDist[2] = '0';
+  memset(customDist, '0', sizeof(customDist));
   customDistIdx = 0;
 }
 
