@@ -551,7 +551,7 @@ void resetCustomDistance() {
 }
 
 void checkDistance() {
-  // Measure distance and difference from custom
+  // Measure diffrence between current and custom distance
   diffDist = robotMeasures.distanceUS - numericCustomDist;
 
   // Move to the custom distance if first check
@@ -559,7 +559,7 @@ void checkDistance() {
     if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
       if (diffDist >= STOP_TRESHOLD) {
         // Just slow down
-        int speed = map(diffDist, 0, numericCustomDist + SLOW_TRESHOLD, SLOW_SPEED_MIN, 255);
+        int speed = map(diffDist, 0, SLOW_TRESHOLD, SLOW_SPEED_MIN, 255);
         runMotors(DIRECTION_FORWARD, speed);
       } else {
         // Stop
@@ -599,7 +599,7 @@ void preventDamage(int minDistance) {
   if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
     if (diffDist >= STOP_TRESHOLD) {
       // Just slow down
-      int speed = map(diffDist, 0, minDistance + SLOW_TRESHOLD, 0, 255);
+      int speed = map(diffDist, 0, SLOW_TRESHOLD, SLOW_SPEED_MIN, 255);
       runMotors(DIRECTION_FORWARD, speed);
     } else {
       // Stop
