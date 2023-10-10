@@ -110,6 +110,7 @@ unsigned int sendBufferIndex = 0;
 Servo servoH;
 
 // Custom distance [cm]
+// TODO: fare con memset?
 char customDist[CUSTOM_DIST_CHAR] = "000";
 byte customDistIdx = 0;
 int numericCustomDist = 0;
@@ -509,7 +510,7 @@ double measureDistance() {
 }
 
 void readCustomDistance(char digit) {
-  if (customDistIdx == 3) {
+  if (customDistIdx == (CUSTOM_DIST_CHAR - 1)) {
     resetCustomDistance();
     stateChange(&robotState, STATE_FREE);
   } else {
@@ -542,6 +543,7 @@ bool composeNumericDistance() {
 }
 
 void resetCustomDistance() {
+  // TODO: fare con memset?
   customDist[0] = '0';
   customDist[1] = '0';
   customDist[2] = '0';
