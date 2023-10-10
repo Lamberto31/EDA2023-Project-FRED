@@ -16,6 +16,11 @@ import os
 # Full: all, also the BDT message
 DEBUG = "Default"
 
+# VIEW_DATA can be 2 value: False, True. Can be passed as argument (int from 0 to 1). Works only if DEBUG is not None
+# False: disable data view
+# True: enable data view
+VIEW_DATA = True
+
 # WIFI can be 2 value: False, True. Can be passed as argument (int from 0 to 1)
 # False: disable wifi connection
 # True: enable wifi connection
@@ -36,6 +41,10 @@ parser.add_argument("--debug", "-d",  help="An integer that define a debug level
                     2 is full.\n\
                     If not passed it will be a code-defined value\
                     ", type=int, choices=[0, 1, 2], default=1)
+parser.add_argument("--viewdata", "-v", help="Enable/disable tabular data visualization:\
+                    0 is disable\
+                    1 is enable\
+                    ", type=int, choices=[0, 1], default=1)
 parser.add_argument("--wifi", "-w", help="Enable/disable wifi connection:\
                     0 is disable\
                     1 is enable\
@@ -80,7 +89,7 @@ def debugStamp(str, level="Default"):
 
 # Print dataToSend in tabular format
 def stampDataToSend():
-    if DEBUG == "Default" or DEBUG == "Full":
+    if DEBUG == "Default" or DEBUG == "Full" and VIEW_DATA:
         print("\nDATA TO SEND")
         print("N.\tcreated_at\tfield1\tfield2\tfield3\tfield4\tfield5\tfield6\tfield7\n")
         for i in range(0, len(dataToSend)):
@@ -96,6 +105,13 @@ def interpretDebugArguments():
     elif args.debug == 2:
         DEBUG = "Full"
     return DEBUG
+# VIEWDATA
+def interpretViewDataArguments():
+    if args.viewdata == 0:
+        VIEW_DATA = False
+    elif args.viewdata == 1:
+        VIEW_DATA = True
+    return VIEW_DATA
 # WIFI
 def interpretWifiArguments():
     if args.wifi == 0:
@@ -108,10 +124,12 @@ def interpretWifiArguments():
 # Interpret input arguments
 DEBUG = interpretDebugArguments()
 WIFI = interpretWifiArguments()
+VIEW_DATA = interpretViewDataArguments()
 
 # Print initial configuration
 print("Functionalities configuration")
 print("DEBUG: " + DEBUG + " (" + str(args.debug) + ")")
+print("VIEW_DATA: " + str(VIEW_DATA) + " (" + str(args.viewdata) + ")")
 print("WIFI: " + str(WIFI) + " (" + str(args.wifi) + ")")
 
 # Serial connection configuration
