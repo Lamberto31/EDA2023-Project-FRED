@@ -217,9 +217,9 @@ while True:
             # If contains "INFO" it's a INFO messagge
             elif "INFO" in str(recv):
                 debugStamp("New INFO message")
-                debugStamp(str(recv, 'utf-8'))
-                recv = ser.readline()
-                debugStamp(str(recv, 'utf-8'))
+                debugStamp(str(recv, 'utf-8'), "Full")
+                info = ser.readline().decode('utf-8')[0:-2]                
+                debugStamp(str(info, 'utf-8'))
     except Exception as e:
         # If there is an error, handle the closing of the program
         if connected:
