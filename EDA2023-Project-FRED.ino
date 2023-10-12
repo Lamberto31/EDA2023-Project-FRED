@@ -59,8 +59,11 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 #define PERIOD_SERVER 15000  // [ms] between each message to server. Min value 15000, may cause error response if lower (server allow one message each 15s)
 #define PERIOD_MEASURETOSEND 3000  // [ms] between each insertion of data into the structure. Suggested value 3000, it's ok if greater but a lower value may cause high memory consumption
 #define SEND_BUFFER_SIZE PERIOD_SERVER / PERIOD_MEASURETOSEND  // [byte] Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
-//Servo
+// Servo
 #define SERVO_HORIZ_CENTER 100 // [angle] [0-180] Angle considered as center for servo, it depends on the construction
+// Feedback Led
+#define FEEDBACK_BLINK_READ_RECEIVE 1  // [adim] Number of blinks for feedback led when reading a custom distance
+#define FEEDBACK_DURATION_READ_RECEIVE 100  // [ms] Duration of each blink for feedback led when reading a custom distance
 
 // IR
 // Button-Command
@@ -245,42 +248,52 @@ void loop() {
         switch (robotState.command) {
           case IR_BUTTON_1: {
             readCustomDistance('1');
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             break;
           }
           case IR_BUTTON_2: {
             readCustomDistance('2');
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             break;
           }
           case IR_BUTTON_3: {
             readCustomDistance('3');
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             break;
           }
           case IR_BUTTON_4: {
             readCustomDistance('4');
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             break;
           }
           case IR_BUTTON_5: {
             readCustomDistance('5');
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             break;
           }
           case IR_BUTTON_6: {
             readCustomDistance('6');
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             break;
           }
           case IR_BUTTON_7: {
             readCustomDistance('7');
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             break;
           }
           case IR_BUTTON_8: {
             readCustomDistance('8');
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             break;
           }
           case IR_BUTTON_9: {
             readCustomDistance('9');
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             break;
           }
           case IR_BUTTON_0: {
             readCustomDistance('0');
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             break;
           }
           case IR_BUTTON_AST: {
