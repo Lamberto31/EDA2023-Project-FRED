@@ -218,6 +218,8 @@ while True:
             elif "INFO" in str(recv):
                 debugStamp("New INFO message")
                 debugStamp(str(recv, 'utf-8'))
+                recv = ser.readline()
+                debugStamp(str(recv, 'utf-8'))
     except Exception as e:
         # If there is an error, handle the closing of the program
         if connected:
