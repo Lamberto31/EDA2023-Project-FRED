@@ -285,7 +285,7 @@ void loop() {
             if (composeNumericDistance()) stateChange(&robotState, STATE_SEARCH); else stateChange(&robotState, STATE_FREE);
               debugF("numericCustomDist = ");
               debugln(numericCustomDist);
-              bluetoothSendInfo("Custom Distance", numericCustomDist);
+              if (bluetoothConnected) bluetoothSendInfo("Custom Distance", numericCustomDist);
             break;
           }
           case IR_BUTTON_OK: {
