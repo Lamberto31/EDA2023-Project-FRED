@@ -298,9 +298,11 @@ void loop() {
           }
           case IR_BUTTON_AST: {
             if (composeNumericDistance()) stateChange(&robotState, STATE_SEARCH); else stateChange(&robotState, STATE_FREE);
-              debugF("numericCustomDist = ");
-              debugln(numericCustomDist);
-              if (bluetoothConnected) bluetoothSendInfo("Custom Distance", numericCustomDist);
+            debugF("numericCustomDist = ");
+            debugln(numericCustomDist);
+            if (bluetoothConnected) bluetoothSendInfo("Custom Distance", numericCustomDist);
+            // Feedback led
+            digitalWrite(LED_BUILTIN, LOW);
             break;
           }
           case IR_BUTTON_OK: {
