@@ -218,8 +218,8 @@ while True:
             elif "INFO" in str(recv):
                 debugStamp("New INFO message")
                 debugStamp(str(recv, 'utf-8'), "Full")
-                info = ser.readline().decode('utf-8')[0:-2]                
-                debugStamp(str(info, 'utf-8'))
+                info = ser.readline().decode('utf-8')[0:-2]
+                debugStamp(str(info))
     except Exception as e:
         # If there is an error, handle the closing of the program
         if connected:
@@ -260,4 +260,3 @@ while True:
             debugStamp("Data sent, now the script can be closed")
             ser.close()
             exit()
-    
