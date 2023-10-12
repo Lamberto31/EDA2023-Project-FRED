@@ -98,8 +98,8 @@ def stampDataToSend():
 
 # Handle CTRL+C
 def interruptHandler(sig, frame):
-    debugStamp("Interrupt received, waiting for data to send and then close the script")
-    debugStamp("If you want to close the script immediately send interrupt again")
+    print("\nInterrupt received, waiting for data to send and then close the script")
+    print("If you want to close the script immediately send interrupt again")
     signal.signal(signal.SIGINT, signal.default_int_handler)
     ser.close()  # Close serial connection, this will cause error and so the script will stop but safely
 
