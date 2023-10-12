@@ -247,53 +247,53 @@ void loop() {
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
           case IR_BUTTON_1: {
-            readCustomDistance('1');
             ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
+            readCustomDistance('1');
             break;
           }
           case IR_BUTTON_2: {
-            readCustomDistance('2');
             ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
+            readCustomDistance('2');
             break;
           }
           case IR_BUTTON_3: {
-            readCustomDistance('3');
             ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
+            readCustomDistance('3');
             break;
           }
           case IR_BUTTON_4: {
-            readCustomDistance('4');
             ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
+            readCustomDistance('4');
             break;
           }
           case IR_BUTTON_5: {
-            readCustomDistance('5');
             ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
+            readCustomDistance('5');
             break;
           }
           case IR_BUTTON_6: {
-            readCustomDistance('6');
             ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
+            readCustomDistance('6');
             break;
           }
           case IR_BUTTON_7: {
-            readCustomDistance('7');
             ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
+            readCustomDistance('7');
             break;
           }
           case IR_BUTTON_8: {
-            readCustomDistance('8');
             ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
+            readCustomDistance('8');
             break;
           }
           case IR_BUTTON_9: {
-            readCustomDistance('9');
             ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
+            readCustomDistance('9');
             break;
           }
           case IR_BUTTON_0: {
-            readCustomDistance('0');
             ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
+            readCustomDistance('0');
             break;
           }
           case IR_BUTTON_AST: {
@@ -540,6 +540,8 @@ void readCustomDistance(char digit) {
   if (customDistIdx == (CUSTOM_DIST_CHAR - 1)) {
     resetCustomDistance();
     stateChange(&robotState, STATE_FREE);
+    // Feedback led
+    digitalWrite(LED_BUILTIN, LOW);
   } else {
     customDist[customDistIdx] = digit;
     customDistIdx++;
