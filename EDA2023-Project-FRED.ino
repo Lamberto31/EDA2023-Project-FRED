@@ -658,11 +658,9 @@ void countPulses() {
 
 // BLUETOOTH
 bool bluetoothConnection(bool waitConnection) {
-
-  digitalWrite(LED_BUILTIN, HIGH);
-
   // If waitConnection true => wait BLUETOOTH_WAIT_CONNECTION ms for connection or skip if OK button pressed
   if (waitConnection) {
+    digitalWrite(LED_BUILTIN, HIGH);
     unsigned long previousMillisBluetoothConnected = millis();
     bool skip = false;
     while (millis() - previousMillisBluetoothConnected < BLUETOOTH_WAIT_CONNECTION) {
@@ -678,12 +676,11 @@ bool bluetoothConnection(bool waitConnection) {
         stateCmdExecuted(&robotState);
       }
     }
+    digitalWrite(LED_BUILTIN, LOW);
   }
 
   // Check if connected
   bluetoothConnected = digitalRead(PIN_BLUETOOTH_STATE) == HIGH;
-
-  digitalWrite(LED_BUILTIN, LOW);
   return bluetoothConnected;
 }
 
