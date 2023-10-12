@@ -230,6 +230,8 @@ void loop() {
           case IR_BUTTON_AST: {
             runMotors(DIRECTION_STOP, 0);
             stateChange(&robotState, STATE_READ);
+            // Feedback led
+            digitalWrite(LED_BUILTIN, HIGH);
             break;
           }
         }
@@ -291,11 +293,15 @@ void loop() {
           case IR_BUTTON_OK: {
             resetCustomDistance();
             stateChange(&robotState, STATE_FREE);
+            // Feedback led
+            digitalWrite(LED_BUILTIN, LOW);
             break;
           }
           case IR_BUTTON_HASH: {
             resetCustomDistance();
             stateChange(&robotState, STATE_MEASURE);
+            // Feedback led
+            digitalWrite(LED_BUILTIN, LOW);
             break;
           }
         }
@@ -340,6 +346,8 @@ void loop() {
           }
           case IR_BUTTON_AST: {
             stateChange(&robotState, STATE_READ);
+            // Feedback led
+            digitalWrite(LED_BUILTIN, HIGH);
             break;
           }
         }
