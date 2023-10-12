@@ -400,12 +400,13 @@ void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags
   }
 }
 
-// TODO_CAPIRE: senza WiFi non serve più, la tolgo?
-void ledFeedback(byte blinkNumber, unsigned int blinkDuration) {
+void ledFeedback(byte blinkNumber, unsigned int blinkDuration, bool reverse) {
   for (byte blinkCount = 0; blinkCount < blinkNumber; blinkCount++) {
-    digitalWrite(LED_BUILTIN, HIGH);
+    if (!reverse) digitalWrite(LED_BUILTIN, HIGH);
+    else digitalWrite(LED_BUILTIN, LOW);
     delay(blinkDuration);
-    digitalWrite(LED_BUILTIN, LOW);
+    if (!reverse) digitalWrite(LED_BUILTIN, LOW);
+    else digitalWrite(LED_BUILTIN, HIGH);
     delay(blinkDuration);
   }
 }
