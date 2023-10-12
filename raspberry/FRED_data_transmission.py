@@ -198,14 +198,14 @@ while True:
             recv = ser.readline()
             # If contains "START" it's a BDT messagge
             if "START" in str(recv):
-                debugStamp("New BDT message START")
+                debugStamp("New BDT message: START")
                 debugStamp(str(recv, 'utf-8'), "Full")
                 while True:
                     recv = ser.readline()
                     debugStamp(str(recv, 'utf-8'), "Full")
                     insertDataInDict(recv)
                     if "END" in str(recv):
-                        debugStamp("New BDT message END")
+                        debugStamp("New BDT message: END")
                         measures["created_at"] = int(time.time())  # seconds
                         # Check if the last measure has the same timestamp of the new one, if so don't add it
                         # TODO_DOPO: Per ora scarto le misure, da capire cosa farci dopo aver visto il filtraggio
@@ -216,7 +216,7 @@ while True:
                         break
             # If contains "INFO" it's a INFO messagge
             elif "INFO" in str(recv):
-                debugStamp("New INFO message")
+                debugStamp("New BDT message: INFO")
                 debugStamp(str(recv, 'utf-8'), "Full")
                 info = ser.readline().decode('utf-8')[0:-2]
                 debugStamp(str(info))
