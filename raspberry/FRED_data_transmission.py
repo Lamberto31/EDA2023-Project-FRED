@@ -6,6 +6,7 @@ import argparse
 import csv
 import datetime
 import os
+import signal
 
 # INITIAL DEFINITIONS
 # Functionalities active/disabled
@@ -94,6 +95,11 @@ def stampDataToSend():
         print("N.\tcreated_at\tfield1\tfield2\tfield3\tfield4\tfield5\tfield6\tfield7\n")
         for i in range(0, len(dataToSend)):
             print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\n")
+
+# Handle CTRL+C
+def interruptHandler(sig, frame):
+    debugStamp("Interrupt received, waiting for data to send and then close the script")
+    ser.close()  # Close serial connection, this will cause error and so the script will stop but safely
 
 # Interpret input arguments
 # DEBUG
@@ -194,6 +200,8 @@ while True:
             if not connected:
                 debugStamp("Bluetooth connection established")
                 connected = True
+                # Handle CTRL+C
+                signal.signal(signal.SIGINT, interruptHandler)
             # Read data
             recv = ser.readline()
             # If contains "START" it's a BDT messagge
