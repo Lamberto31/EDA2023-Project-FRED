@@ -129,6 +129,10 @@ def interpretWifiArguments():
     return WIFI
 
 # INITIAL CONFIGURATION
+
+# Print closing instructions
+print("Press CTRL+C or send SIGINT to safely close the script")
+
 # Interpret input arguments
 DEBUG = interpretDebugArguments()
 WIFI = interpretWifiArguments()
