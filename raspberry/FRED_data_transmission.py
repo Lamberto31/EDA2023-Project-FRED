@@ -6,6 +6,7 @@ import argparse
 import csv
 import datetime
 import os
+import signal
 
 # INITIAL DEFINITIONS
 # Functionalities active/disabled
@@ -95,6 +96,13 @@ def stampDataToSend():
         for i in range(0, len(dataToSend)):
             print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\n")
 
+# Handle CTRL+C
+def interruptHandler(sig, frame):
+    print("\nInterrupt received, waiting for data to send and then close the script")
+    print("If you want to close the script immediately send interrupt again")
+    signal.signal(signal.SIGINT, signal.default_int_handler)
+    ser.close()  # Close serial connection, this will cause error and so the script will stop but safely
+
 # Interpret input arguments
 # DEBUG
 def interpretDebugArguments():
@@ -121,6 +129,10 @@ def interpretWifiArguments():
     return WIFI
 
 # INITIAL CONFIGURATION
+
+# Print closing instructions
+print("Press CTRL+C or send SIGINT to safely close the script")
+
 # Interpret input arguments
 DEBUG = interpretDebugArguments()
 WIFI = interpretWifiArguments()
@@ -194,6 +206,8 @@ while True:
             if not connected:
                 debugStamp("Bluetooth connection established")
                 connected = True
+                # Handle CTRL+C
+                signal.signal(signal.SIGINT, interruptHandler)
             # Read data
             recv = ser.readline()
             # If contains "START" it's a BDT messagge
