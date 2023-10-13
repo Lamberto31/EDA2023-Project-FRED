@@ -59,8 +59,11 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 #define PERIOD_SERVER 15000  // [ms] between each message to server. Min value 15000, may cause error response if lower (server allow one message each 15s)
 #define PERIOD_MEASURETOSEND 3000  // [ms] between each insertion of data into the structure. Suggested value 3000, it's ok if greater but a lower value may cause high memory consumption
 #define SEND_BUFFER_SIZE PERIOD_SERVER / PERIOD_MEASURETOSEND  // [byte] Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
-//Servo
+// Servo
 #define SERVO_HORIZ_CENTER 100 // [angle] [0-180] Angle considered as center for servo, it depends on the construction
+// Feedback Led
+#define FEEDBACK_BLINK_READ_RECEIVE 1  // [adim] Number of blinks for feedback led when reading a custom distance
+#define FEEDBACK_DURATION_READ_RECEIVE 100  // [ms] Duration of each blink for feedback led when reading a custom distance
 
 // IR
 // Button-Command
@@ -230,6 +233,8 @@ void loop() {
           case IR_BUTTON_AST: {
             runMotors(DIRECTION_STOP, 0);
             stateChange(&robotState, STATE_READ);
+            // Feedback led
+            digitalWrite(LED_BUILTIN, HIGH);
             break;
           }
         }
@@ -242,59 +247,76 @@ void loop() {
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
           case IR_BUTTON_1: {
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             readCustomDistance('1');
             break;
           }
           case IR_BUTTON_2: {
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             readCustomDistance('2');
             break;
           }
           case IR_BUTTON_3: {
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             readCustomDistance('3');
             break;
           }
           case IR_BUTTON_4: {
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             readCustomDistance('4');
             break;
           }
           case IR_BUTTON_5: {
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             readCustomDistance('5');
             break;
           }
           case IR_BUTTON_6: {
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             readCustomDistance('6');
             break;
           }
           case IR_BUTTON_7: {
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             readCustomDistance('7');
             break;
           }
           case IR_BUTTON_8: {
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             readCustomDistance('8');
             break;
           }
           case IR_BUTTON_9: {
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             readCustomDistance('9');
             break;
           }
           case IR_BUTTON_0: {
+            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
             readCustomDistance('0');
             break;
           }
           case IR_BUTTON_AST: {
             if (composeNumericDistance()) stateChange(&robotState, STATE_SEARCH); else stateChange(&robotState, STATE_FREE);
-              debugF("numericCustomDist = ");
-              debugln(numericCustomDist);
+            debugF("numericCustomDist = ");
+            debugln(numericCustomDist);
+            if (bluetoothConnected) bluetoothSendInfo("Custom Distance", numericCustomDist);
+            // Feedback led
+            digitalWrite(LED_BUILTIN, LOW);
             break;
           }
           case IR_BUTTON_OK: {
             resetCustomDistance();
             stateChange(&robotState, STATE_FREE);
+            // Feedback led
+            digitalWrite(LED_BUILTIN, LOW);
             break;
           }
           case IR_BUTTON_HASH: {
             resetCustomDistance();
             stateChange(&robotState, STATE_MEASURE);
+            // Feedback led
+            digitalWrite(LED_BUILTIN, LOW);
             break;
           }
         }
@@ -339,6 +361,8 @@ void loop() {
           }
           case IR_BUTTON_AST: {
             stateChange(&robotState, STATE_READ);
+            // Feedback led
+            digitalWrite(LED_BUILTIN, HIGH);
             break;
           }
         }
@@ -391,12 +415,13 @@ void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags
   }
 }
 
-// TODO_CAPIRE: senza WiFi non serve più, la tolgo?
-void ledFeedback(byte blinkNumber, unsigned int blinkDuration) {
+void ledFeedback(byte blinkNumber, unsigned int blinkDuration, bool reverse) {
   for (byte blinkCount = 0; blinkCount < blinkNumber; blinkCount++) {
-    digitalWrite(LED_BUILTIN, HIGH);
+    if (!reverse) digitalWrite(LED_BUILTIN, HIGH);
+    else digitalWrite(LED_BUILTIN, LOW);
     delay(blinkDuration);
-    digitalWrite(LED_BUILTIN, LOW);
+    if (!reverse) digitalWrite(LED_BUILTIN, LOW);
+    else digitalWrite(LED_BUILTIN, HIGH);
     delay(blinkDuration);
   }
 }
@@ -515,6 +540,8 @@ void readCustomDistance(char digit) {
   if (customDistIdx == (CUSTOM_DIST_CHAR - 1)) {
     resetCustomDistance();
     stateChange(&robotState, STATE_FREE);
+    // Feedback led
+    digitalWrite(LED_BUILTIN, LOW);
   } else {
     customDist[customDistIdx] = digit;
     customDistIdx++;
@@ -633,11 +660,9 @@ void countPulses() {
 
 // BLUETOOTH
 bool bluetoothConnection(bool waitConnection) {
-
-  digitalWrite(LED_BUILTIN, HIGH);
-
   // If waitConnection true => wait BLUETOOTH_WAIT_CONNECTION ms for connection or skip if OK button pressed
   if (waitConnection) {
+    digitalWrite(LED_BUILTIN, HIGH);
     unsigned long previousMillisBluetoothConnected = millis();
     bool skip = false;
     while (millis() - previousMillisBluetoothConnected < BLUETOOTH_WAIT_CONNECTION) {
@@ -653,12 +678,11 @@ bool bluetoothConnection(bool waitConnection) {
         stateCmdExecuted(&robotState);
       }
     }
+    digitalWrite(LED_BUILTIN, LOW);
   }
 
   // Check if connected
   bluetoothConnected = digitalRead(PIN_BLUETOOTH_STATE) == HIGH;
-
-  digitalWrite(LED_BUILTIN, LOW);
   return bluetoothConnected;
 }
 
@@ -690,4 +714,13 @@ void bluetoothSendMeasure() {
   Serial.println(F("BDT 1.0 END"));
 
   robotMeasures.sent = true;
+}
+
+void bluetoothSendInfo(const char* variable, int value) {
+  //BDT: Bluetooth Data Transmission
+  Serial.println(F("BDT 1.0 INFO"));
+
+  Serial.print(variable);
+  Serial.print(F(": "));
+  Serial.println(value);
 }
