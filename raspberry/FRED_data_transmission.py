@@ -15,6 +15,7 @@ import os
 # Default: only essential
 # Full: all, also the BDT message
 DEBUG = "Default"
+
 # WIFI can be 2 value: False, True. Can be passed as argument (int from 0 to 1)
 # False: disable wifi connection
 # True: enable wifi connection
@@ -40,6 +41,12 @@ parser.add_argument("--wifi", "-w", help="Enable/disable wifi connection:\
                     1 is enable\
                     ", type=int, choices=[0, 1], default=1)
 args = parser.parse_args()
+
+# Connection status
+# Check if the connection is established
+connected = False
+# Check if the connection is lost (after a first connection!)
+disconnected = False
 
 # FUNCTIONS DEFINITION
 # Insert received data in stored measures
@@ -80,7 +87,7 @@ def stampDataToSend():
             print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\n")
 
 # Interpret input arguments
-#DEBUG
+# DEBUG
 def interpretDebugArguments():
     if args.debug == 0:
         DEBUG = "None"
@@ -89,7 +96,7 @@ def interpretDebugArguments():
     elif args.debug == 2:
         DEBUG = "Full"
     return DEBUG
-#WIFI
+# WIFI
 def interpretWifiArguments():
     if args.wifi == 0:
         WIFI = False
@@ -163,27 +170,42 @@ debugStamp("Starting main loop")
 while True:
     # RECEIVE DATA FROM BLUETOOTH
     # Check if there are incoming data
-    if ser.inWaiting() > 0:
-        # Read data
-        recv = ser.readline()
-        # If contains "START" it's a BDT messagge
-        if "START" in str(recv):
-            debugStamp("New BDT message START")
-            debugStamp(str(recv, 'utf-8'), "Full")
-            while True:
-                recv = ser.readline()
+    try:
+        if not disconnected and ser.in_waiting > 0:
+            # Check if the connection is established
+            if not connected:
+                debugStamp("Bluetooth connection established")
+                connected = True
+            # Read data
+            recv = ser.readline()
+            # If contains "START" it's a BDT messagge
+            if "START" in str(recv):
+                debugStamp("New BDT message START")
                 debugStamp(str(recv, 'utf-8'), "Full")
-                insertDataInDict(recv)
-                if "END" in str(recv):
-                    debugStamp("New BDT message END")
-                    measures["created_at"] = int(time.time())  # seconds
-                    # Check if the last measure has the same timestamp of the new one, if so don't add it
-                    # TODO_DOPO: Per ora scarto le misure, da capire cosa farci dopo aver visto il filtraggio
-                    if (dataToSend and dataToSend[-1]["created_at"] == measures["created_at"]):
+                while True:
+                    recv = ser.readline()
+                    debugStamp(str(recv, 'utf-8'), "Full")
+                    insertDataInDict(recv)
+                    if "END" in str(recv):
+                        debugStamp("New BDT message END")
+                        measures["created_at"] = int(time.time())  # seconds
+                        # Check if the last measure has the same timestamp of the new one, if so don't add it
+                        # TODO_DOPO: Per ora scarto le misure, da capire cosa farci dopo aver visto il filtraggio
+                        if (dataToSend and dataToSend[-1]["created_at"] == measures["created_at"]):
+                            break
+                        dataToSend.append(measures.copy())
+                        stampDataToSend()
                         break
-                    dataToSend.append(measures.copy())
-                    stampDataToSend()
-                    break
+    except Exception as e:
+        # If there is an error, handle the closing of the program
+        if connected:
+            connected = False
+            disconnected = True
+            debugStamp("Bluetooth connection lost, waiting for data to send and then close the script")
+        else:
+            debugStamp("Bluetooth connection not established, run the script again")
+            ser.close()
+            exit()
     
     # SEND DATA TO REMOTE SERVER
     # Do it every PERIOD_SERVER seconds and if dataToSend is not empty
@@ -208,4 +230,10 @@ while True:
 
         # Reset timer
         lastSendToServer = time.time()
+
+        # Close program if disconnected but after sending data
+        if disconnected:
+            debugStamp("Data sent, now the script can be closed")
+            ser.close()
+            exit()
     

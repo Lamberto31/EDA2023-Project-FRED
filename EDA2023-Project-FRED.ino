@@ -37,8 +37,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 
 // PARAMETERS
 // Measure
-#define PERIOD_MEASURE 100  // [ms] between each measurement. Min value 60, cay cause error on ultrasonic measure if lower
-// Ultrasonic
+#define PERIOD_MEASURE 100  // [ms] between each measurement. Min value 60, may cause error on ultrasonic measure if lower
 #define DECIMALS 4  // [digits] Max value 4, it may cause buffer overflow if greater
 // Optical
 #define WHEEL_ENCODER_HOLES 20  // Holes in wheel encoder (when counted indicates one round)
@@ -46,7 +45,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 // Movement control
 #define STOP_TRESHOLD 0.1  // [cm] Tolerance for diffDist
 #define SLOW_TRESHOLD 50  // [cm] Treshold used to go at max speed until reached
-#define SLOW_SPEED_MIN 100  // [analog] [0-255] Max value for low speed
+#define SLOW_SPEED_MIN 100  // [analog] [0-255] Min value for low speed
 #define SLOW_FACTOR_MAX 15  // [adim] Max value for slowFactor to prevent too slow speed
 #define SLOW_FACTOR_STOP 10  // [adim] Min value for slowFactor to allow stop from checkDistance
 // Custom distance [cm]
@@ -111,7 +110,7 @@ unsigned int sendBufferIndex = 0;
 Servo servoH;
 
 // Custom distance [cm]
-char customDist[CUSTOM_DIST_CHAR] = "000";
+char customDist[CUSTOM_DIST_CHAR];
 byte customDistIdx = 0;
 int numericCustomDist = 0;
 
@@ -148,6 +147,9 @@ void setup() {
   // Ultrasonic
   pinMode(PIN_ULTRASONIC_TRIG, OUTPUT);
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
+
+  // Distance
+  memset(customDist, '0', sizeof(customDist));
 
   // Bluetooth
   pinMode(PIN_BLUETOOTH_STATE, INPUT);
@@ -325,7 +327,7 @@ void loop() {
       break;
     }
     // Measure state handling
-    // TODO: Capire che fare di questo stato
+    // TODO: Capire che fare di questo stato, al momento non fa più nulla
     case STATE_MEASURE: {
       sendBufferIndex = 0;
       memset(sendBuffer, 0, sizeof(sendBuffer));
@@ -383,11 +385,13 @@ void loop() {
 // It runs in an ISR context with interrupts enabled
 void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
   if (DEBUG_ACTIVE) printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
+  // Ignore repeat commands
   if (aFlags != IRDATA_FLAGS_IS_REPEAT) {
     stateNewCmd(&robotState, aCommand);
   }
 }
 
+// TODO_CAPIRE: senza WiFi non serve più, la tolgo?
 void ledFeedback(byte blinkNumber, unsigned int blinkDuration) {
   for (byte blinkCount = 0; blinkCount < blinkNumber; blinkCount++) {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -465,7 +469,7 @@ void measureAll(unsigned long deltaT) {
   
   int pulses = opticalPulses;
   opticalPulses = 0;
-  int direction;
+  int directionSign;
   double travelledRevolution;
   double travelledDistance;
 
@@ -478,9 +482,9 @@ void measureAll(unsigned long deltaT) {
   robotMeasures.velocityUS = (robotMeasures.distanceUS - prevDistance) / (deltaT * 0.001);
 
   // Position from optical
-  direction = measureDirection();
+  directionSign = measureDirection();
   travelledRevolution = (pulses / (double)WHEEL_ENCODER_HOLES);
-  travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution * direction;
+  travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution * directionSign;
   robotMeasures.distanceOptical = travelledDistance + prevDistance;
 
   // Velocity from optical
@@ -508,7 +512,7 @@ double measureDistance() {
 }
 
 void readCustomDistance(char digit) {
-  if (customDistIdx == 3) {
+  if (customDistIdx == (CUSTOM_DIST_CHAR - 1)) {
     resetCustomDistance();
     stateChange(&robotState, STATE_FREE);
   } else {
@@ -541,14 +545,12 @@ bool composeNumericDistance() {
 }
 
 void resetCustomDistance() {
-  customDist[0] = '0';
-  customDist[1] = '0';
-  customDist[2] = '0';
+  memset(customDist, '0', sizeof(customDist));
   customDistIdx = 0;
 }
 
 void checkDistance() {
-  // Measure distance and difference from custom
+  // Measure diffrence between current and custom distance
   diffDist = robotMeasures.distanceUS - numericCustomDist;
 
   // Move to the custom distance if first check
@@ -556,7 +558,7 @@ void checkDistance() {
     if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
       if (diffDist >= STOP_TRESHOLD) {
         // Just slow down
-        int speed = map(diffDist, 0, numericCustomDist + SLOW_TRESHOLD, SLOW_SPEED_MIN, 255);
+        int speed = map(diffDist, 0, SLOW_TRESHOLD, SLOW_SPEED_MIN, 255);
         runMotors(DIRECTION_FORWARD, speed);
       } else {
         // Stop
@@ -596,7 +598,7 @@ void preventDamage(int minDistance) {
   if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
     if (diffDist >= STOP_TRESHOLD) {
       // Just slow down
-      int speed = map(diffDist, 0, minDistance + SLOW_TRESHOLD, 0, 255);
+      int speed = map(diffDist, 0, SLOW_TRESHOLD, SLOW_SPEED_MIN, 255);
       runMotors(DIRECTION_FORWARD, speed);
     } else {
       // Stop
@@ -608,14 +610,21 @@ void preventDamage(int minDistance) {
 // VELOCITY
 int measureDirection() {
 
-  int direction = -1;
+  // Take previous direction
+  // int directionSign = -1;
+  int directionSign = (double(0) < robotMeasures.velocityUS) - (robotMeasures.velocityUS < double(0));
 
-  if (robotState.direction == DIRECTION_BACKWARD) {
-    direction = 1;
+
+  if (robotState.direction == DIRECTION_FORWARD) {
+    directionSign = -1;
+  } else if (robotState.direction == DIRECTION_BACKWARD) {
+    directionSign = 1;
   } else if (robotState.direction == DIRECTION_RIGHT || robotState.direction == DIRECTION_LEFT) {
-    direction = 0;
+    directionSign = 0;
   }
-  return direction;
+  // if DIRECTION_STOP keep previous direction, so directionSign is already set
+
+  return directionSign;
 }
 
 void countPulses() {
@@ -627,7 +636,7 @@ bool bluetoothConnection(bool waitConnection) {
 
   digitalWrite(LED_BUILTIN, HIGH);
 
-  // If waitConnection true => wait BLUETOOTH_WAIT_CONNECTION seconds for connection or skip if OK button pressed
+  // If waitConnection true => wait BLUETOOTH_WAIT_CONNECTION ms for connection or skip if OK button pressed
   if (waitConnection) {
     unsigned long previousMillisBluetoothConnected = millis();
     bool skip = false;
@@ -658,25 +667,25 @@ void bluetoothSendMeasure() {
   Serial.println(F("BDT 1.0 START"));
 
   Serial.print(F("Distance_US:"));
-  Serial.println(robotMeasures.distanceUS);
+  Serial.println(robotMeasures.distanceUS, DECIMALS);
 
   Serial.print(F("Distance_US_Filtered:"));
-  Serial.println(robotMeasures.distanceUSFiltered);
+  Serial.println(robotMeasures.distanceUSFiltered, DECIMALS);
 
   Serial.print(F("Distance_OPT:"));
-  Serial.println(robotMeasures.distanceOptical);
+  Serial.println(robotMeasures.distanceOptical, DECIMALS);
 
   Serial.print(F("Rev_per_second:"));
-  Serial.println(robotMeasures.rpsOptical);
+  Serial.println(robotMeasures.rpsOptical, DECIMALS);
 
   Serial.print(F("Velocity_US:"));
-  Serial.println(robotMeasures.velocityUS);
+  Serial.println(robotMeasures.velocityUS, DECIMALS);
 
   Serial.print(F("Velocity_OPT:"));
-  Serial.println(robotMeasures.velocityOptical);
+  Serial.println(robotMeasures.velocityOptical, DECIMALS);
 
   Serial.print(F("Velocity_OPT_Filtered:"));
-  Serial.println(robotMeasures.velocityOpticalFiltered);
+  Serial.println(robotMeasures.velocityOpticalFiltered, DECIMALS);
 
   Serial.println(F("BDT 1.0 END"));
 
