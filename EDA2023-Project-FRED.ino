@@ -583,10 +583,10 @@ void checkDistance() {
 
   // Move to the custom distance if first check
   if (firstCheck) {
-    if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
-      if (diffDist >= STOP_TRESHOLD) {
+    if (diffDist <= STOP_TRESHOLD + SLOW_TRESHOLD) {
+      if (diffDist > STOP_TRESHOLD) {
         // Just slow down
-        int speed = map(diffDist, 0, SLOW_TRESHOLD, SLOW_SPEED_MIN, 255);
+        int speed = map(diffDist, STOP_TRESHOLD, SLOW_TRESHOLD, SLOW_SPEED_MIN, SLOW_SPEED_MAX);
         runMotors(DIRECTION_FORWARD, speed);
       } else {
         // Stop
