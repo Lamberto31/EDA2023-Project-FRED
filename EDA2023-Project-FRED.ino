@@ -47,6 +47,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 #define SLOW_TRESHOLD 50  // [cm] Treshold used to go at max speed until reached
 #define SLOW_SPEED_MIN 50  // [analog] [0-255] Min value for slow speed
 #define SLOW_SPEED_MAX 150  // [analog] [0-255] Max value for slow speed
+#define CHECK_SPEED_MAX 100 // [analog] [0-255] Max value for check speed
 #define SLOW_FACTOR_MAX 15  // [adim] Max value for slowFactor to prevent too slow speed
 #define SLOW_FACTOR_STOP 10  // [adim] Min value for slowFactor to allow stop from checkDistance
 // Custom distance [cm]
@@ -609,10 +610,10 @@ void checkDistance() {
       }
     }
     if (diffDist > STOP_TRESHOLD && robotState.direction != DIRECTION_FORWARD) {
-      runMotors(DIRECTION_FORWARD, SLOW_SPEED_MIN - (speedSlowFactor * 5));
+      runMotors(DIRECTION_FORWARD, CHECK_SPEED_MAX - (speedSlowFactor * 5));
       if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
     } else if (diffDist < -STOP_TRESHOLD && robotState.direction != DIRECTION_BACKWARD) {
-      runMotors(DIRECTION_BACKWARD, SLOW_SPEED_MIN - (speedSlowFactor * 5));
+      runMotors(DIRECTION_BACKWARD, CHECK_SPEED_MAX - (speedSlowFactor * 5));
       if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
     }
   }
