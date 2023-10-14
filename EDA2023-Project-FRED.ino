@@ -45,7 +45,8 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 // Movement control
 #define STOP_TRESHOLD 0.1  // [cm] Tolerance for diffDist
 #define SLOW_TRESHOLD 100  // [cm] Treshold used to go at max speed until reached
-#define SLOW_SPEED_MIN 100  // [analog] [0-255] Min value for low speed
+#define SLOW_SPEED_MIN 100  // [analog] [0-255] Min value for slow speed
+#define SLOW_SPEED_MAX 150  // [analog] [0-255] Max value for slow speed
 #define SLOW_FACTOR_MAX 15  // [adim] Max value for slowFactor to prevent too slow speed
 #define SLOW_FACTOR_STOP 10  // [adim] Min value for slowFactor to allow stop from checkDistance
 // Custom distance [cm]
@@ -622,10 +623,10 @@ void preventDamage(int minDistance) {
   diffDist = robotMeasures.distanceUS - minDistance;
 
   // Difference less than treshold
-  if (diffDist < STOP_TRESHOLD + SLOW_TRESHOLD) {
-    if (diffDist >= STOP_TRESHOLD) {
+  if (diffDist <= STOP_TRESHOLD + SLOW_TRESHOLD) {
+    if (diffDist > STOP_TRESHOLD) {
       // Just slow down
-      int speed = map(diffDist, 0, SLOW_TRESHOLD, SLOW_SPEED_MIN, 255);
+      int speed = map(diffDist, STOP_TRESHOLD, SLOW_TRESHOLD, SLOW_SPEED_MIN, SLOW_SPEED_MAX);
       runMotors(DIRECTION_FORWARD, speed);
     } else {
       // Stop
