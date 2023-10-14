@@ -44,8 +44,8 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 #define WHEEL_DIAMETER 65  //[mm] Diameter of wheel
 // Movement control
 #define STOP_TRESHOLD 0.1  // [cm] Tolerance for diffDist
-#define SLOW_TRESHOLD 100  // [cm] Treshold used to go at max speed until reached
-#define SLOW_SPEED_MIN 100  // [analog] [0-255] Min value for slow speed
+#define SLOW_TRESHOLD 50  // [cm] Treshold used to go at max speed until reached
+#define SLOW_SPEED_MIN 50  // [analog] [0-255] Min value for slow speed
 #define SLOW_SPEED_MAX 150  // [analog] [0-255] Max value for slow speed
 #define SLOW_FACTOR_MAX 15  // [adim] Max value for slowFactor to prevent too slow speed
 #define SLOW_FACTOR_STOP 10  // [adim] Min value for slowFactor to allow stop from checkDistance
