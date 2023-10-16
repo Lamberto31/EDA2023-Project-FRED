@@ -29,6 +29,8 @@ WIFI = True
 
 # Parameters Definition
 PERIOD_SERVER = 15 # seconds
+STATUS_DISCONNECTED = "DISCONNECTED"
+STATUS_CONNECTED = "CONNECTED"
 
 # Get secret values from .env file
 API_KEY = config('API_KEY')
@@ -169,7 +171,8 @@ measures = {
     "field4": 0,
     "field5": 0,
     "field6": 0,
-    "field7": 0
+    "field7": 0,
+    "status": STATUS_CONNECTED
     }
 
 # Init list of dataToSend
@@ -271,6 +274,8 @@ while True:
 
         # Close program if disconnected but after sending data
         if disconnected:
+            r = requests.post("https://api.thingspeak.com/update.json", json = {"api_key": API_KEY, "status": STATUS_DISCONNECTED})
+            debugStamp(str(r.status_code) + " " + str(r.reason))
             debugStamp("Data sent, now the script can be closed")
             ser.close()
             exit()
