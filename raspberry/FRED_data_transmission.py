@@ -235,9 +235,10 @@ while True:
             if not connected:
                 debugStamp("Bluetooth connection established")
                 connected = True
-                debugStamp("Sending connected status to remote server")
-                r = requests.post("https://api.thingspeak.com/update.json", json = {"api_key": API_KEY, "status": STATUS_CONNECTED})
-                debugStamp(str(r.status_code) + " " + str(r.reason))
+                if (WIFI):
+                    debugStamp("Sending connected status to remote server")
+                    r = requests.post("https://api.thingspeak.com/update.json", json = {"api_key": API_KEY, "status": STATUS_CONNECTED})
+                    debugStamp(str(r.status_code) + " " + str(r.reason))
                 # Handle CTRL+C
                 signal.signal(signal.SIGINT, interruptHandler)
             # Read data
@@ -303,9 +304,10 @@ while True:
 
         # Close program if disconnected but after sending data
         if disconnected:
-            debugStamp("Sending disconnected status to remote server")
-            r = requests.post("https://api.thingspeak.com/update.json", json = {"api_key": API_KEY, "status": STATUS_DISCONNECTED})
-            debugStamp(str(r.status_code) + " " + str(r.reason))
+            if (WIFI):
+                debugStamp("Sending disconnected status to remote server")
+                r = requests.post("https://api.thingspeak.com/update.json", json = {"api_key": API_KEY, "status": STATUS_DISCONNECTED})
+                debugStamp(str(r.status_code) + " " + str(r.reason))
             debugStamp("Data sent, now the script can be closed")
             ser.close()
             exit()
