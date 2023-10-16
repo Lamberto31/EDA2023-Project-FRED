@@ -36,6 +36,7 @@ STATUS_FREE = "Free walking"
 STATUS_READING = "Reading"
 STATUS_EXPLORATION = "Exploration"
 STATUS_DATA_TRANSMISSION = "Data transmission"
+STATUS_UNKNOWN = "Unknown"
 
 # Get secret values from .env file
 API_KEY = config('API_KEY')
@@ -80,7 +81,7 @@ def getStatusString(statusNumber):
     elif statusNumber == 4:
         return STATUS_READING
     else:
-        return "UNKNOWN"
+        return STATUS_UNKNOWN
 
 # Insert received data in stored measures
 def insertDataInDict(recvData):
@@ -195,7 +196,7 @@ measures = {
     "field5": 0,
     "field6": 0,
     "field7": 0,
-    "status": STATUS_CONNECTED
+    "status": STATUS_UNKNOWN
     }
 
 # Init list of dataToSend
@@ -232,7 +233,7 @@ while True:
             if not connected:
                 debugStamp("Bluetooth connection established")
                 connected = True
-                debugStamp("Sending disconnected status to remote server")
+                debugStamp("Sending connected status to remote server")
                 r = requests.post("https://api.thingspeak.com/update.json", json = {"api_key": API_KEY, "status": STATUS_CONNECTED})
                 debugStamp(str(r.status_code) + " " + str(r.reason))
                 # Handle CTRL+C
