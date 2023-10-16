@@ -209,6 +209,9 @@ while True:
             if not connected:
                 debugStamp("Bluetooth connection established")
                 connected = True
+                debugStamp("Sending disconnected status to remote server")
+                r = requests.post("https://api.thingspeak.com/update.json", json = {"api_key": API_KEY, "status": STATUS_CONNECTED})
+                debugStamp(str(r.status_code) + " " + str(r.reason))
                 # Handle CTRL+C
                 signal.signal(signal.SIGINT, interruptHandler)
             # Read data
