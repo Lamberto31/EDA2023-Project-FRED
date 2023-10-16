@@ -578,7 +578,7 @@ void resetCustomDistance() {
   memset(customDist, '0', sizeof(customDist));
   customDistIdx = 0;
 }
-
+// TODO: Capire bene come sistemare per ottenere risultati migliori
 void checkDistance() {
   // Measure diffrence between current and custom distance
   diffDist = robotMeasures.distanceUS - numericCustomDist;
