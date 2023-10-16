@@ -118,9 +118,9 @@ def debugStamp(str, level="Default"):
 def stampDataToSend():
     if ((DEBUG == "Default" or DEBUG == "Full") and VIEW_DATA):
         print("\nDATA TO SEND")
-        print("N.\tcreated_at\tfield1\tfield2\tfield3\tfield4\tfield5\tfield6\tfield7\n")
+        print("N.\tcreated_at\tfield1\tfield2\tfield3\tfield4\tfield5\tfield6\tfield7\tstatus\n")
         for i in range(0, len(dataToSend)):
-            print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\n")
+            print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + str(dataToSend[i]["status"]) + "\n")
 
 # Handle CTRL+C
 def interruptHandler(sig, frame):
