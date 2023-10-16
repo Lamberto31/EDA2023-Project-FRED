@@ -103,8 +103,6 @@ def insertDataInDict(recvData):
     elif data[0] == "Velocity_OPT_Filtered":
         measures["field7"] = data[1]
     elif data[0] == "Status":
-        # DEBUG_TEMP
-        print("Status: " + str(data[1]))
         measures["status"] = getStatusString(data[1])
 
 # Conditional print
