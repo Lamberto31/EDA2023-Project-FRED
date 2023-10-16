@@ -720,6 +720,9 @@ void bluetoothSendMeasure() {
   Serial.print(F("Velocity_OPT_Filtered:"));
   Serial.println(robotMeasures.velocityOpticalFiltered, DECIMALS);
 
+  Serial.print(F("Status"));
+  Serial.println(robotState.current);
+
   Serial.println(F("BDT 1.0 END"));
 
   robotMeasures.sent = true;
