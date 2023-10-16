@@ -29,8 +29,13 @@ WIFI = True
 
 # Parameters Definition
 PERIOD_SERVER = 15 # seconds
-STATUS_DISCONNECTED = "DISCONNECTED"
-STATUS_CONNECTED = "CONNECTED"
+STATUS_DISCONNECTED = "Disconnected"
+STATUS_CONNECTED = "Connected"
+STATUS_SETUP = "Setup"
+STATUS_FREE = "Free walking"
+STATUS_READING = "Reading"
+STATUS_EXPLORATION = "Exploration"
+STATUS_DATA_TRANSMISSION = "Data transmission"
 
 # Get secret values from .env file
 API_KEY = config('API_KEY')
@@ -61,6 +66,22 @@ connected = False
 disconnected = False
 
 # FUNCTIONS DEFINITION
+
+# Transform status number in status string
+def getStatusString(statusNumber):
+    if statusNumber == 0:
+        return STATUS_SETUP
+    elif statusNumber == 1:
+        return STATUS_FREE
+    elif statusNumber == 2:
+        return STATUS_EXPLORATION
+    elif statusNumber == 3:
+        return STATUS_DATA_TRANSMISSION
+    elif statusNumber == 4:
+        return STATUS_READING
+    else:
+        return "UNKNOWN"
+
 # Insert received data in stored measures
 def insertDataInDict(recvData):
     decoded = recvData.decode('utf-8')
@@ -80,6 +101,8 @@ def insertDataInDict(recvData):
         measures["field6"] = data[1]
     elif data[0] == "Velocity_OPT_Filtered":
         measures["field7"] = data[1]
+    elif data[0] == "Status":
+        measures["status"] = getStatusString(data[1])
 
 # Conditional print
 def debugStamp(str, level="Default"):
