@@ -303,7 +303,6 @@ void loop() {
             if (composeNumericDistance()) stateChange(&robotState, STATE_SEARCH); else stateChange(&robotState, STATE_FREE);
             debugF("numericCustomDist = ");
             debugln(numericCustomDist);
-            if (bluetoothConnected) bluetoothSendInfo("Custom Distance", numericCustomDist);
             // Feedback led
             digitalWrite(LED_BUILTIN, LOW);
             break;
