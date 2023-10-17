@@ -8,6 +8,9 @@ csvName = 'feeds.csv';
 % Number of values to show
 numPoints = 50;
 
+% Exploration status name
+explorationStatusName = "Exploration";
+
 
 %% GET DATA FROM CSV%%
 path = strcat(logsPath,csvName);
@@ -16,6 +19,9 @@ T = readtable(path, opts);
 
 % Get the last numPoints rows
 T = T(max(1,(end-(numPoints - 1))):end, :);
+
+% Get the rows where status is explorationStatusName
+T = T(T.status == explorationStatusName,:);
 
 % Convert created_at to datetime (inputformat like "2023-10-09T09:49:20+02:00")
 timestampDate = datetime(T.created_at,'InputFormat','yyyy-MM-dd''T''HH:mm:ssXXX','TimeZone','Europe/Zurich');

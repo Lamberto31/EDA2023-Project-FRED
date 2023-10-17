@@ -102,6 +102,8 @@ def insertDataInDict(recvData):
         measures["field6"] = data[1]
     elif data[0] == "Velocity_OPT_Filtered":
         measures["field7"] = data[1]
+    elif data[0] == "Distance_Custom":
+        measures["field8"] = data[1]
     elif data[0] == "Status":
         measures["status"] = getStatusString(data[1])
 
@@ -118,9 +120,9 @@ def debugStamp(str, level="Default"):
 def stampDataToSend():
     if ((DEBUG == "Default" or DEBUG == "Full") and VIEW_DATA):
         print("\nDATA TO SEND")
-        print("N.\tcreated_at\tfield1\tfield2\tfield3\tfield4\tfield5\tfield6\tfield7\tstatus\n")
+        print("N.\tcreated_at\tfield1\tfield2\tfield3\tfield4\tfield5\tfield6\tfield7\tfield8\tstatus\n")
         for i in range(0, len(dataToSend)):
-            print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\t" + str(dataToSend[i]["status"]) + "\n")
+            print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\t" + str(dataToSend[i]["field8"]) + "\t" + str(dataToSend[i]["status"]) + "\n")
 
 # Handle CTRL+C
 def interruptHandler(sig, frame):
@@ -196,6 +198,7 @@ measures = {
     "field5": 0,
     "field6": 0,
     "field7": 0,
+    "field8": 0,
     "status": STATUS_UNKNOWN
     }
 

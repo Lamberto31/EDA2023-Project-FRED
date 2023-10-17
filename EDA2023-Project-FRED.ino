@@ -303,7 +303,6 @@ void loop() {
             if (composeNumericDistance()) stateChange(&robotState, STATE_SEARCH); else stateChange(&robotState, STATE_FREE);
             debugF("numericCustomDist = ");
             debugln(numericCustomDist);
-            if (bluetoothConnected) bluetoothSendInfo("Custom Distance", numericCustomDist);
             // Feedback led
             digitalWrite(LED_BUILTIN, LOW);
             break;
@@ -336,6 +335,7 @@ void loop() {
             runMotors(DIRECTION_STOP, 0);
             speedSlowFactor = 0;
             firstCheck = true;
+            numericCustomDist = 0;
             stateChange(&robotState, STATE_FREE);
             break;
           }
@@ -343,6 +343,7 @@ void loop() {
             runMotors(DIRECTION_STOP, 0);
             speedSlowFactor = 0;
             firstCheck = true;
+            numericCustomDist = 0;
             stateChange(&robotState, STATE_MEASURE);
             break;
           }
@@ -612,6 +613,8 @@ void checkDistance() {
       if (speedSlowFactor >= SLOW_FACTOR_STOP) {
         stateChange(&robotState, STATE_FREE);
         speedSlowFactor = 0;
+        firstCheck = true;
+        numericCustomDist = 0;
       }
     }
     // If difference greater than treshold and not moving forward go ahead and increase slowFactor
@@ -719,6 +722,9 @@ void bluetoothSendMeasure() {
 
   Serial.print(F("Velocity_OPT_Filtered:"));
   Serial.println(robotMeasures.velocityOpticalFiltered, DECIMALS);
+
+  Serial.print(F("Distance_Custom:"));
+  Serial.println(numericCustomDist);
 
   Serial.print(F("Status:"));
   Serial.println(robotState.current);
