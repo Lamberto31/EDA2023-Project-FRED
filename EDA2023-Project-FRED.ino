@@ -336,6 +336,7 @@ void loop() {
             runMotors(DIRECTION_STOP, 0);
             speedSlowFactor = 0;
             firstCheck = true;
+            numericCustomDist = 0;
             stateChange(&robotState, STATE_FREE);
             break;
           }
@@ -343,6 +344,7 @@ void loop() {
             runMotors(DIRECTION_STOP, 0);
             speedSlowFactor = 0;
             firstCheck = true;
+            numericCustomDist = 0;
             stateChange(&robotState, STATE_MEASURE);
             break;
           }
@@ -612,6 +614,8 @@ void checkDistance() {
       if (speedSlowFactor >= SLOW_FACTOR_STOP) {
         stateChange(&robotState, STATE_FREE);
         speedSlowFactor = 0;
+        firstCheck = true;
+        numericCustomDist = 0;
       }
     }
     // If difference greater than treshold and not moving forward go ahead and increase slowFactor
