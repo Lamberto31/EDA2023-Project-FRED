@@ -18,6 +18,7 @@ readAPIKey = string(T.readapiky);
 positionUSId = 1;
 positionOpticalId = 2;
 positionFilteredId = 3;
+positionObjectiveId = 8;
 
 % Velocity
 velocityUSId = 5;
@@ -33,6 +34,7 @@ rpsId = 4;
 [positionUS, time1] = thingSpeakRead(channelID, 'Field', positionUSId, 'NumPoints', numPoints, 'ReadKey', readAPIKey);
 [positionOptical, time2] = thingSpeakRead(channelID, 'Field', positionOpticalId, 'NumPoints', numPoints, 'ReadKey', readAPIKey);
 [positionFiltered, time3] = thingSpeakRead(channelID, 'Field', positionFilteredId, 'NumPoints', numPoints, 'ReadKey', readAPIKey);
+[positionObjective, time8] = thingSpeakRead(channelID, 'Field', positionObjectiveId, 'NumPoints', numPoints, 'ReadKey', readAPIKey);
 
 % Velocity
 [velocityUS, time5] = thingSpeakRead(channelID, 'Field', velocityUSId, 'NumPoints', numPoints, 'ReadKey', readAPIKey);
@@ -53,8 +55,9 @@ hold on
 hplot1 = plot(time1, positionUS, '-o', 'DisplayName', 'US');
 hplot2 = plot(time2, positionOptical, '-*', 'DisplayName', 'Optical');
 hplot3 = plot(time3, positionFiltered, '-pentagram', 'DisplayName', 'Filtered');
+hplot8 = plot(time8, positionObjective, '-.', 'DisplayName', 'Objective');
 title('Position');
-legend([hplot1, hplot2, hplot3]);
+legend([hplot1, hplot2, hplot3, hplot8]);
 grid(ax1,'on')
 hold off
 
