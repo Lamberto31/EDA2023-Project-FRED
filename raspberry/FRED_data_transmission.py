@@ -29,6 +29,14 @@ WIFI = True
 
 # Parameters Definition
 PERIOD_SERVER = 15 # seconds
+STATUS_DISCONNECTED = "Disconnected"
+STATUS_CONNECTED = "Connected"
+STATUS_SETUP = "Setup"
+STATUS_FREE = "Free walking"
+STATUS_READING = "Reading"
+STATUS_EXPLORATION = "Exploration"
+STATUS_DATA_TRANSMISSION = "Data transmission"
+STATUS_UNKNOWN = "Unknown"
 
 # Get secret values from .env file
 API_KEY = config('API_KEY')
@@ -59,6 +67,22 @@ connected = False
 disconnected = False
 
 # FUNCTIONS DEFINITION
+
+# Transform status number in status string
+def getStatusString(statusNumber):
+    if statusNumber == "0":
+        return STATUS_SETUP
+    elif statusNumber == "1":
+        return STATUS_FREE
+    elif statusNumber == "2":
+        return STATUS_EXPLORATION
+    elif statusNumber == "3":
+        return STATUS_DATA_TRANSMISSION
+    elif statusNumber == "4":
+        return STATUS_READING
+    else:
+        return STATUS_UNKNOWN
+
 # Insert received data in stored measures
 def insertDataInDict(recvData):
     decoded = recvData.decode('utf-8')
@@ -78,6 +102,8 @@ def insertDataInDict(recvData):
         measures["field6"] = data[1]
     elif data[0] == "Velocity_OPT_Filtered":
         measures["field7"] = data[1]
+    elif data[0] == "Status":
+        measures["status"] = getStatusString(data[1])
 
 # Conditional print
 def debugStamp(str, level="Default"):
@@ -92,9 +118,9 @@ def debugStamp(str, level="Default"):
 def stampDataToSend():
     if ((DEBUG == "Default" or DEBUG == "Full") and VIEW_DATA):
         print("\nDATA TO SEND")
-        print("N.\tcreated_at\tfield1\tfield2\tfield3\tfield4\tfield5\tfield6\tfield7\n")
+        print("N.\tcreated_at\tfield1\tfield2\tfield3\tfield4\tfield5\tfield6\tfield7\tstatus\n")
         for i in range(0, len(dataToSend)):
-            print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\n")
+            print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\t" + str(dataToSend[i]["status"]) + "\n")
 
 # Handle CTRL+C
 def interruptHandler(sig, frame):
@@ -169,7 +195,8 @@ measures = {
     "field4": 0,
     "field5": 0,
     "field6": 0,
-    "field7": 0
+    "field7": 0,
+    "status": STATUS_UNKNOWN
     }
 
 # Init list of dataToSend
@@ -206,6 +233,10 @@ while True:
             if not connected:
                 debugStamp("Bluetooth connection established")
                 connected = True
+                if (WIFI):
+                    debugStamp("Sending connected status to remote server")
+                    r = requests.post("https://api.thingspeak.com/update.json", json = {"api_key": API_KEY, "status": STATUS_CONNECTED})
+                    debugStamp(str(r.status_code) + " " + str(r.reason))
                 # Handle CTRL+C
                 signal.signal(signal.SIGINT, interruptHandler)
             # Read data
@@ -271,6 +302,10 @@ while True:
 
         # Close program if disconnected but after sending data
         if disconnected:
+            if (WIFI):
+                debugStamp("Sending disconnected status to remote server")
+                r = requests.post("https://api.thingspeak.com/update.json", json = {"api_key": API_KEY, "status": STATUS_DISCONNECTED})
+                debugStamp(str(r.status_code) + " " + str(r.reason))
             debugStamp("Data sent, now the script can be closed")
             ser.close()
             exit()
