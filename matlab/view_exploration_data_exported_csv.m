@@ -37,9 +37,9 @@ hold on
 hplot1 = plot(timestampDate, T.field1, '-o', 'DisplayName', 'US');
 hplot2 = plot(timestampDate, T.field2, '-*', 'DisplayName', 'Optical');
 hplot3 = plot(timestampDate, T.field3, '-pentagram', 'DisplayName', 'Filtered');
-hplot4 = plot(timestampDate, T.field8, '-.', 'DisplayName', 'Objective');
+hplot8 = plot(timestampDate, T.field8, '-.', 'DisplayName', 'Objective');
 title('Position');
-legend([hplot1, hplot2, hplot3, hplot4]);
+legend([hplot1, hplot2, hplot3, hplot8]);
 grid(ax1,'on')
 hold off
 
