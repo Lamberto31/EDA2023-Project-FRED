@@ -224,7 +224,7 @@ void loop() {
   }
   // Check if just stopped and measure time until it's effectively stopped
   if (justStopped) {
-    if (robotMeasures.velocityOptical < 0.1) {
+    if (abs(robotMeasures.velocityOptical) < 0.1) {
       currentMillisStopSpeed = millis();
       stopTime = currentMillisStopSpeed - previousMillisStopSpeed;
       justStopped = false;
