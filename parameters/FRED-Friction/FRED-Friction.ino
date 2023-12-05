@@ -99,6 +99,24 @@ Servo servoH;
 #define debugFln(x)
 #endif
 
+// END BASIC FRED CONFIGURATION
+
+// PARAMETERS FRED CONFIGURATION
+PERIOD_SPEED = 2000 // [ms] Time that, if elapsed, ensure a maximum speed
+// Max speed timer
+unsigned long previousMillisSpeed;
+unsigned long currentMillisSpeed;
+// Boolean to check if moving or not
+bool moving = false;
+// Stop speed timer
+unsigned long previousMillisStopSpeed;
+unsigned long currentMillisStopSpeed;
+// Boolean to check if just stopped
+bool justStopped = false;
+// Measured stop time
+unsigned long stopTime = 0;
+// END PARAMETERS FRED CONFIGURATION
+
 void setup() {
   Serial.begin(9600);
 
