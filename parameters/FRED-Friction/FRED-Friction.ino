@@ -173,8 +173,6 @@ void setup() {
   // Optical
   delay(1000);
   attachInterrupt(digitalPinToInterrupt(PIN_OPTICAL), countPulses, RISING);
-
-  stateChange(&robotState, STATE_FREE);
 }
 
 void loop() {
