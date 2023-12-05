@@ -102,7 +102,7 @@ Servo servoH;
 // END BASIC FRED CONFIGURATION
 
 // PARAMETERS FRED CONFIGURATION
-PERIOD_SPEED = 2000 // [ms] Time that, if elapsed, ensure a maximum speed
+#define PERIOD_SPEED 2000 // [ms] Time that, if elapsed, ensure a maximum speed
 // Max speed timer
 unsigned long previousMillisSpeed;
 unsigned long currentMillisSpeed;
