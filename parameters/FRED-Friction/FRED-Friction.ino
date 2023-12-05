@@ -1,3 +1,4 @@
+// BASIC FRED CONFIGURATION
 #define IR_RECEIVE_PIN 10     // Defined here because the library requires it
 #define NO_LED_FEEDBACK_CODE  // Defined here because the library requires it
 #include "TinyIRReceiver.hpp"
@@ -5,12 +6,6 @@
 
 // Custom library for states handling
 #include "src/States/States.h"
-
-// Custom library for EEPROM memory handling
-#include "src/EepromUtils/EepromUtils.h"
-
-// Custom library for build data to send to remote server
-#include "src/DataHelper/DataHelper.h"
 
 // Digital Pins
 #define PIN_HC05_TX 0
@@ -42,26 +37,9 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 // Optical
 #define WHEEL_ENCODER_HOLES 20  // Holes in wheel encoder (when counted indicates one round)
 #define WHEEL_DIAMETER 65  //[mm] Diameter of wheel
-// Movement control
-#define STOP_TRESHOLD 0.1  // [cm] Tolerance for diffDist
-#define SLOW_TRESHOLD 50  // [cm] Treshold used to go at max speed until reached
-#define SLOW_SPEED_MIN 50  // [analog] [0-255] Min value for slow speed
-#define SLOW_SPEED_MAX 150  // [analog] [0-255] Max value for slow speed
-#define CHECK_SPEED_MAX 100 // [analog] [0-255] Max value for check speed
-#define SLOW_FACTOR_STEP 5  // [adim] Step for slowFactor
-#define SLOW_FACTOR_MAX 10  // [adim] Max value for slowFactor to prevent too slow speed, must be greater than (CHECK_SPEED_MAX / SLOW_FACTOR_STEP) or it will cause error due to negative speed
-#define SLOW_FACTOR_STOP 7  // [adim] Min value for slowFactor to allow stop from checkDistance, must be lower than SLOW_FACTOR_MAX or checkDistance will never exit from STATE_SEARCH
-// Custom distance [cm]
-#define CUSTOM_DIST_MIN 10  // [cm]
-#define CUSTOM_DIST_MAX 500  // [cm]
-#define CUSTOM_DIST_CHAR 4  // [chars] Max value 4, it may cause buffer overflow if greater
 // Bluetooth
 #define BLUETOOTH_WAIT_CONNECTION 10000  // [ms] Wait time to receive Bluetooth connection
 #define PERIOD_BLUETOOTH 500  // [ms] between each message to Bluetooth. Min value 1000, may cause error response if lower
-// TODO_CAPIRE: SERVE O COME MODIFICARE (in particolare il SEND_BUFFER_SIZE che potrebbe diventare PERIOD_BLUETOOTH / PERIOD_MEASURE )
-#define PERIOD_SERVER 15000  // [ms] between each message to server. Min value 15000, may cause error response if lower (server allow one message each 15s)
-#define PERIOD_MEASURETOSEND 3000  // [ms] between each insertion of data into the structure. Suggested value 3000, it's ok if greater but a lower value may cause high memory consumption
-#define SEND_BUFFER_SIZE PERIOD_SERVER / PERIOD_MEASURETOSEND  // [byte] Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
 // Servo
 #define SERVO_HORIZ_CENTER 100 // [angle] [0-180] Angle considered as center for servo, it depends on the construction
 // Feedback Led
@@ -98,27 +76,13 @@ unsigned long currentMillisMeasure;
 // Optical
 volatile int opticalPulses = 0;
 
-// Movement control
-double diffDist;
-bool firstCheck = true;
-byte speedSlowFactor = 0;
-
 // Bluetooth
 bool bluetoothConnected = false;
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
-// TODO_CAPIRE: USARE PER MANDARE PIU' MISURE VIA BLUETOOTH?
-// DataToSend sendBuffer[5];
-DataToSend sendBuffer[SEND_BUFFER_SIZE];
-unsigned int sendBufferIndex = 0;
 
 // Servomotor
 Servo servoH;
-
-// Custom distance [cm]
-char customDist[CUSTOM_DIST_CHAR];
-byte customDistIdx = 0;
-int numericCustomDist = 0;
 
 // Debug macro
 #if DEBUG_ACTIVE == 1
@@ -153,9 +117,6 @@ void setup() {
   // Ultrasonic
   pinMode(PIN_ULTRASONIC_TRIG, OUTPUT);
   pinMode(PIN_ULTRASONIC_ECHO, INPUT);
-
-  // Distance
-  memset(customDist, '0', sizeof(customDist));
 
   // Bluetooth
   pinMode(PIN_BLUETOOTH_STATE, INPUT);
@@ -199,181 +160,22 @@ void setup() {
 }
 
 void loop() {
-  switch (robotState.current) {
-    // Free state handling
-    case STATE_FREE: {
-      if (robotState.direction == DIRECTION_FORWARD) {
-        preventDamage(CUSTOM_DIST_MIN);
+  if (!robotState.cmd_executed) {
+    switch (robotState.command) {
+      case IR_BUTTON_OK: {
+        runMotors(DIRECTION_STOP, 0);
+        break;
       }
-      if (!robotState.cmd_executed) {
-        switch (robotState.command) {
-          case IR_BUTTON_OK: {
-            if (DEBUG_ACTIVE) printMeasures(&robotMeasures);
-            runMotors(DIRECTION_STOP, 0);
-            break;
-          }
-          case IR_BUTTON_UP: {
-            runMotors(DIRECTION_FORWARD, 255);
-            break;
-          }
-          case IR_BUTTON_DOWN: {
-            runMotors(DIRECTION_BACKWARD, 100);
-            break;
-          }
-          case IR_BUTTON_RIGHT: {
-            runMotors(DIRECTION_RIGHT, 100);
-            break;
-          }
-          case IR_BUTTON_LEFT: {
-            runMotors(DIRECTION_LEFT, 100);
-            break;
-          }
-          case IR_BUTTON_HASH: {
-            runMotors(DIRECTION_STOP, 0);
-            stateChange(&robotState, STATE_MEASURE);
-            break;
-          }
-          case IR_BUTTON_AST: {
-            runMotors(DIRECTION_STOP, 0);
-            stateChange(&robotState, STATE_READ);
-            // Feedback led
-            digitalWrite(LED_BUILTIN, HIGH);
-            break;
-          }
-        }
-        stateCmdExecuted(&robotState);
+      case IR_BUTTON_UP: {
+        runMotors(DIRECTION_FORWARD, 255);
+        break;
       }
-      break;
+      case IR_BUTTON_UP: {
+        runMotors(DIRECTION_BACKWARD, 255);
+        break;
+      }
     }
-    // Reading state handling
-    case STATE_READ: {
-      if (!robotState.cmd_executed) {
-        switch (robotState.command) {
-          case IR_BUTTON_1: {
-            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
-            readCustomDistance('1');
-            break;
-          }
-          case IR_BUTTON_2: {
-            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
-            readCustomDistance('2');
-            break;
-          }
-          case IR_BUTTON_3: {
-            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
-            readCustomDistance('3');
-            break;
-          }
-          case IR_BUTTON_4: {
-            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
-            readCustomDistance('4');
-            break;
-          }
-          case IR_BUTTON_5: {
-            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
-            readCustomDistance('5');
-            break;
-          }
-          case IR_BUTTON_6: {
-            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
-            readCustomDistance('6');
-            break;
-          }
-          case IR_BUTTON_7: {
-            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
-            readCustomDistance('7');
-            break;
-          }
-          case IR_BUTTON_8: {
-            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
-            readCustomDistance('8');
-            break;
-          }
-          case IR_BUTTON_9: {
-            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
-            readCustomDistance('9');
-            break;
-          }
-          case IR_BUTTON_0: {
-            ledFeedback(FEEDBACK_BLINK_READ_RECEIVE, FEEDBACK_DURATION_READ_RECEIVE, true);
-            readCustomDistance('0');
-            break;
-          }
-          case IR_BUTTON_AST: {
-            if (composeNumericDistance()) stateChange(&robotState, STATE_SEARCH); else stateChange(&robotState, STATE_FREE);
-            debugF("numericCustomDist = ");
-            debugln(numericCustomDist);
-            // Feedback led
-            digitalWrite(LED_BUILTIN, LOW);
-            break;
-          }
-          case IR_BUTTON_OK: {
-            resetCustomDistance();
-            stateChange(&robotState, STATE_FREE);
-            // Feedback led
-            digitalWrite(LED_BUILTIN, LOW);
-            break;
-          }
-          case IR_BUTTON_HASH: {
-            resetCustomDistance();
-            stateChange(&robotState, STATE_MEASURE);
-            // Feedback led
-            digitalWrite(LED_BUILTIN, LOW);
-            break;
-          }
-        }
-      stateCmdExecuted(&robotState);
-      }
-      break;
-    }
-    // Search state handling
-    case STATE_SEARCH: {
-      checkDistance();
-      if (!robotState.cmd_executed) {
-        switch (robotState.command) {
-          case IR_BUTTON_OK: {
-            runMotors(DIRECTION_STOP, 0);
-            speedSlowFactor = 0;
-            firstCheck = true;
-            numericCustomDist = 0;
-            stateChange(&robotState, STATE_FREE);
-            break;
-          }
-          case IR_BUTTON_HASH: {
-            runMotors(DIRECTION_STOP, 0);
-            speedSlowFactor = 0;
-            firstCheck = true;
-            numericCustomDist = 0;
-            stateChange(&robotState, STATE_MEASURE);
-            break;
-          }
-        }
-        stateCmdExecuted(&robotState);
-      }
-      break;
-    }
-    // Measure state handling
-    // TODO: Capire che fare di questo stato, al momento non fa più nulla
-    case STATE_MEASURE: {
-      sendBufferIndex = 0;
-      memset(sendBuffer, 0, sizeof(sendBuffer));
-      if (!robotState.cmd_executed) {
-        switch (robotState.command) {
-          case IR_BUTTON_OK: {
-            stateChange(&robotState, STATE_FREE);
-            break;
-          }
-          case IR_BUTTON_AST: {
-            stateChange(&robotState, STATE_READ);
-            // Feedback led
-            digitalWrite(LED_BUILTIN, HIGH);
-            break;
-          }
-        }
-        stateCmdExecuted(&robotState);
-      }
-      break;
-    }
+    stateCmdExecuted(&robotState);
   }
   // Actions performed for each state
   // Measure
@@ -392,19 +194,6 @@ void loop() {
 
     bluetoothConnection(false);
     if (bluetoothConnected && !robotMeasures.sent) bluetoothSendMeasure();
-    previousMillisMeasureToSend = millis();
-  }
-
-  // TODO_CAPIRE: CAPIRE SE SERVE
-  // Insert new data in sendBuffer
-  currentMillisMeasureToSend = millis();
-  if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
-    // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, robotMeasures.distanceUS, robotMeasures.distanceUSFiltered);
-    insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND / 1000) * sendBufferIndex, robotMeasures, sendBufferIndex, SEND_BUFFER_SIZE);
-    sendBufferIndex++;
-
-    if (DEBUG_ACTIVE) readAndPrintData(&sendBuffer[0], SEND_BUFFER_SIZE);
-
     previousMillisMeasureToSend = millis();
   }
 }
@@ -538,112 +327,6 @@ double measureDistance() {
   distance = 0.0343 * tripTime / 2.0;
 
   return distance;
-}
-
-void readCustomDistance(char digit) {
-  if (customDistIdx == (CUSTOM_DIST_CHAR - 1)) {
-    resetCustomDistance();
-    stateChange(&robotState, STATE_FREE);
-    // Feedback led
-    digitalWrite(LED_BUILTIN, LOW);
-  } else {
-    customDist[customDistIdx] = digit;
-    customDistIdx++;
-  }
-}
-
-bool composeNumericDistance() {
-  // No digits
-  if (customDistIdx == 0) {
-    numericCustomDist = 0;
-    return false;
-  }
-  // Create numericCustomDist
-  char buff[customDistIdx + 1];
-  for (byte i = 0; i <= customDistIdx - 1; i++) {
-    buff[i] = customDist[i];
-  }
-  buff[customDistIdx] = '\0';
-  numericCustomDist = atoi(buff);
-  resetCustomDistance();
-
-  // Check if not in [CUSTOM_DIST_MIN, CUSTOM_DIST_MAX]
-  if (numericCustomDist < CUSTOM_DIST_MIN || numericCustomDist > CUSTOM_DIST_MAX) {
-    numericCustomDist = 0;
-    return false;
-  }
-  return true;
-}
-
-void resetCustomDistance() {
-  memset(customDist, '0', sizeof(customDist));
-  customDistIdx = 0;
-}
-// TODO: Capire bene come sistemare per ottenere risultati migliori
-void checkDistance() {
-  // Measure diffrence between current and custom distance
-  diffDist = robotMeasures.distanceUS - numericCustomDist;
-
-  // Move to the custom distance if first check
-  if (firstCheck) {
-    if (diffDist <= STOP_TRESHOLD + SLOW_TRESHOLD) {
-      if (diffDist > STOP_TRESHOLD) {
-        // Just slow down
-        int speed = map(diffDist, STOP_TRESHOLD, SLOW_TRESHOLD, SLOW_SPEED_MIN, SLOW_SPEED_MAX);
-        runMotors(DIRECTION_FORWARD, speed);
-      } else {
-        // Stop
-        runMotors(DIRECTION_STOP, 0);
-        firstCheck = false;
-      }
-    } else {
-      runMotors(DIRECTION_FORWARD, 255);
-    }
-  }
-
-  // Adjust if not first check
-  if (!firstCheck) {
-    // If difference less than treshold stop and reduce speed, if too low stop checking and go to free state
-    if (abs(diffDist) <= STOP_TRESHOLD) {
-      // Stop
-      runMotors(DIRECTION_STOP, 0);
-      // Check and ajust slow factor
-      if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
-      // Stop if slow factor enough high
-      if (speedSlowFactor >= SLOW_FACTOR_STOP) {
-        stateChange(&robotState, STATE_FREE);
-        speedSlowFactor = 0;
-        firstCheck = true;
-        numericCustomDist = 0;
-      }
-    }
-    // If difference greater than treshold and not moving forward go ahead and increase slowFactor
-    if (diffDist > STOP_TRESHOLD && robotState.direction != DIRECTION_FORWARD) {
-      runMotors(DIRECTION_FORWARD, CHECK_SPEED_MAX - (speedSlowFactor * SLOW_FACTOR_STEP));
-      if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
-    // If difference less than treshold and not moving backward go backward and increase slowFactor
-    } else if (diffDist < -STOP_TRESHOLD && robotState.direction != DIRECTION_BACKWARD) {
-      runMotors(DIRECTION_BACKWARD, CHECK_SPEED_MAX - (speedSlowFactor * SLOW_FACTOR_STEP));
-      if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
-    }
-  }
-}
-
-void preventDamage(int minDistance) {
-  // Measure distance and difference from custom
-  diffDist = robotMeasures.distanceUS - minDistance;
-
-  // Difference less than treshold
-  if (diffDist <= STOP_TRESHOLD + SLOW_TRESHOLD) {
-    if (diffDist > STOP_TRESHOLD) {
-      // Just slow down
-      int speed = map(diffDist, STOP_TRESHOLD, SLOW_TRESHOLD, SLOW_SPEED_MIN, SLOW_SPEED_MAX);
-      runMotors(DIRECTION_FORWARD, speed);
-    } else {
-      // Stop
-      runMotors(DIRECTION_STOP, 0);
-    }
-  }
 }
 
 // VELOCITY
