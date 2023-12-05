@@ -200,18 +200,26 @@ void loop() {
     stateCmdExecuted(&robotState);
   }
   // Check if moving and stop if PERIOD_SPEED elapsed
-  currentMillisSpeed = millis();
-  if (currentMillisSpeed - previousMillisSpeed >= PERIOD_SPEED && moving) {
-    runMotors(DIRECTION_STOP, 0);
-    // Begin stop speed timer
-    previousMillisStopSpeed = millis();
-    moving = false;
-    justStopped = true;
+  if (moving) {
+    bluetoothSendInfo("Increasing speed", robotMeasures.velocityOptical);
+    currentMillisSpeed = millis();
+    if (currentMillisSpeed - previousMillisSpeed >= PERIOD_SPEED) {
+      runMotors(DIRECTION_STOP, 0);
+      // Begin stop speed timer
+      previousMillisStopSpeed = millis();
+      moving = false;
+      justStopped = true;
+    }
   }
+  
   // Measure
   currentMillisMeasure = millis();
   if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
     measureAll(currentMillisMeasure - previousMillisMeasure);
+    if (justStopped) {
+      bluetoothSendInfo("Decreasing distance", robotMeasures.distanceUS);
+      bluetoothSendInfo("Decreasing speed", robotMeasures.velocityOptical);
+    }
     previousMillisMeasure = millis();
   }
   // Check if just stopped and measure time until it's effectively stopped
@@ -221,14 +229,16 @@ void loop() {
       stopTime = currentMillisStopSpeed - previousMillisStopSpeed;
       justStopped = false;
       bluetoothSendInfo("StopTime", stopTime);
+      bluetoothSendInfo("Distance", robotMeasures.distanceUS);
+      bluetoothSendInfo("Speed", robotMeasures.velocityOptical);
     }
   }
   // Send measure with Bluetooth
-  if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
+  /* if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
     bluetoothConnection(false);
     if (bluetoothConnected && !robotMeasures.sent) bluetoothSendMeasure();
     previousMillisMeasureToSend = millis();
-  }
+  } */
 }
 
 // This is the function, which is called if a complete ir command was received
