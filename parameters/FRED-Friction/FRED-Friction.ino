@@ -178,38 +178,55 @@ void setup() {
 }
 
 void loop() {
+  // Handle IR commands
   if (!robotState.cmd_executed) {
     switch (robotState.command) {
       case IR_BUTTON_OK: {
         runMotors(DIRECTION_STOP, 0);
+        moving = false;
         break;
       }
       case IR_BUTTON_UP: {
         runMotors(DIRECTION_FORWARD, 255);
+        previousMillisSpeed = millis();
+        moving = true;
         break;
       }
-      case IR_BUTTON_UP: {
+      case IR_BUTTON_DOWN: {
         runMotors(DIRECTION_BACKWARD, 255);
+        previousMillisSpeed = millis();
+        moving = true;
         break;
       }
     }
     stateCmdExecuted(&robotState);
   }
-  // Actions performed for each state
+  // Check if moving and stop if PERIOD_SPEED elapsed
+  currentMillisSpeed = millis();
+  if (currentMillisSpeed - previousMillisSpeed >= PERIOD_SPEED && moving) {
+    runMotors(DIRECTION_STOP, 0);
+    // Begin stop speed timer
+    previousMillisStopSpeed = millis();
+    moving = false;
+    justStopped = true;
+  }
   // Measure
   currentMillisMeasure = millis();
   if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
     measureAll(currentMillisMeasure - previousMillisMeasure);
     previousMillisMeasure = millis();
   }
-
+  // Check if just stopped and measure time until it's effectively stopped
+  if (justStopped) {
+    if (robotMeasures.velocityOptical < 0.1) {
+      currentMillisStopSpeed = millis();
+      stopTime = currentMillisStopSpeed - previousMillisStopSpeed;
+      justStopped = false;
+      bluetoothSendInfo("StopTime", stopTime);
+    }
+  }
   // Send measure with Bluetooth
   if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
-    servoH.attach(PIN_SERVO_HORIZ);
-    servoH.write(SERVO_HORIZ_CENTER);
-    delay(100);
-    servoH.detach();
-
     bluetoothConnection(false);
     if (bluetoothConnected && !robotMeasures.sent) bluetoothSendMeasure();
     previousMillisMeasureToSend = millis();
