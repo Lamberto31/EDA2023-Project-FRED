@@ -317,8 +317,6 @@ void runMotors(byte direction, byte speed) {
 // MEASURE
 void measureAll(unsigned long deltaT) {
   robotMeasures.sent = false;
-  double prevDistance = robotMeasures.distanceUS;
-  // double prevFilteredDistance = robotMeasures.distanceUSFiltered;
   
   int pulses = opticalPulses;
   opticalPulses = 0;
@@ -328,23 +326,14 @@ void measureAll(unsigned long deltaT) {
 
   // Distance from ultrasonic
   robotMeasures.distanceUS = measureDistance();
-  //DEBUG_TEMP
-  robotMeasures.distanceUSFiltered = int(robotMeasures.distanceUS);
 
-  // Velocity from ultrasonic
-  robotMeasures.velocityUS = (robotMeasures.distanceUS - prevDistance) / (deltaT * 0.001);
-
-  // Position from optical
+  // Velocity from optical
   directionSign = measureDirection();
   travelledRevolution = (pulses / (double)WHEEL_ENCODER_HOLES);
   travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution * directionSign;
-  robotMeasures.distanceOptical = travelledDistance + prevDistance;
 
-  // Velocity from optical
   robotMeasures.rpsOptical = travelledRevolution / (deltaT * 0.001);
   robotMeasures.velocityOptical = travelledDistance / (deltaT * 0.001);
-  //DEBUG_TEMP
-  robotMeasures.velocityOpticalFiltered = int(robotMeasures.velocityOptical);
 }
 
 // DISTANCE
@@ -423,26 +412,11 @@ void bluetoothSendMeasure() {
   Serial.print(F("Distance_US:"));
   Serial.println(robotMeasures.distanceUS, DECIMALS);
 
-  Serial.print(F("Distance_US_Filtered:"));
-  Serial.println(robotMeasures.distanceUSFiltered, DECIMALS);
-
-  Serial.print(F("Distance_OPT:"));
-  Serial.println(robotMeasures.distanceOptical, DECIMALS);
-
   Serial.print(F("Rev_per_second:"));
   Serial.println(robotMeasures.rpsOptical, DECIMALS);
 
-  Serial.print(F("Velocity_US:"));
-  Serial.println(robotMeasures.velocityUS, DECIMALS);
-
   Serial.print(F("Velocity_OPT:"));
   Serial.println(robotMeasures.velocityOptical, DECIMALS);
-
-  Serial.print(F("Velocity_OPT_Filtered:"));
-  Serial.println(robotMeasures.velocityOpticalFiltered, DECIMALS);
-
-  Serial.print(F("Distance_Custom:"));
-  Serial.println(numericCustomDist);
 
   Serial.print(F("Status:"));
   Serial.println(robotState.current);
