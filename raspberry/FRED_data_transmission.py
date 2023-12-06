@@ -250,12 +250,12 @@ if PARAMS:
         "attempt": 1,
         "position": 0,
         "speed": 0,
+        "currentTime": 0,
         "stopTime": 0,
         }
     # Init boolean dictionary used to write csv
     writeCsvParams = {
-        "position": False,
-        "speed": False,
+        "currentTime": False,
         "stopTime": False,
         }
     # Define function that fill params dictionary
@@ -265,11 +265,12 @@ if PARAMS:
         data = clean.split(":")
         if "distance" in data[0].lower():
             params["distance"] = data[1]
-            writeCsvParams["position"] = True
         elif "speed" in data[0].lower():
             params["speed"] = data[1]
-            writeCsvParams["speed"] = True
-        elif "stoptime" in data[0].lower():
+        elif "current" in data[0].lower():
+            params["currentTime"] = data[1]
+            writeCsvParams["currentTime"] = True
+        elif "stop" in data[0].lower():
             params["stopTime"] = data[1]
             writeCsvParams["stopTime"] = True
         elif "attempt" in data[0].lower():
@@ -283,16 +284,14 @@ if PARAMS:
     # Define function that write a row in csv if enough data are present
     def writeParamsCsv():
         if writeCsvParams["stopTime"]:
-            paramsCsvWriter.writerow({"attempt": params["attempt"], "position": params["position"], "speed": params["speed"], "stopTime": params["stopTime"]})
+            paramsCsvWriter.writerow({"attempt": params["attempt"], "currentTime": params["currentTime"], "position": params["position"], "speed": params["speed"], "stopTime": params["stopTime"]})
             paramsCsvFile.flush()
-            writeCsvParams["position"] = False
-            writeCsvParams["speed"] = False
+            writeCsvParams["currentTime"] = False
             writeCsvParams["stopTime"] = False
-        if writeCsvParams["position"] and writeCsvParams["speed"]:
-            paramsCsvWriter.writerow({"attempt": params["attempt"], "position": params["position"], "speed": params["speed"]})
+        elif writeCsvParams["currentTime"]:
+            paramsCsvWriter.writerow({"attempt": params["attempt"], "currentTime": params["currentTime"], "position": params["position"], "speed": params["speed"]})
             paramsCsvFile.flush()
-            writeCsvParams["position"] = False
-            writeCsvParams["speed"] = False
+            writeCsvParams["currentTime"] = False
         
 
 
