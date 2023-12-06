@@ -220,6 +220,7 @@ void loop() {
     if (bluetoothConnected) {
       bluetoothSendParams("Increasing distance", robotMeasures.distanceUS, true); 
       bluetoothSendParams("Increasing speed", robotMeasures.velocityOptical, true);
+    }
     currentMillisSpeed = millis();
     if (currentMillisSpeed - previousMillisSpeed >= PERIOD_SPEED) {
       runMotors(DIRECTION_STOP, 0);
