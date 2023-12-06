@@ -243,6 +243,59 @@ csvFile.flush()
 # Init last execution time
 lastSendToServer = time.time()
 
+# PARAMS PROCESSING
+if PARAMS:
+    # Init dictionary that contains measures (declared as field as in the remote server)
+    params = {
+        "attempt": 1,
+        "position": 0,
+        "speed": 0,
+        "stopTime": 0,
+        }
+    # Init boolean dictionary used to write csv
+    writeCsvParams = {
+        "position": False,
+        "speed": False,
+        "stopTime": False,
+        }
+    # Define function that fill params dictionary
+    def insertParamsInDict(recvParams):
+        decoded = recvParams.decode('utf-8')
+        clean = decoded[0:-2]
+        data = clean.split(":")
+        if "distance" in data[0].lower():
+            params["distance"] = data[1]
+            writeCsvParams["position"] = True
+        elif "speed" in data[0].lower():
+            params["speed"] = data[1]
+            writeCsvParams["speed"] = True
+        elif "stoptime" in data[0].lower():
+            params["stopTime"] = data[1]
+            writeCsvParams["stopTime"] = True
+        elif "attempt" in data[0].lower():
+            params["attempt"] += 1
+    # Create csv params file and write header
+    paramsCsvFileName = "FRED_params_" + timestamp + ".csv"
+    paramsCsvFile = open(os.path.join("./logs", paramsCsvFileName), mode='w')
+    paramsCsvWriter = csv.DictWriter(paramsCsvFile, fieldnames=params.keys())
+    paramsCsvWriter.writeheader()
+    paramsCsvFile.flush()
+    # Define function that write a row in csv if enough data are present
+    def writeParamsCsv():
+        if writeCsvParams["stopTime"]:
+            paramsCsvWriter.writerow({"attempt": params["attempt"], "position": params["position"], "speed": params["speed"], "stopTime": params["stopTime"]})
+            paramsCsvFile.flush()
+            writeCsvParams["position"] = False
+            writeCsvParams["speed"] = False
+            writeCsvParams["stopTime"] = False
+        if writeCsvParams["position"] and writeCsvParams["speed"]:
+            paramsCsvWriter.writerow({"attempt": params["attempt"], "position": params["position"], "speed": params["speed"]})
+            paramsCsvFile.flush()
+            writeCsvParams["position"] = False
+            writeCsvParams["speed"] = False
+        
+
+
 # MAIN LOOP: receive data from Bluetooth and send to remote server via WiFi
 debugStamp("Starting main loop")
 while True:
@@ -286,6 +339,15 @@ while True:
                 debugStamp(str(recv, 'utf-8'), "Full")
                 info = ser.readline().decode('utf-8')[0:-2]
                 debugStamp(str(info))
+            # If contains "PARAMS" it's a PARAMS messagge
+            elif "PARAMS" in str(recv):
+                debugStamp("New BDT message: PARAMS")
+                debugStamp(str(recv, 'utf-8'), "Full")
+                params = ser.readline()
+                if PARAMS:
+                    insertParamsInDict(params)
+                    writeParamsCsv()
+                debugStamp(str(params.decode('utf-8')[0:-2]))
     except Exception as e:
         # If there is an error, handle the closing of the program
         if connected:
