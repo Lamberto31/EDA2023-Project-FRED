@@ -211,6 +211,7 @@ void loop() {
       if (bluetoothConnected) {
         bluetoothSendParams("Decreasing distance", robotMeasures.distanceUS, true);
         bluetoothSendParams("Decreasing speed", robotMeasures.velocityOptical, true);
+        bluetoothSendParams("Current time", millis() - previousMillisSpeed, false);
       }
     }
     previousMillisMeasure = millis();
@@ -220,6 +221,7 @@ void loop() {
     if (bluetoothConnected) {
       bluetoothSendParams("Increasing distance", robotMeasures.distanceUS, true); 
       bluetoothSendParams("Increasing speed", robotMeasures.velocityOptical, true);
+      bluetoothSendParams("Current time", millis() - previousMillisSpeed, false);
     }
     currentMillisSpeed = millis();
     if (currentMillisSpeed - previousMillisSpeed >= PERIOD_SPEED) {
@@ -240,7 +242,8 @@ void loop() {
         bluetoothSendParams("Attempt", attempt++, false);
         bluetoothSendParams("Distance", robotMeasures.distanceUS, true);
         bluetoothSendParams("Speed", robotMeasures.velocityOptical, true);
-        bluetoothSendParams("StopTime", stopTime, false);
+        bluetoothSendParams("Current time", millis() - previousMillisSpeed, false);
+        bluetoothSendParams("Stop time", stopTime, false);
       }
     }
   }
