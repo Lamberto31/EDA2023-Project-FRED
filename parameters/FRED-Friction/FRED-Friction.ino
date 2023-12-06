@@ -327,7 +327,6 @@ void measureAll(unsigned long deltaT) {
   
   int pulses = opticalPulses;
   opticalPulses = 0;
-  int directionSign;
   double travelledRevolution;
   double travelledDistance;
 
@@ -335,9 +334,8 @@ void measureAll(unsigned long deltaT) {
   robotMeasures.distanceUS = measureDistance();
 
   // Velocity from optical
-  directionSign = measureDirection();
   travelledRevolution = (pulses / (double)WHEEL_ENCODER_HOLES);
-  travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution * directionSign;
+  travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution;
 
   robotMeasures.rpsOptical = travelledRevolution / (deltaT * 0.001);
   robotMeasures.velocityOptical = travelledDistance / (deltaT * 0.001);
@@ -361,25 +359,6 @@ double measureDistance() {
 }
 
 // VELOCITY
-int measureDirection() {
-
-  // Take previous direction
-  // int directionSign = -1;
-  int directionSign = (double(0) < robotMeasures.velocityUS) - (robotMeasures.velocityUS < double(0));
-
-
-  if (robotState.direction == DIRECTION_FORWARD) {
-    directionSign = -1;
-  } else if (robotState.direction == DIRECTION_BACKWARD) {
-    directionSign = 1;
-  } else if (robotState.direction == DIRECTION_RIGHT || robotState.direction == DIRECTION_LEFT) {
-    directionSign = 0;
-  }
-  // if DIRECTION_STOP keep previous direction, so directionSign is already set
-
-  return directionSign;
-}
-
 void countPulses() {
   opticalPulses++;
 }
