@@ -11,7 +11,8 @@ usage="Usage:\n
         \t-h, --help\t\t show this help text\n
         \t-d, --debug {0,1,2}\t enable debug mode for python script, 0 for none, 1 for default, 2 for full\n
         \t-v, --viewdata {0,1}\t enable tabular data visualization for python script, 0 for disable, 2 for enable. Works only if debug is not none\n
-        \t-w, --wifi {0,1}\t enable wifi mode for python script, 0 for disable, 2 for enable\n
+        \t-w, --wifi {0,1}\t enable wifi mode for python script, 0 for disable, 1 for enable\n
+        \t-p, --params {0,1}\t enable params processing for python script, 0 for disable, 1 for enable\n
     Note:\n
         \tIf you want to pass optional arguments it's necessary to do with space! See the examples\n
     Examples:\n
@@ -24,6 +25,7 @@ HELP=0
 DEBUG=1
 VIEW_DATA=1
 WIFI=1
+PARAMS=0
 
 # Parse arguments
 POSITIONAL_ARGS=()
@@ -46,6 +48,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     -w|--wifi)
       WIFI="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -p|--params)
+      PARAMS="$2"
       shift # past argument
       shift # past value
       ;;
@@ -97,4 +104,4 @@ fi
     fi
 
 echo "Executing python script..."
-python3 FRED_data_transmission.py -d $DEBUG -v $VIEW_DATA -w $WIFI
+python3 FRED_data_transmission.py -d $DEBUG -v $VIEW_DATA -w $WIFI -p $PARAMS

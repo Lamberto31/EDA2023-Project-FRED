@@ -27,6 +27,11 @@ VIEW_DATA = True
 # True: enable wifi connection
 WIFI = True
 
+# PARAMS can be 2 value: False, True, Can be passed as argument (int from 0 to 1)
+# False: disable params processing
+# True: enable params processing
+PARAMS = False
+
 # Parameters Definition
 PERIOD_SERVER = 15 # seconds
 STATUS_DISCONNECTED = "Disconnected"
@@ -58,6 +63,10 @@ parser.add_argument("--wifi", "-w", help="Enable/disable wifi connection:\
                     0 is disable\
                     1 is enable\
                     ", type=int, choices=[0, 1], default=1)
+parser.add_argument("--params", "-p", help="Enable/disable params processing:\
+                    0 is disable\
+                    1 is enable\
+                    ", type=int, choices=[0, 1], default=0)
 args = parser.parse_args()
 
 # Connection status
@@ -155,6 +164,13 @@ def interpretWifiArguments():
     elif args.wifi == 1:
         WIFI = True
     return WIFI
+# PARAMS
+def interpretParamsArguments():
+    if args.params == 0:
+        PARAMS = False
+    elif args.params == 1:
+        PARAMS = True
+    return PARAMS
 
 # INITIAL CONFIGURATION
 
@@ -165,12 +181,14 @@ print("Press CTRL+C or send SIGINT to safely close the script")
 DEBUG = interpretDebugArguments()
 WIFI = interpretWifiArguments()
 VIEW_DATA = interpretViewDataArguments()
+PARAMS = interpretParamsArguments()
 
 # Print initial configuration
 print("Functionalities configuration")
 print("DEBUG: " + DEBUG + " (" + str(args.debug) + ")")
 print("VIEW_DATA: " + str(VIEW_DATA) + " (" + str(args.viewdata) + ")")
 print("WIFI: " + str(WIFI) + " (" + str(args.wifi) + ")")
+print("PARAMS: " + str(PARAMS) + " (" + str(args.params) + ")")
 
 # Serial connection configuration
 ser = serial.Serial(
