@@ -217,7 +217,9 @@ void loop() {
   }
   // Check if moving and stop if PERIOD_SPEED elapsed
   if (moving) {
-    if (bluetoothConnected) bluetoothSendParams("Increasing speed", robotMeasures.velocityOptical, true);
+    if (bluetoothConnected) {
+      bluetoothSendParams("Increasing distance", robotMeasures.distanceUS, true); 
+      bluetoothSendParams("Increasing speed", robotMeasures.velocityOptical, true);
     currentMillisSpeed = millis();
     if (currentMillisSpeed - previousMillisSpeed >= PERIOD_SPEED) {
       runMotors(DIRECTION_STOP, 0);
@@ -235,9 +237,9 @@ void loop() {
       justStopped = false;
       if (bluetoothConnected) {
         bluetoothSendParams("Attempt", attempt++, false);
-        bluetoothSendParams("StopTime", stopTime, false);
         bluetoothSendParams("Distance", robotMeasures.distanceUS, true);
         bluetoothSendParams("Speed", robotMeasures.velocityOptical, true);
+        bluetoothSendParams("StopTime", stopTime, false);
       }
     }
   }
