@@ -204,14 +204,14 @@ void loop() {
   if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
     measureAll(currentMillisMeasure - previousMillisMeasure);
     if (justStopped) {
-      bluetoothSendInfo("Decreasing distance", robotMeasures.distanceUS);
-      bluetoothSendInfo("Decreasing speed", robotMeasures.velocityOptical);
+      bluetoothSendParams("Decreasing distance", robotMeasures.distanceUS, true);
+      bluetoothSendParams("Decreasing speed", robotMeasures.velocityOptical, true);
     }
     previousMillisMeasure = millis();
   }
   // Check if moving and stop if PERIOD_SPEED elapsed
   if (moving) {
-    bluetoothSendInfo("Increasing speed", robotMeasures.velocityOptical);
+    bluetoothSendParams("Increasing speed", robotMeasures.velocityOptical, true);
     currentMillisSpeed = millis();
     if (currentMillisSpeed - previousMillisSpeed >= PERIOD_SPEED) {
       runMotors(DIRECTION_STOP, 0);
@@ -227,17 +227,11 @@ void loop() {
       currentMillisStopSpeed = millis();
       stopTime = currentMillisStopSpeed - previousMillisStopSpeed;
       justStopped = false;
-      bluetoothSendInfo("StopTime", stopTime);
-      bluetoothSendInfo("Distance", robotMeasures.distanceUS);
-      bluetoothSendInfo("Speed", robotMeasures.velocityOptical);
+      bluetoothSendParams("StopTime", stopTime, false);
+      bluetoothSendParams("Distance", robotMeasures.distanceUS, true);
+      bluetoothSendParams("Speed", robotMeasures.velocityOptical, true);
     }
   }
-  // Send measure with Bluetooth
-  /* if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
-    bluetoothConnection(false);
-    if (bluetoothConnected && !robotMeasures.sent) bluetoothSendMeasure();
-    previousMillisMeasureToSend = millis();
-  } */
 }
 
 // This is the function, which is called if a complete ir command was received
@@ -412,32 +406,12 @@ bool bluetoothConnection(bool waitConnection) {
   return bluetoothConnected;
 }
 
-void bluetoothSendMeasure() {
+void bluetoothSendParams(const char* variable, int value, bool decimal) {
   //BDT: Bluetooth Data Transmission
-  Serial.println(F("BDT 1.0 START"));
-
-  Serial.print(F("Distance_US:"));
-  Serial.println(robotMeasures.distanceUS, DECIMALS);
-
-  Serial.print(F("Rev_per_second:"));
-  Serial.println(robotMeasures.rpsOptical, DECIMALS);
-
-  Serial.print(F("Velocity_OPT:"));
-  Serial.println(robotMeasures.velocityOptical, DECIMALS);
-
-  Serial.print(F("Status:"));
-  Serial.println(robotState.current);
-
-  Serial.println(F("BDT 1.0 END"));
-
-  robotMeasures.sent = true;
-}
-
-void bluetoothSendInfo(const char* variable, int value) {
-  //BDT: Bluetooth Data Transmission
-  Serial.println(F("BDT 1.0 INFO"));
+  Serial.println(F("BDT 1.0 PARAMS"));
 
   Serial.print(variable);
   Serial.print(F(": "));
-  Serial.println(value);
+  if (decimal) Serial.println(value, DECIMALS);
+  else Serial.println(value);
 }
