@@ -248,9 +248,9 @@ if PARAMS:
     # Init dictionary that contains measures (declared as field as in the remote server)
     params = {
         "attempt": 1,
+        "currentTime": 0,
         "position": 0,
         "speed": 0,
-        "currentTime": 0,
         "stopTime": 0,
         }
     # Init boolean dictionary used to write csv
