@@ -28,6 +28,37 @@ for i = 1:numAttempts
     T_attempts{i} = T(idx, :);
 end
 
+%% STATISTICS %%
+% Speed
+T_speed = cell(numAttempts,1);
+speed_max = zeros(numAttempts,1);
+speed_mean = zeros(numAttempts,1);
+for i = 1:numAttempts
+    % Take only speed when increasing and not 0
+    idx_speed_notNull = T_attempts{i}.speed ~= 0 & T_attempts{i}.note == "Increasing";
+    T_speed{i} = T_attempts{i}(idx_speed_notNull, :);
+    % Statistics
+    speed_max(i) = max(T_speed{i}.speed);
+    speed_mean(i) = mean(T_speed{i}.speed);
+end
+% Time to Stop
+% Take rows that contains a value for tts
+idx_timeToStop = not(isnan(T.stopTime));
+T_stop = T(idx_timeToStop,:);
+% Statistics
+tts_mean = sum(T_stop.stopTime) / numAttempts;
+
+% Show results
+% Speed
+disp("Max speed for each experiment:");
+disp(speed_max);
+disp("Mean speed for each experiment");
+disp(speed_mean);
+% Time to Stop
+disp("Mean time to stop");
+disp(tts_mean);
+
+
 %% VISUALIZE DATA %%
 % Layout definition
 tiledlayout(2,1);
@@ -56,3 +87,25 @@ legend(hplot2);
 grid(ax2,'on')
 hold off
 
+% Time to stop
+figure(); hold on;
+plot(1:numAttempts, T_stop.stopTime, '-+');
+plot(1:numAttempts, ones(numAttempts,1)*tts_mean);
+title('Time to stop');
+xlabel('Attempt');
+ylabel('Time to stop [ms]');
+legend("For each attempt", "Mean");
+grid on
+
+% Speed (statistics)
+figure();
+hold on;
+hplot4 = zeros(1, numAttempts);
+for i = 1:numAttempts
+    hplot4(i) = plot(T_speed{i}.currentTime, T_speed{i}.speed, '-*', 'DisplayName', int2str(i));
+end
+title('Speed (statistics)');
+legend(hplot4);
+xlabel('Time [ms]');
+ylabel('Speed [cm/s]');
+grid on
