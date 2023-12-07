@@ -115,6 +115,8 @@ hplot4 = zeros(1, numAttempts);
 for i = 1:numAttempts
     hplot4(i) = plot(T_speed{i}.currentTime, T_speed{i}.speed, '-*', 'DisplayName', int2str(i));
 end
+hplot4(end+1) = plot(T_speed{i}.currentTime, ones(length(T_speed{i}.currentTime),1)*speed_mean_all, 'DisplayName', 'Average mean');
+hplot4(end+1) = plot(T_speed{i}.currentTime, ones(length(T_speed{i}.currentTime),1)*speed_max_all, 'DisplayName', 'Average max');
 title('Speed (statistics)');
 legend(hplot4);
 xlabel('Time [ms]');
