@@ -115,8 +115,6 @@ unsigned long currentMillisStopSpeed;
 bool justStopped = false;
 // Measured stop time
 unsigned long stopTime = 0;
-// Attempt counter
-int attempt = 0;
 // END PARAMETERS FRED CONFIGURATION
 
 void setup() {
@@ -239,11 +237,11 @@ void loop() {
       stopTime = currentMillisStopSpeed - previousMillisStopSpeed;
       justStopped = false;
       if (bluetoothConnected) {
-        bluetoothSendParams("Attempt", attempt++, false);
+        bluetoothSendParams("Stop time", stopTime, false);
         bluetoothSendParams("Distance", robotMeasures.distanceUS, true);
         bluetoothSendParams("Speed", robotMeasures.velocityOptical, true);
         bluetoothSendParams("Current time", millis() - previousMillisSpeed, false);
-        bluetoothSendParams("Stop time", stopTime, false);
+        
       }
     }
   }
