@@ -358,6 +358,7 @@ while True:
                     writeParamsCsv()
                 debugStamp(str(params.decode('utf-8')[0:-2]))
     except Exception as e:
+        debugStamp(e, "Full")
         # If there is an error, handle the closing of the program
         if connected:
             connected = False
