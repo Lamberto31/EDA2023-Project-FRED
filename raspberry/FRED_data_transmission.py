@@ -245,11 +245,11 @@ lastSendToServer = time.time()
 
 # PARAMS PROCESSING
 if PARAMS:
-    # Init dictionary that contains measures (declared as field as in the remote server)
-    params = {
+    # Init dictionary that contains data received with PARAMS
+    paramsData = {
         "attempt": 1,
         "currentTime": 0,
-        "position": 0,
+        "distance": 0,
         "speed": 0,
         "stopTime": 0,
         "note": "None"
@@ -265,41 +265,40 @@ if PARAMS:
         clean = decoded[0:-2]
         data = clean.split(":")
         if "distance" in data[0].lower():
-            params["distance"] = data[1]
+            paramsData["distance"] = data[1]
             if "increasing" in data[0].lower():
-                params["note"] = "Increasing"
+                paramsData["note"] = "Increasing"
             elif "decreasing" in data[0].lower():
-                params["note"] = "Decreasing"
+                paramsData["note"] = "Decreasing"
         elif "speed" in data[0].lower():
-            params["speed"] = data[1]
+            paramsData["speed"] = data[1]
             if "increasing" in data[0].lower():
-                params["note"] = "Increasing"
+                paramsData["note"] = "Increasing"
             elif "decreasing" in data[0].lower():
-                params["note"] = "Decreasing"
+                paramsData["note"] = "Decreasing"
         elif "current" in data[0].lower():
-            params["currentTime"] = data[1]
+            paramsData["currentTime"] = data[1]
             writeCsvParams["currentTime"] = True
         elif "stop" in data[0].lower():
-            params["stopTime"] = data[1]
+            paramsData["stopTime"] = data[1]
             writeCsvParams["stopTime"] = True
-            params["note"] = "Stopped"
-        elif "attempt" in data[0].lower():
-            params["attempt"] += 1
+            paramsData["note"] = "Stopped"
     # Create csv params file and write header
     paramsCsvFileName = "FRED_params_" + timestamp + ".csv"
     paramsCsvFile = open(os.path.join("./logs", paramsCsvFileName), mode='w')
-    paramsCsvWriter = csv.DictWriter(paramsCsvFile, fieldnames=params.keys())
+    paramsCsvWriter = csv.DictWriter(paramsCsvFile, fieldnames=paramsData.keys())
     paramsCsvWriter.writeheader()
     paramsCsvFile.flush()
     # Define function that write a row in csv if enough data are present
     def writeParamsCsv():
-        if writeCsvParams["stopTime"]:
-            paramsCsvWriter.writerow({"attempt": params["attempt"], "currentTime": params["currentTime"], "position": params["position"], "speed": params["speed"], "stopTime": params["stopTime"], "note": params["note"]})
-            paramsCsvFile.flush()
-            writeCsvParams["currentTime"] = False
-            writeCsvParams["stopTime"] = False
-        elif writeCsvParams["currentTime"]:
-            paramsCsvWriter.writerow({"attempt": params["attempt"], "currentTime": params["currentTime"], "position": params["position"], "speed": params["speed"], "note": params["note"]})
+        if writeCsvParams["currentTime"]:
+            if writeCsvParams["stopTime"]:
+                paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "stopTime": paramsData["stopTime"], "note": paramsData["note"]})
+                paramsData["attempt"] += 1
+                writeCsvParams["stopTime"] = False
+                
+            else:
+                paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "note": paramsData["note"]})
             paramsCsvFile.flush()
             writeCsvParams["currentTime"] = False
         
@@ -358,6 +357,7 @@ while True:
                     writeParamsCsv()
                 debugStamp(str(params.decode('utf-8')[0:-2]))
     except Exception as e:
+        debugStamp(e, "Full")
         # If there is an error, handle the closing of the program
         if connected:
             connected = False
