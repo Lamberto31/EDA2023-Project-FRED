@@ -405,7 +405,7 @@ void bluetoothSendParams(const char* variable, int value, bool decimal) {
   Serial.println(F("BDT 1.0 PARAMS"));
 
   Serial.print(variable);
-  Serial.print(F(": "));
+  Serial.print(F(":"));
   if (decimal) Serial.println(value, DECIMALS);
   else Serial.println(value);
 }
