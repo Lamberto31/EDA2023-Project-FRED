@@ -5,22 +5,28 @@ logsPath = '../raspberry/logs/';
 % Name of csv file with extension
 csvName = 'FRED_log_2023-10-17T16_07_56_objective.csv';
 
-% Number of values to show
-numPoints = 50;
-
+% Number of attempts to consider
+numAttempts = 5;
 
 %% GET DATA FROM CSV%%
 path = strcat(logsPath,csvName);
 opts = detectImportOptions(path);
 T = readtable(path, opts);
 
-% Get the last numPoints rows
-T = T(max(1,(end-(numPoints - 1))):end, :);
+% Get only first numAttempts
+rows = sum(T.attempt <= numAttempts);
+T = T(1:rows,:);
 
-% Extract timestamp and convert from epoch to datetime
-timestampEpoch = T.created_at;
-timestampDate = datetime(timestampEpoch,'ConvertFrom','posixtime','TimeZone','Europe/Zurich','Format','dd-MMM-yyyy HH:mm:ss');
+% Get the real number of considered attempts (if numAttempts > real)
+numAttempts = T(end,:).attempt;
 
+%% DIVIDE ATTEMPTS
+% Create cell array used to divide attempts
+T_attempts = cell(numAttempts,1);
+for i = 1:numAttempts
+    idx = T.attempt == i;
+    T_attempts{i} = T(idx, :);
+end
 
 %% VISUALIZE DATA %%
 % Layout definition
