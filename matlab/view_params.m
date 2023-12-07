@@ -30,35 +30,29 @@ end
 
 %% VISUALIZE DATA %%
 % Layout definition
-tiledlayout(3,1);
+tiledlayout(2,1);
 
 % Position
 ax1 = nexttile;
 hold on
-hplot1 = plot(timestampDate, T.field1, '-o', 'DisplayName', 'US');
-hplot2 = plot(timestampDate, T.field2, '-*', 'DisplayName', 'Optical');
-hplot3 = plot(timestampDate, T.field3, '-pentagram', 'DisplayName', 'Filtered');
-hplot8 = plot(timestampDate, T.field8, '-.', 'DisplayName', 'Objective');
+hplot1 = zeros(1, numAttempts);
+for i = 1:numAttempts
+    hplot1(i) = plot(T_attempts{i}.currentTime, T_attempts{i}.distance, '-o', 'DisplayName', int2str(i));
+end
 title('Position');
-legend([hplot1, hplot2, hplot3, hplot8]);
+legend(hplot1);
 grid(ax1,'on')
 hold off
 
 % Velocity
 ax2 = nexttile;
 hold on
-hplot5 = plot(timestampDate, T.field5, '-o', 'DisplayName', 'US');
-hplot6 = plot(timestampDate, T.field6, '-*', 'DisplayName', 'Optical');
-hplot7 = plot(timestampDate, T.field7, '-pentagram', 'DisplayName', 'Filtered');
+hplot2 = zeros(1, numAttempts);
+for i = 1:numAttempts
+    hplot2(i) = plot(T_attempts{i}.currentTime, T_attempts{i}.speed, '-*', 'DisplayName', int2str(i));
+end
 title('Velocity');
-legend([hplot5, hplot6, hplot7]);
+legend(hplot2);
 grid(ax2,'on')
 hold off
-
-% Rps
-ax3 = nexttile;
-hplot4 = plot(timestampDate, T.field4, '-*', 'DisplayName', 'Optical');
-title('RPS');
-legend(hplot4);
-grid(ax3,'on')
 
