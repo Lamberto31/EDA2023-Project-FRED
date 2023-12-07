@@ -398,7 +398,7 @@ bool bluetoothConnection(bool waitConnection) {
   return bluetoothConnected;
 }
 
-void bluetoothSendParams(const char* variable, int value, bool decimal) {
+void bluetoothSendParams(const char* variable, double value, bool decimal) {
   //BDT: Bluetooth Data Transmission
   Serial.println(F("BDT 1.0 PARAMS"));
 
