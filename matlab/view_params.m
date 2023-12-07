@@ -5,8 +5,8 @@ logsPath = '../raspberry/logs/';
 % Name of csv file with extension
 csvName = 'FRED_params_2023-12-07T14_45_55_fixed_wood_attempts_10.csv';
 
-% Number of attempts to consider
-numAttempts = 5;
+% Number of attempts to consider (if you want to use all use intmax)
+numAttempts = 10;
 
 %% GET DATA FROM CSV %%
 path = strcat(logsPath,csvName);
