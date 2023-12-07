@@ -38,8 +38,10 @@ for i = 1:numAttempts
     idx_speed_notNull = T_attempts{i}.speed ~= 0 & T_attempts{i}.note == "Increasing";
     T_speed{i} = T_attempts{i}(idx_speed_notNull, :);
     % Statistics
-    speed_max(i) = max(T_speed{i}.speed);
     speed_mean(i) = mean(T_speed{i}.speed);
+    speed_max(i) = max(T_speed{i}.speed);
+    speed_mean_all = mean(speed_mean);
+    speed_max_all = mean(speed_max);
 end
 % Time to Stop
 % Take rows that contains a value for tts
@@ -50,14 +52,17 @@ tts_mean = sum(T_stop.stopTime) / numAttempts;
 
 % Show results
 % Speed
-disp("Max speed for each experiment:");
-disp(speed_max);
-disp("Mean speed for each experiment");
+disp("Mean speed for each experiment [cm/s]");
 disp(speed_mean);
+disp("Max speed for each experiment [cm/s]");
+disp(speed_max);
+disp("Mean speed [cm/s");
+disp(speed_mean_all);
+disp("Mean max speed [cm/s");
+disp(speed_max_all)
 % Time to Stop
-disp("Mean time to stop");
+disp("Mean time to stop [ms]");
 disp(tts_mean);
-
 
 %% VISUALIZE DATA %%
 % Position and speed
