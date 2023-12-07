@@ -8,7 +8,7 @@ csvName = 'FRED_params_2023-12-07T14_45_55_fixed_wood_attempts_10.csv';
 % Number of attempts to consider
 numAttempts = 5;
 
-%% GET DATA FROM CSV%%
+%% GET DATA FROM CSV %%
 path = strcat(logsPath,csvName);
 opts = detectImportOptions(path);
 T = readtable(path, opts);
@@ -20,7 +20,7 @@ T = T(1:rows,:);
 % Get the real number of considered attempts (if numAttempts > real)
 numAttempts = T(end,:).attempt;
 
-%% DIVIDE ATTEMPTS
+%% DIVIDE ATTEMPTS %%
 % Create cell array used to divide attempts
 T_attempts = cell(numAttempts,1);
 for i = 1:numAttempts
@@ -60,30 +60,36 @@ disp(tts_mean);
 
 
 %% VISUALIZE DATA %%
+% Position and speed
+figure();
 % Layout definition
 tiledlayout(2,1);
 
-% Position
+% Distance
 ax1 = nexttile;
 hold on
 hplot1 = zeros(1, numAttempts);
 for i = 1:numAttempts
     hplot1(i) = plot(T_attempts{i}.currentTime, T_attempts{i}.distance, '-o', 'DisplayName', int2str(i));
 end
-title('Position');
+title('Distance');
 legend(hplot1);
+xlabel('Time [ms]');
+ylabel('Distance [cm]');
 grid(ax1,'on')
 hold off
 
-% Velocity
+% Speed
 ax2 = nexttile;
 hold on
 hplot2 = zeros(1, numAttempts);
 for i = 1:numAttempts
     hplot2(i) = plot(T_attempts{i}.currentTime, T_attempts{i}.speed, '-*', 'DisplayName', int2str(i));
 end
-title('Velocity');
+title('Speed');
 legend(hplot2);
+xlabel('Time [ms]');
+ylabel('Speed [cm/s]');
 grid(ax2,'on')
 hold off
 
