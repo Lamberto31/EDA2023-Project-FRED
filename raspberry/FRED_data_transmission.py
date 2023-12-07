@@ -283,8 +283,6 @@ if PARAMS:
             paramsData["stopTime"] = data[1]
             writeCsvParams["stopTime"] = True
             paramsData["note"] = "Stopped"
-        elif "attempt" in data[0].lower():
-            paramsData["attempt"] += 1
     # Create csv params file and write header
     paramsCsvFileName = "FRED_params_" + timestamp + ".csv"
     paramsCsvFile = open(os.path.join("./logs", paramsCsvFileName), mode='w')
@@ -293,13 +291,14 @@ if PARAMS:
     paramsCsvFile.flush()
     # Define function that write a row in csv if enough data are present
     def writeParamsCsv():
-        if writeCsvParams["stopTime"]:
-            paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "stopTime": paramsData["stopTime"], "note": paramsData["note"]})
-            paramsCsvFile.flush()
-            writeCsvParams["currentTime"] = False
-            writeCsvParams["stopTime"] = False
-        elif writeCsvParams["currentTime"]:
-            paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "note": paramsData["note"]})
+        if writeCsvParams["currentTime"]:
+            if writeCsvParams["stopTime"]:
+                paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "stopTime": paramsData["stopTime"], "note": paramsData["note"]})
+                paramsData["attempt"] += 1
+                writeCsvParams["stopTime"] = False
+                
+            else:
+                paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "note": paramsData["note"]})
             paramsCsvFile.flush()
             writeCsvParams["currentTime"] = False
         
