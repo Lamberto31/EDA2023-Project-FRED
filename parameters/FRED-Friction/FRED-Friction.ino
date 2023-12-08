@@ -400,12 +400,28 @@ bool bluetoothConnection(bool waitConnection) {
   return bluetoothConnected;
 }
 
-void bluetoothSendParams(const char* variable, double value, bool decimal) {
+void bluetoothSendParams() {
   //BDT: Bluetooth Data Transmission
   Serial.println(F("BDT 1.0 PARAMS"));
 
-  Serial.print(variable);
-  Serial.print(F(":"));
-  if (decimal) Serial.println(value, DECIMALS);
-  else Serial.println(value);
+  // Send status first to know how much message to expect
+  Serial.print(F("Status:"));
+  Serial.println(robotState.current);
+
+  Serial.print(F("Current_Time:"));
+  Serial.println(robotParams.currentTime);
+
+  Serial.print(F("Distance_US:"));
+  Serial.println(robotParams.distanceUS, DECIMALS);
+
+  Serial.print(F("Velocity_OPT:"));
+  Serial.println(robotParams.velocityOptical, DECIMALS);
+
+  if (robotState.current == STATE_STOP) {
+    Serial.print(F("Stop_Time:"));
+    Serial.println(robotParams.stopTime);
+    stateChange(&robotState, STATE_IDLE);
+  }
+
+  robotParams.sent = true;
 }
