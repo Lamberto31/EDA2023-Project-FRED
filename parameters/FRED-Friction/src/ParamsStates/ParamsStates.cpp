@@ -15,37 +15,20 @@ void stateNewDirection(State *st, byte direction) {
   st->direction = direction;
 }
 
-void printMeasures(Measures *ms) {
+void printParams(Params *ms) {
   Serial.println(F("LAST MEASURES"));
   Serial.print(F("Quantity"));
   Serial.print(F("\tUnits"));
-  Serial.print(F("\tRaw"));
-  Serial.println(F("\tFiltered"));
+  Serial.print(F("\tValue"));
 
   Serial.print(F("Distance US\t[cm]\t"));
-  Serial.print(ms->distanceUS);
-  Serial.print(F("\t"));
-  Serial.println(ms->distanceUSFiltered);
-
-  Serial.print(F("Distance OPT\t[cm]\t"));
-  Serial.print(ms->distanceOptical);
-  Serial.print(F("\t"));
-  Serial.println(F("---"));
+  Serial.println(ms->distanceUS);
 
   Serial.print(F("Rev per second\t[r/s]\t"));
-  Serial.print(ms->rpsOptical);
-  Serial.print(F("\t"));
-  Serial.println(F("---"));
-
-  Serial.print(F("Velocity US\t[cm/s]\t"));
-  Serial.print(ms->velocityUS);
-  Serial.print(F("\t"));
-  Serial.println(F("---"));
+  Serial.println(ms->rpsOptical);
 
   Serial.print(F("Velocity OPT\t[cm/s]\t"));
-  Serial.print(ms->velocityOptical);
-  Serial.print(F("\t"));
-  Serial.println(ms->velocityOpticalFiltered);
+  Serial.println(ms->velocityOptical);
 
   Serial.println();
 }

@@ -22,15 +22,14 @@ struct State {
   byte direction;
 };
 
-struct Measures {
+struct Params {
   double distanceUS;
-  double distanceUSFiltered;
-  double velocityUS;
 
-  double distanceOptical;
   double rpsOptical;
   double velocityOptical;
-  double velocityOpticalFiltered;
+
+  unsigned long stopTime;
+  unsigned long currentTime;
 
   bool sent;
 };
@@ -40,6 +39,6 @@ void stateNewCmd(State *st, byte command);
 void stateCmdExecuted(State *st);
 void stateNewDirection(State *st, byte direction);
 
-void printMeasures(Measures *ms);
+void printParams(Params *ms);
 
 #endif

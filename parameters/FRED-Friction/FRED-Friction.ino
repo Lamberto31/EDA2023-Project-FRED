@@ -25,7 +25,7 @@
 
 // States
 State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
-Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
+Params robotMeasures = {0, 0, 0, 0, 0, true};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 0
