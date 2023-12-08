@@ -99,14 +99,16 @@ grid(ax2,'on')
 hold off
 
 % Time to stop
-figure(); hold on;
-plot(1:numAttempts, T_stop.stopTime, '-+');
-plot(1:numAttempts, ones(numAttempts,1)*tts_mean);
-title('Time to stop');
-xlabel('Attempt');
-ylabel('Time to stop [ms]');
-legend("For each attempt", "Mean");
-grid on
+if numAttempts > 1
+    figure(); hold on;
+    plot(1:numAttempts, T_stop.stopTime, '-+');
+    plot(1:numAttempts, ones(numAttempts,1)*tts_mean);
+    title('Time to stop');
+    xlabel('Attempt');
+    ylabel('Time to stop [ms]');
+    legend("For each attempt", "Mean");
+    grid on
+end
 
 % Speed (statistics)
 figure();
