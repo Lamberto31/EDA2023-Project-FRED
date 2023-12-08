@@ -106,13 +106,9 @@ Servo servoH;
 // Max speed timer
 unsigned long previousMillisSpeed;
 unsigned long currentMillisSpeed;
-// Boolean to check if moving or not
-bool moving = false;
 // Stop speed timer
 unsigned long previousMillisStopSpeed;
 unsigned long currentMillisStopSpeed;
-// Boolean to check if just stopped
-bool justStopped = false;
 // END PARAMETERS FRED CONFIGURATION
 
 void setup() {
@@ -179,19 +175,19 @@ void loop() {
     switch (robotState.command) {
       case IR_BUTTON_OK: {
         runMotors(DIRECTION_STOP, 0);
-        moving = false;
+        robotState.current = STATE_IDLE;
         break;
       }
       case IR_BUTTON_UP: {
         runMotors(DIRECTION_FORWARD, 255);
         previousMillisSpeed = millis();
-        moving = true;
+        robotState.current = STATE_INPUT_MAX;
         break;
       }
       case IR_BUTTON_DOWN: {
         runMotors(DIRECTION_BACKWARD, 255);
         previousMillisSpeed = millis();
-        moving = true;
+        robotState.current = STATE_INPUT_MAX;
         break;
       }
     }
@@ -204,7 +200,7 @@ void loop() {
   if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
     measureAll(currentMillisMeasure - previousMillisMeasure);
     robotParams.currentTime = millis() - previousMillisSpeed;
-    if (justStopped) {
+    if (robotState.current == STATE_INPUT_0) {
       if (bluetoothConnected) {
         bluetoothSendParams("Decreasing distance", robotParams.distanceUS, true);
         bluetoothSendParams("Decreasing speed", robotParams.velocityOptical, true);
@@ -213,8 +209,8 @@ void loop() {
     }
     previousMillisMeasure = millis();
   }
-  // Check if moving and stop if PERIOD_SPEED elapsed
-  if (moving) {
+  // Check if accelerating and stop if PERIOD_SPEED elapsed
+  if (robotState.current == STATE_INPUT_MAX) {
     robotParams.currentTime = millis() - previousMillisSpeed;
     if (bluetoothConnected) {
       bluetoothSendParams("Increasing distance", robotParams.distanceUS, true); 
@@ -226,17 +222,16 @@ void loop() {
       runMotors(DIRECTION_STOP, 0);
       // Begin stop speed timer
       previousMillisStopSpeed = millis();
-      moving = false;
-      justStopped = true;
+      robotState.current = STATE_INPUT_0;
     }
   }
   // Check if just stopped and measure time until it's effectively stopped
-  if (justStopped) {
+  if (robotState.current == STATE_INPUT_0) {
     if (abs(robotParams.velocityOptical) < 0.1) {
       currentMillisStopSpeed = millis();
       robotParams.stopTime = currentMillisStopSpeed - previousMillisStopSpeed;
       robotParams.currentTime = millis() - previousMillisSpeed;
-      justStopped = false;
+      robotState.current = STATE_IDLE;
       if (bluetoothConnected) {
         bluetoothSendParams("Stop time", robotParams.stopTime, false);
         bluetoothSendParams("Distance", robotParams.distanceUS, true);

@@ -4,10 +4,10 @@
 #include <Arduino.h>
 
 #define STATE_SETUP 0
-#define STATE_FREE 1
-#define STATE_SEARCH 2
-#define STATE_MEASURE 3
-#define STATE_READ 4
+#define STATE_IDLE 1
+#define STATE_INPUT_MAX 2
+#define STATE_INPUT_0 3
+#define STATE_STOP 4
 
 #define DIRECTION_STOP 0
 #define DIRECTION_FORWARD 1
