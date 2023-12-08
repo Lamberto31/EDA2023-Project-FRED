@@ -41,6 +41,7 @@ STATUS_FREE = "Free walking"
 STATUS_READING = "Reading"
 STATUS_EXPLORATION = "Exploration"
 STATUS_DATA_TRANSMISSION = "Data transmission"
+# TODO: qui aggiungere gli altri stati del caso PARAMS
 STATUS_UNKNOWN = "Unknown"
 
 # Get secret values from .env file
@@ -245,6 +246,7 @@ lastSendToServer = time.time()
 
 # PARAMS PROCESSING
 if PARAMS:
+    # TODO: Da queste parti rimuovere il codice che gestiva tramite writeCsvParams e writeParamsCsv la scrittura o meno, ora i messaggi e la scrittura dipendono dallo stato
     # Init dictionary that contains data received with PARAMS
     paramsData = {
         "attempt": 1,
@@ -264,6 +266,7 @@ if PARAMS:
         decoded = recvParams.decode('utf-8')
         clean = decoded[0:-2]
         data = clean.split(":")
+        # TODO: Qui gestire la nota al variare dello stato (o forse è meglio farlo dove chiamo questa funzione?)
         if "distance" in data[0].lower():
             paramsData["distance"] = data[1]
             if "increasing" in data[0].lower():
@@ -353,6 +356,7 @@ while True:
                 debugStamp(str(recv, 'utf-8'), "Full")
                 params = ser.readline()
                 if PARAMS:
+                    # TODO: qui gestire il numero di messaggi al variare dello stato
                     insertParamsInDict(params)
                     writeParamsCsv()
                 debugStamp(str(params.decode('utf-8')[0:-2]))
