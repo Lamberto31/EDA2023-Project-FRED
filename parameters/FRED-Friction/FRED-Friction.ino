@@ -78,6 +78,7 @@ volatile int opticalPulses = 0;
 
 // Bluetooth
 bool bluetoothConnected = false;
+// TODO: Capire se serve questo timer o no
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
 
@@ -234,12 +235,15 @@ void loop() {
   bluetoothConnection(false);
   // If connected and stopped or need to send params
   if (bluetoothConnected && (robotState.current == STATE_STOP || !robotParams.sent)) {
-    currentMillisMeasureToSend = millis();
-    if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
-      bluetoothSendParams();
-      previousMillisMeasureToSend = millis();
-    }
-  }  
+    bluetoothSendParams();
+    // TODO: Capire se è meglio inviare a fine esperimento e accumulare tutte le misure nel mentre o inviare ogni volta
+    // Non con timer come qua ma quando è in STATE_STOP
+    // currentMillisMeasureToSend = millis();
+    // if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
+    //   bluetoothSendParams();
+    //   previousMillisMeasureToSend = millis();
+    // }
+  } 
 }
 
 // This is the function, which is called if a complete ir command was received
