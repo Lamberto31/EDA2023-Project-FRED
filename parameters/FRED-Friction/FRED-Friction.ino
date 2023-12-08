@@ -25,7 +25,7 @@
 
 // States
 State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
-Params robotMeasures = {0, 0, 0, 0, 0, true};
+Params robotParams = {0, 0, 0, 0, 0, true};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 0
@@ -113,8 +113,6 @@ unsigned long previousMillisStopSpeed;
 unsigned long currentMillisStopSpeed;
 // Boolean to check if just stopped
 bool justStopped = false;
-// Measured stop time
-unsigned long stopTime = 0;
 // END PARAMETERS FRED CONFIGURATION
 
 void setup() {
@@ -205,21 +203,23 @@ void loop() {
   currentMillisMeasure = millis();
   if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
     measureAll(currentMillisMeasure - previousMillisMeasure);
+    robotParams.currentTime = millis() - previousMillisSpeed;
     if (justStopped) {
       if (bluetoothConnected) {
-        bluetoothSendParams("Decreasing distance", robotMeasures.distanceUS, true);
-        bluetoothSendParams("Decreasing speed", robotMeasures.velocityOptical, true);
-        bluetoothSendParams("Current time", millis() - previousMillisSpeed, false);
+        bluetoothSendParams("Decreasing distance", robotParams.distanceUS, true);
+        bluetoothSendParams("Decreasing speed", robotParams.velocityOptical, true);
+        bluetoothSendParams("Current time", robotParams.currentTime, false);
       }
     }
     previousMillisMeasure = millis();
   }
   // Check if moving and stop if PERIOD_SPEED elapsed
   if (moving) {
+    robotParams.currentTime = millis() - previousMillisSpeed;
     if (bluetoothConnected) {
-      bluetoothSendParams("Increasing distance", robotMeasures.distanceUS, true); 
-      bluetoothSendParams("Increasing speed", robotMeasures.velocityOptical, true);
-      bluetoothSendParams("Current time", millis() - previousMillisSpeed, false);
+      bluetoothSendParams("Increasing distance", robotParams.distanceUS, true); 
+      bluetoothSendParams("Increasing speed", robotParams.velocityOptical, true);
+      bluetoothSendParams("Current time", millis() - robotParams.currentTime, false);
     }
     currentMillisSpeed = millis();
     if (currentMillisSpeed - previousMillisSpeed >= PERIOD_SPEED) {
@@ -232,15 +232,16 @@ void loop() {
   }
   // Check if just stopped and measure time until it's effectively stopped
   if (justStopped) {
-    if (abs(robotMeasures.velocityOptical) < 0.1) {
+    if (abs(robotParams.velocityOptical) < 0.1) {
       currentMillisStopSpeed = millis();
-      stopTime = currentMillisStopSpeed - previousMillisStopSpeed;
+      robotParams.stopTime = currentMillisStopSpeed - previousMillisStopSpeed;
+      robotParams.currentTime = millis() - previousMillisSpeed;
       justStopped = false;
       if (bluetoothConnected) {
-        bluetoothSendParams("Stop time", stopTime, false);
-        bluetoothSendParams("Distance", robotMeasures.distanceUS, true);
-        bluetoothSendParams("Speed", robotMeasures.velocityOptical, true);
-        bluetoothSendParams("Current time", millis() - previousMillisSpeed, false);
+        bluetoothSendParams("Stop time", robotParams.stopTime, false);
+        bluetoothSendParams("Distance", robotParams.distanceUS, true);
+        bluetoothSendParams("Speed", robotParams.velocityOptical, true);
+        bluetoothSendParams("Current time", robotParams.currentTime, false);
         
       }
     }
@@ -330,7 +331,7 @@ void runMotors(byte direction, byte speed) {
 
 // MEASURE
 void measureAll(unsigned long deltaT) {
-  robotMeasures.sent = false;
+  robotParams.sent = false;
   
   int pulses = opticalPulses;
   opticalPulses = 0;
@@ -338,14 +339,14 @@ void measureAll(unsigned long deltaT) {
   double travelledDistance;
 
   // Distance from ultrasonic
-  robotMeasures.distanceUS = measureDistance();
+  robotParams.distanceUS = measureDistance();
 
   // Velocity from optical
   travelledRevolution = (pulses / (double)WHEEL_ENCODER_HOLES);
   travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution;
 
-  robotMeasures.rpsOptical = travelledRevolution / (deltaT * 0.001);
-  robotMeasures.velocityOptical = travelledDistance / (deltaT * 0.001);
+  robotParams.rpsOptical = travelledRevolution / (deltaT * 0.001);
+  robotParams.velocityOptical = travelledDistance / (deltaT * 0.001);
 }
 
 // DISTANCE
