@@ -56,9 +56,9 @@ disp("Mean speed for each experiment [cm/s]");
 disp(speed_mean);
 disp("Max speed for each experiment [cm/s]");
 disp(speed_max);
-disp("Mean speed [cm/s");
+disp("Mean speed [cm/s]");
 disp(speed_mean_all);
-disp("Mean max speed [cm/s");
+disp("Mean max speed [cm/s]");
 disp(speed_max_all)
 % Time to Stop
 disp("Mean time to stop [ms]");
