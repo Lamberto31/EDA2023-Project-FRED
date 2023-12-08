@@ -199,30 +199,17 @@ void loop() {
     }
     stateCmdExecuted(&robotState);
   }
-  // Check if connected
-  bluetoothConnection(false);
+  
   // Measure
   currentMillisMeasure = millis();
   if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
     measureAll(currentMillisMeasure - previousMillisMeasure);
     robotParams.currentTime = millis() - previousMillisSpeed;
-    if (robotState.current == STATE_INPUT_0) {
-      if (bluetoothConnected) {
-        bluetoothSendParams("Decreasing distance", robotParams.distanceUS, true);
-        bluetoothSendParams("Decreasing speed", robotParams.velocityOptical, true);
-        bluetoothSendParams("Current time", robotParams.currentTime, false);
-      }
-    }
     previousMillisMeasure = millis();
   }
+
   // Check if accelerating and stop if PERIOD_SPEED elapsed
   if (robotState.current == STATE_INPUT_MAX) {
-    robotParams.currentTime = millis() - previousMillisSpeed;
-    if (bluetoothConnected) {
-      bluetoothSendParams("Increasing distance", robotParams.distanceUS, true); 
-      bluetoothSendParams("Increasing speed", robotParams.velocityOptical, true);
-      bluetoothSendParams("Current time", millis() - robotParams.currentTime, false);
-    }
     currentMillisSpeed = millis();
     if (currentMillisSpeed - previousMillisSpeed >= PERIOD_SPEED) {
       runMotors(DIRECTION_STOP, 0);
@@ -231,22 +218,28 @@ void loop() {
       stateChange(&robotState, STATE_INPUT_0);
     }
   }
+
   // Check if just stopped and measure time until it's effectively stopped
   if (robotState.current == STATE_INPUT_0) {
     if (abs(robotParams.velocityOptical) < 0.1) {
       currentMillisStopSpeed = millis();
       robotParams.stopTime = currentMillisStopSpeed - previousMillisStopSpeed;
       robotParams.currentTime = millis() - previousMillisSpeed;
-      stateChange(&robotState, STATE_IDLE);
-      if (bluetoothConnected) {
-        bluetoothSendParams("Stop time", robotParams.stopTime, false);
-        bluetoothSendParams("Distance", robotParams.distanceUS, true);
-        bluetoothSendParams("Speed", robotParams.velocityOptical, true);
-        bluetoothSendParams("Current time", robotParams.currentTime, false);
-        
-      }
+      stateChange(&robotState, STATE_STOP);
     }
   }
+
+  // Send Bluetooth message
+  // Check if connected
+  bluetoothConnection(false);
+  // If connected and stopped or need to send params
+  if (bluetoothConnected && (robotState.current == STATE_STOP || !robotParams.sent)) {
+    currentMillisMeasureToSend = millis();
+    if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
+      bluetoothSendParams();
+      previousMillisMeasureToSend = millis();
+    }
+  }  
 }
 
 // This is the function, which is called if a complete ir command was received
@@ -405,6 +398,9 @@ void bluetoothSendParams() {
   Serial.println(F("BDT 1.0 PARAMS"));
 
   // Send status first to know how much message to expect
+  // INPUT_MAX => 3 messages => Increasing
+  // INPUT_0 => 3 messages => Decreasing
+  // STOP => 4 messages => Stop
   Serial.print(F("Status:"));
   Serial.println(robotState.current);
 
