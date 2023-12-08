@@ -167,6 +167,8 @@ void setup() {
   // Optical
   delay(1000);
   attachInterrupt(digitalPinToInterrupt(PIN_OPTICAL), countPulses, RISING);
+
+  stateChange(&robotState, STATE_IDLE);
 }
 
 void loop() {
@@ -175,19 +177,19 @@ void loop() {
     switch (robotState.command) {
       case IR_BUTTON_OK: {
         runMotors(DIRECTION_STOP, 0);
-        robotState.current = STATE_IDLE;
+        stateChange(&robotState, STATE_IDLE);
         break;
       }
       case IR_BUTTON_UP: {
         runMotors(DIRECTION_FORWARD, 255);
         previousMillisSpeed = millis();
-        robotState.current = STATE_INPUT_MAX;
+        stateChange(&robotState, STATE_INPUT_MAX);
         break;
       }
       case IR_BUTTON_DOWN: {
         runMotors(DIRECTION_BACKWARD, 255);
         previousMillisSpeed = millis();
-        robotState.current = STATE_INPUT_MAX;
+        stateChange(&robotState, STATE_INPUT_MAX);
         break;
       }
     }
@@ -222,7 +224,7 @@ void loop() {
       runMotors(DIRECTION_STOP, 0);
       // Begin stop speed timer
       previousMillisStopSpeed = millis();
-      robotState.current = STATE_INPUT_0;
+      stateChange(&robotState, STATE_INPUT_0);
     }
   }
   // Check if just stopped and measure time until it's effectively stopped
@@ -231,7 +233,7 @@ void loop() {
       currentMillisStopSpeed = millis();
       robotParams.stopTime = currentMillisStopSpeed - previousMillisStopSpeed;
       robotParams.currentTime = millis() - previousMillisSpeed;
-      robotState.current = STATE_IDLE;
+      stateChange(&robotState, STATE_IDLE);
       if (bluetoothConnected) {
         bluetoothSendParams("Stop time", robotParams.stopTime, false);
         bluetoothSendParams("Distance", robotParams.distanceUS, true);
