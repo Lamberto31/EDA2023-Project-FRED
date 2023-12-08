@@ -181,15 +181,19 @@ void loop() {
         break;
       }
       case IR_BUTTON_UP: {
-        runMotors(DIRECTION_FORWARD, 255);
-        previousMillisSpeed = millis();
-        stateChange(&robotState, STATE_INPUT_MAX);
+        if (robotState.current == STATE_IDLE) {
+          runMotors(DIRECTION_FORWARD, 255);
+          previousMillisSpeed = millis();
+          stateChange(&robotState, STATE_INPUT_MAX);
+        }
         break;
       }
       case IR_BUTTON_DOWN: {
-        runMotors(DIRECTION_BACKWARD, 255);
-        previousMillisSpeed = millis();
-        stateChange(&robotState, STATE_INPUT_MAX);
+        if (robotState.current == STATE_IDLE) {
+          runMotors(DIRECTION_BACKWARD, 255);
+          previousMillisSpeed = millis();
+          stateChange(&robotState, STATE_INPUT_MAX);
+        }
         break;
       }
     }
