@@ -1,5 +1,5 @@
-#ifndef _STATES_H_
-#define _STATES_H_
+#ifndef _PARAMSSTATES_H_
+#define _PARAMSSTATES_H_
 
 #include <Arduino.h>
 

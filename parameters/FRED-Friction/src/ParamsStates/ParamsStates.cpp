@@ -1,4 +1,4 @@
-#include "States.h"
+#include "ParamsStates.h"
 #include <Arduino.h>
 
 void stateChange(State *st, byte dest) {

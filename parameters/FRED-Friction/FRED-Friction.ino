@@ -5,7 +5,7 @@
 #include <Servo.h>
 
 // Custom library for states handling
-#include "src/States/States.h"
+#include "src/ParamsStates/ParamsStates.h"
 
 // Digital Pins
 #define PIN_HC05_TX 0
