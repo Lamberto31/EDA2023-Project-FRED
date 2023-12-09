@@ -25,7 +25,7 @@
 
 // States
 State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
-Params robotParams = {0, 0, 0, 0, 0, true, 0};
+Params robotParams = {0, 0, 0, 0, true, 0};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 0
@@ -107,6 +107,7 @@ unsigned long currentMillisSpeed;
 // Stop speed timer
 unsigned long previousMillisStopSpeed;
 unsigned long currentMillisStopSpeed;
+unsigned long stopTime = 0;
 // Bluetooth message buffer size (in terms of robotParams)
 #define BLUETOOTH_BUFFER_SIZE (PERIOD_SPEED + PERIOD_MAX_STOP) / PERIOD_MEASURE
 // Bluetooth message buffer
@@ -227,7 +228,7 @@ void loop() {
   if (robotState.current == STATE_INPUT_0) {
     if (abs(robotParams.velocityOptical) < 0.1) {
       currentMillisStopSpeed = millis();
-      robotParams.stopTime = currentMillisStopSpeed - previousMillisStopSpeed;
+      stopTime = currentMillisStopSpeed - previousMillisStopSpeed;
       robotParams.currentTime = millis() - previousMillisSpeed;
       stateChange(&robotState, STATE_STOP);
     }
@@ -239,7 +240,7 @@ void loop() {
     bluetoothBuffer[bluetoothBufferIndex] = robotParams;
     robotParams.recorded = true;
     bluetoothBufferIndex++;
-    robotParams = {0, 0, 0, 0, 0, true, 0};
+    robotParams = {0, 0, 0, 0, true, 0};
     }
 
   // Send Bluetooth buffer
@@ -417,7 +418,8 @@ void bluetoothSendBuffer() {
 
   // Reset buffer
   bluetoothBufferIndex = 0;
-  bluetoothBuffer[bluetoothBufferIndex] = {0, 0, 0, 0, 0, true, 0};
+  bluetoothBuffer[bluetoothBufferIndex] = {0, 0, 0, 0, true, 0};
+  stopTime = 0;
 
   stateChange(&robotState, STATE_IDLE);
 
@@ -441,6 +443,6 @@ void bluetoothSendParams(byte index) {
 
   if (bluetoothBuffer[index].state == STATE_STOP) {
     Serial.print(F("Stop_Time:"));
-    Serial.println(bluetoothBuffer[index].stopTime);
+    Serial.println(stopTime);
   }
 }

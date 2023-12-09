@@ -28,7 +28,6 @@ struct Params {
   double rpsOptical;
   double velocityOptical;
 
-  unsigned long stopTime;
   unsigned long currentTime;
 
   bool recorded;
