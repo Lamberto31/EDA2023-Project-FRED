@@ -253,7 +253,6 @@ lastSendToServer = time.time()
 
 # PARAMS PROCESSING
 if PARAMS:
-    # TODO: Da queste parti rimuovere il codice che gestiva tramite writeCsvParams e writeParamsCsv la scrittura o meno, ora i messaggi e la scrittura dipendono dallo stato
     def getParamsStatusString(statusNumber):
         if statusNumber == "0":
             return STATUS_SETUP
@@ -276,11 +275,6 @@ if PARAMS:
         "stopTime": 0,
         "note": "None"
         }
-    # Init boolean dictionary used to write csv
-    writeCsvParams = {
-        "currentTime": False,
-        "stopTime": False,
-        }
     # Define function that fill params dictionary
     def insertParamsInDict(recvParams):
         decoded = recvParams.decode('utf-8')
@@ -292,10 +286,8 @@ if PARAMS:
             paramsData["speed"] = data[1]
         elif "current" in data[0].lower():
             paramsData["currentTime"] = data[1]
-            writeCsvParams["currentTime"] = True
         elif "stop" in data[0].lower():
             paramsData["stopTime"] = data[1]
-            writeCsvParams["stopTime"] = True
     # Create csv params file and write header
     paramsCsvFileName = "FRED_params_" + timestamp + ".csv"
     paramsCsvFile = open(os.path.join("./logs", paramsCsvFileName), mode='w')
@@ -303,19 +295,13 @@ if PARAMS:
     paramsCsvWriter.writeheader()
     paramsCsvFile.flush()
     # Define function that write a row in csv if enough data are present
-    def writeParamsCsv():
-        if writeCsvParams["currentTime"]:
-            if writeCsvParams["stopTime"]:
-                paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "stopTime": paramsData["stopTime"], "note": paramsData["note"]})
-                paramsData["attempt"] += 1
-                writeCsvParams["stopTime"] = False
-                
-            else:
-                paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "note": paramsData["note"]})
-            paramsCsvFile.flush()
-            writeCsvParams["currentTime"] = False
-        
-
+    def writeParamsCsv(statusString):
+        if statusString == STATUS_STOP:
+            paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "stopTime": paramsData["stopTime"], "note": paramsData["note"]})
+            paramsData["attempt"] += 1
+        else:
+            paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "note": paramsData["note"]})
+        paramsCsvFile.flush()
 
 # MAIN LOOP: receive data from Bluetooth and send to remote server via WiFi
 debugStamp("Starting main loop")
@@ -374,7 +360,7 @@ while True:
                     for i in range(0, messageNumber):
                         params = ser.readline()
                         insertParamsInDict(params)
-                    writeParamsCsv()
+                    writeParamsCsv(statusString)
                 debugStamp(str(params.decode('utf-8')[0:-2]))
     except Exception as e:
         debugStamp(e, "Full")
