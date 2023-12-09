@@ -206,11 +206,15 @@ void loop() {
   }
   
   // Measure
-  currentMillisMeasure = millis();
-  if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
-    measureAll(currentMillisMeasure - previousMillisMeasure);
-    robotParams.currentTime = millis() - previousMillisSpeed;
-    previousMillisMeasure = millis();
+  if (robotState.current != STATE_IDLE) {
+    currentMillisMeasure = millis();
+    if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
+      measureAll(currentMillisMeasure - previousMillisMeasure);
+      robotParams.currentTime = millis() - previousMillisSpeed;
+      Serial.print(F("currentTime:"));
+      Serial.println(robotParams.currentTime);
+      previousMillisMeasure = millis();
+    }
   }
 
   // Check if accelerating and stop if PERIOD_SPEED elapsed
