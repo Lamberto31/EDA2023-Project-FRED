@@ -286,26 +286,16 @@ if PARAMS:
         decoded = recvParams.decode('utf-8')
         clean = decoded[0:-2]
         data = clean.split(":")
-        # TODO: Qui gestire la nota al variare dello stato (o forse è meglio farlo dove chiamo questa funzione?)
         if "distance" in data[0].lower():
             paramsData["distance"] = data[1]
-            if "increasing" in data[0].lower():
-                paramsData["note"] = "Increasing"
-            elif "decreasing" in data[0].lower():
-                paramsData["note"] = "Decreasing"
         elif "speed" in data[0].lower():
             paramsData["speed"] = data[1]
-            if "increasing" in data[0].lower():
-                paramsData["note"] = "Increasing"
-            elif "decreasing" in data[0].lower():
-                paramsData["note"] = "Decreasing"
         elif "current" in data[0].lower():
             paramsData["currentTime"] = data[1]
             writeCsvParams["currentTime"] = True
         elif "stop" in data[0].lower():
             paramsData["stopTime"] = data[1]
             writeCsvParams["stopTime"] = True
-            paramsData["note"] = "Stopped"
     # Create csv params file and write header
     paramsCsvFileName = "FRED_params_" + timestamp + ".csv"
     paramsCsvFile = open(os.path.join("./logs", paramsCsvFileName), mode='w')
@@ -376,8 +366,14 @@ while True:
                 debugStamp(str(recv, 'utf-8'), "Full")
                 params = ser.readline()
                 if PARAMS:
-                    # TODO: qui gestire il numero di messaggi al variare dello stato
-                    insertParamsInDict(params)
+                    statusString = getParamsStatusString(params.decode('utf-8')[0:-2])
+                    paramsData["note"] = statusString
+                    messageNumber = 3
+                    if statusString == STATUS_STOP:
+                        messageNumber = 4
+                    for i in range(0, messageNumber):
+                        params = ser.readline()
+                        insertParamsInDict(params)
                     writeParamsCsv()
                 debugStamp(str(params.decode('utf-8')[0:-2]))
     except Exception as e:
