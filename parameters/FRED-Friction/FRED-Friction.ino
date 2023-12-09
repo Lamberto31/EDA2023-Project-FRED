@@ -409,6 +409,7 @@ void bluetoothSendBuffer() {
   Serial.println(F("BDT 1.0 PARAMS"));
 
   // Cycle through buffer and send all messages
+  digitalWrite(LED_BUILTIN, HIGH);
   for (byte i = 0; i < bluetoothBufferIndex; i++) {
     bluetoothSendParams(i);
     // Wait PERIOD_BLUETOOTH ms between each message with while and millis
@@ -422,7 +423,7 @@ void bluetoothSendBuffer() {
   stopTime = 0;
 
   stateChange(&robotState, STATE_IDLE);
-
+  digitalWrite(LED_BUILTIN, LOW);
 }
 void bluetoothSendParams(byte index) {
   // Send status first to know how much message to expect
