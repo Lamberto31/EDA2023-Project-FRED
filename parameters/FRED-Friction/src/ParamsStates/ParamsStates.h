@@ -1,13 +1,13 @@
-#ifndef _STATES_H_
-#define _STATES_H_
+#ifndef _PARAMSSTATES_H_
+#define _PARAMSSTATES_H_
 
 #include <Arduino.h>
 
 #define STATE_SETUP 0
-#define STATE_FREE 1
-#define STATE_SEARCH 2
-#define STATE_MEASURE 3
-#define STATE_READ 4
+#define STATE_IDLE 1
+#define STATE_INPUT_MAX 2
+#define STATE_INPUT_0 3
+#define STATE_STOP 4
 
 #define DIRECTION_STOP 0
 #define DIRECTION_FORWARD 1
@@ -22,15 +22,14 @@ struct State {
   byte direction;
 };
 
-struct Measures {
+struct Params {
   double distanceUS;
-  double distanceUSFiltered;
-  double velocityUS;
 
-  double distanceOptical;
   double rpsOptical;
   double velocityOptical;
-  double velocityOpticalFiltered;
+
+  unsigned long stopTime;
+  unsigned long currentTime;
 
   bool sent;
 };
@@ -40,6 +39,6 @@ void stateNewCmd(State *st, byte command);
 void stateCmdExecuted(State *st);
 void stateNewDirection(State *st, byte direction);
 
-void printMeasures(Measures *ms);
+void printParams(Params *ms);
 
 #endif

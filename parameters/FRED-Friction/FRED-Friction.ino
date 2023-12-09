@@ -5,7 +5,7 @@
 #include <Servo.h>
 
 // Custom library for states handling
-#include "src/States/States.h"
+#include "src/ParamsStates/ParamsStates.h"
 
 // Digital Pins
 #define PIN_HC05_TX 0
@@ -25,7 +25,7 @@
 
 // States
 State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
-Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
+Params robotParams = {0, 0, 0, 0, 0, true};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 0
@@ -78,6 +78,7 @@ volatile int opticalPulses = 0;
 
 // Bluetooth
 bool bluetoothConnected = false;
+// TODO: Capire se serve questo timer o no
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
 
@@ -106,15 +107,9 @@ Servo servoH;
 // Max speed timer
 unsigned long previousMillisSpeed;
 unsigned long currentMillisSpeed;
-// Boolean to check if moving or not
-bool moving = false;
 // Stop speed timer
 unsigned long previousMillisStopSpeed;
 unsigned long currentMillisStopSpeed;
-// Boolean to check if just stopped
-bool justStopped = false;
-// Measured stop time
-unsigned long stopTime = 0;
 // END PARAMETERS FRED CONFIGURATION
 
 void setup() {
@@ -173,6 +168,8 @@ void setup() {
   // Optical
   delay(1000);
   attachInterrupt(digitalPinToInterrupt(PIN_OPTICAL), countPulses, RISING);
+
+  stateChange(&robotState, STATE_IDLE);
 }
 
 void loop() {
@@ -181,70 +178,72 @@ void loop() {
     switch (robotState.command) {
       case IR_BUTTON_OK: {
         runMotors(DIRECTION_STOP, 0);
-        moving = false;
+        stateChange(&robotState, STATE_IDLE);
         break;
       }
       case IR_BUTTON_UP: {
-        runMotors(DIRECTION_FORWARD, 255);
-        previousMillisSpeed = millis();
-        moving = true;
+        if (robotState.current == STATE_IDLE) {
+          runMotors(DIRECTION_FORWARD, 255);
+          previousMillisSpeed = millis();
+          stateChange(&robotState, STATE_INPUT_MAX);
+        }
         break;
       }
       case IR_BUTTON_DOWN: {
-        runMotors(DIRECTION_BACKWARD, 255);
-        previousMillisSpeed = millis();
-        moving = true;
+        if (robotState.current == STATE_IDLE) {
+          runMotors(DIRECTION_BACKWARD, 255);
+          previousMillisSpeed = millis();
+          stateChange(&robotState, STATE_INPUT_MAX);
+        }
         break;
       }
     }
     stateCmdExecuted(&robotState);
   }
-  // Check if connected
-  bluetoothConnection(false);
+  
   // Measure
   currentMillisMeasure = millis();
   if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
     measureAll(currentMillisMeasure - previousMillisMeasure);
-    if (justStopped) {
-      if (bluetoothConnected) {
-        bluetoothSendParams("Decreasing distance", robotMeasures.distanceUS, true);
-        bluetoothSendParams("Decreasing speed", robotMeasures.velocityOptical, true);
-        bluetoothSendParams("Current time", millis() - previousMillisSpeed, false);
-      }
-    }
+    robotParams.currentTime = millis() - previousMillisSpeed;
     previousMillisMeasure = millis();
   }
-  // Check if moving and stop if PERIOD_SPEED elapsed
-  if (moving) {
-    if (bluetoothConnected) {
-      bluetoothSendParams("Increasing distance", robotMeasures.distanceUS, true); 
-      bluetoothSendParams("Increasing speed", robotMeasures.velocityOptical, true);
-      bluetoothSendParams("Current time", millis() - previousMillisSpeed, false);
-    }
+
+  // Check if accelerating and stop if PERIOD_SPEED elapsed
+  if (robotState.current == STATE_INPUT_MAX) {
     currentMillisSpeed = millis();
     if (currentMillisSpeed - previousMillisSpeed >= PERIOD_SPEED) {
       runMotors(DIRECTION_STOP, 0);
       // Begin stop speed timer
       previousMillisStopSpeed = millis();
-      moving = false;
-      justStopped = true;
+      stateChange(&robotState, STATE_INPUT_0);
     }
   }
+
   // Check if just stopped and measure time until it's effectively stopped
-  if (justStopped) {
-    if (abs(robotMeasures.velocityOptical) < 0.1) {
+  if (robotState.current == STATE_INPUT_0) {
+    if (abs(robotParams.velocityOptical) < 0.1) {
       currentMillisStopSpeed = millis();
-      stopTime = currentMillisStopSpeed - previousMillisStopSpeed;
-      justStopped = false;
-      if (bluetoothConnected) {
-        bluetoothSendParams("Stop time", stopTime, false);
-        bluetoothSendParams("Distance", robotMeasures.distanceUS, true);
-        bluetoothSendParams("Speed", robotMeasures.velocityOptical, true);
-        bluetoothSendParams("Current time", millis() - previousMillisSpeed, false);
-        
-      }
+      robotParams.stopTime = currentMillisStopSpeed - previousMillisStopSpeed;
+      robotParams.currentTime = millis() - previousMillisSpeed;
+      stateChange(&robotState, STATE_STOP);
     }
   }
+
+  // Send Bluetooth message
+  // Check if connected
+  bluetoothConnection(false);
+  // If connected and stopped or need to send params
+  if (bluetoothConnected && (robotState.current == STATE_STOP || !robotParams.sent)) {
+    bluetoothSendParams();
+    // TODO: Capire se è meglio inviare a fine esperimento e accumulare tutte le misure nel mentre o inviare ogni volta
+    // Non con timer come qua ma quando è in STATE_STOP
+    // currentMillisMeasureToSend = millis();
+    // if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
+    //   bluetoothSendParams();
+    //   previousMillisMeasureToSend = millis();
+    // }
+  } 
 }
 
 // This is the function, which is called if a complete ir command was received
@@ -330,7 +329,7 @@ void runMotors(byte direction, byte speed) {
 
 // MEASURE
 void measureAll(unsigned long deltaT) {
-  robotMeasures.sent = false;
+  robotParams.sent = false;
   
   int pulses = opticalPulses;
   opticalPulses = 0;
@@ -338,14 +337,14 @@ void measureAll(unsigned long deltaT) {
   double travelledDistance;
 
   // Distance from ultrasonic
-  robotMeasures.distanceUS = measureDistance();
+  robotParams.distanceUS = measureDistance();
 
   // Velocity from optical
   travelledRevolution = (pulses / (double)WHEEL_ENCODER_HOLES);
   travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution;
 
-  robotMeasures.rpsOptical = travelledRevolution / (deltaT * 0.001);
-  robotMeasures.velocityOptical = travelledDistance / (deltaT * 0.001);
+  robotParams.rpsOptical = travelledRevolution / (deltaT * 0.001);
+  robotParams.velocityOptical = travelledDistance / (deltaT * 0.001);
 }
 
 // DISTANCE
@@ -398,12 +397,31 @@ bool bluetoothConnection(bool waitConnection) {
   return bluetoothConnected;
 }
 
-void bluetoothSendParams(const char* variable, double value, bool decimal) {
+void bluetoothSendParams() {
   //BDT: Bluetooth Data Transmission
   Serial.println(F("BDT 1.0 PARAMS"));
 
-  Serial.print(variable);
-  Serial.print(F(":"));
-  if (decimal) Serial.println(value, DECIMALS);
-  else Serial.println(value);
+  // Send status first to know how much message to expect
+  // INPUT_MAX => 3 messages => Increasing
+  // INPUT_0 => 3 messages => Decreasing
+  // STOP => 4 messages => Stop
+  Serial.print(F("Status:"));
+  Serial.println(robotState.current);
+
+  Serial.print(F("Current_Time:"));
+  Serial.println(robotParams.currentTime);
+
+  Serial.print(F("Distance_US:"));
+  Serial.println(robotParams.distanceUS, DECIMALS);
+
+  Serial.print(F("Velocity_OPT:"));
+  Serial.println(robotParams.velocityOptical, DECIMALS);
+
+  if (robotState.current == STATE_STOP) {
+    Serial.print(F("Stop_Time:"));
+    Serial.println(robotParams.stopTime);
+    stateChange(&robotState, STATE_IDLE);
+  }
+
+  robotParams.sent = true;
 }
