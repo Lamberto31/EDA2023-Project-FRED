@@ -180,6 +180,10 @@ void loop() {
     switch (robotState.command) {
       case IR_BUTTON_OK: {
         runMotors(DIRECTION_STOP, 0);
+        // Reset buffer
+        bluetoothBufferIndex = 0;
+        bluetoothBuffer[bluetoothBufferIndex] = {0, 0, 0, 0, true, 0};
+        stopTime = 0;
         stateChange(&robotState, STATE_IDLE);
         break;
       }
