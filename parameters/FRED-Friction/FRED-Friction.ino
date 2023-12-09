@@ -240,7 +240,6 @@ void loop() {
     bluetoothBuffer[bluetoothBufferIndex] = robotParams;
     robotParams.recorded = true;
     bluetoothBufferIndex++;
-    robotParams = {0, 0, 0, 0, true, 0};
     }
 
   // Send Bluetooth buffer
