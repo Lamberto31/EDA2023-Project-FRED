@@ -235,7 +235,7 @@ void loop() {
   }
 
   // Fill Bluetooth buffer
-  if ((robotState.current == STATE_STOP || !robotParams.recorded)) {
+  if ((robotState.current != STATE_IDLE && (robotState.current == STATE_STOP || !robotParams.recorded))) {
     robotParams.state = robotState.current;
     bluetoothBuffer[bluetoothBufferIndex] = robotParams;
     robotParams.recorded = true;
