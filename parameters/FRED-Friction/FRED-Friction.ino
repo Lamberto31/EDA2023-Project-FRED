@@ -103,10 +103,8 @@ Servo servoH;
 #define PERIOD_MAX_STOP 1000 // [ms] Time that, if elapsed, ensure robot stop state
 // Max speed timer
 unsigned long previousMillisSpeed;
-unsigned long currentMillisSpeed;
 // Stop speed timer
 unsigned long previousMillisStopSpeed;
-unsigned long currentMillisStopSpeed;
 unsigned long stopTime = 0;
 // Bluetooth message buffer size (in terms of robotParams)
 #define BLUETOOTH_BUFFER_SIZE (PERIOD_SPEED + PERIOD_MAX_STOP) / PERIOD_MEASURE
@@ -211,16 +209,13 @@ void loop() {
     if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
       measureAll(currentMillisMeasure - previousMillisMeasure);
       robotParams.currentTime = millis() - previousMillisSpeed;
-      Serial.print(F("currentTime:"));
-      Serial.println(robotParams.currentTime);
       previousMillisMeasure = millis();
     }
   }
 
   // Check if accelerating and stop if PERIOD_SPEED elapsed
   if (robotState.current == STATE_INPUT_MAX) {
-    currentMillisSpeed = millis();
-    if (currentMillisSpeed - previousMillisSpeed >= PERIOD_SPEED) {
+    if (millis() - previousMillisSpeed >= PERIOD_SPEED) {
       runMotors(DIRECTION_STOP, 0);
       // Begin stop speed timer
       previousMillisStopSpeed = millis();
@@ -231,8 +226,7 @@ void loop() {
   // Check if just stopped and measure time until it's effectively stopped
   if (robotState.current == STATE_INPUT_0) {
     if (abs(robotParams.velocityOptical) < 0.1) {
-      currentMillisStopSpeed = millis();
-      stopTime = currentMillisStopSpeed - previousMillisStopSpeed;
+      stopTime = millis() - previousMillisStopSpeed;
       robotParams.currentTime = millis() - previousMillisSpeed;
       stateChange(&robotState, STATE_STOP);
     }
@@ -249,6 +243,8 @@ void loop() {
   // Send Bluetooth buffer
   // Check if connected
   bluetoothConnection(false);
+  if (DEBUG_ACTIVE) bluetoothConnected = true;
+  bluetoothConnected = true;
   // If connected and stopped send buffer
   if (bluetoothConnected && robotState.current == STATE_STOP) {
     bluetoothSendBuffer();
