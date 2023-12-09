@@ -403,6 +403,10 @@ bool bluetoothConnection(bool waitConnection) {
 }
 void bluetoothSendBuffer() {
   unsigned long previousMillisBluetoothSend = 0;
+  // Send first message to start communication
+  // BDT: Bluetooth Data Transmission
+  Serial.println(F("BDT 1.0 PARAMS"));
+
   // Cycle through buffer and send all messages
   for (byte i = 0; i < bluetoothBufferIndex; i++) {
     bluetoothSendParams(i);
@@ -410,6 +414,7 @@ void bluetoothSendBuffer() {
     previousMillisBluetoothSend = millis();
     while (millis() - previousMillisBluetoothSend < PERIOD_BLUETOOTH);
   }
+
   // Reset buffer
   bluetoothBufferIndex = 0;
   bluetoothBuffer[bluetoothBufferIndex] = {0, 0, 0, 0, 0, true, 0};
@@ -418,13 +423,10 @@ void bluetoothSendBuffer() {
 
 }
 void bluetoothSendParams(byte index) {
-  //BDT: Bluetooth Data Transmission
-  Serial.println(F("BDT 1.0 PARAMS"));
-
   // Send status first to know how much message to expect
   // INPUT_MAX => 3 messages => Increasing
   // INPUT_0 => 3 messages => Decreasing
-  // STOP => 4 messages => Stop
+  // STOP => 4 messages => Stop => last message
   Serial.print(F("Status:"));
   Serial.println(bluetoothBuffer[index].state);
 

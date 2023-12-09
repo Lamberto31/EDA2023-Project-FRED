@@ -352,16 +352,19 @@ while True:
                 debugStamp(str(recv, 'utf-8'), "Full")
                 params = ser.readline()
                 if PARAMS:
-                    statusString = getParamsStatusString(params.decode('utf-8')[0:-2])
-                    paramsData["status"] = statusString
-                    messageNumber = 3
-                    if statusString == STATUS_STOP:
-                        messageNumber = 4
-                    for i in range(0, messageNumber):
-                        params = ser.readline()
-                        insertParamsInDict(params)
-                    writeParamsCsv(statusString)
-                debugStamp(str(params.decode('utf-8')[0:-2]))
+                    last = False
+                    while not last:
+                        statusString = getParamsStatusString(params.decode('utf-8')[0:-2])
+                        paramsData["status"] = statusString
+                        messageNumber = 3
+                        if statusString == STATUS_STOP:
+                            messageNumber = 4
+                            last = True
+                        for i in range(0, messageNumber):
+                            params = ser.readline()
+                            insertParamsInDict(params)
+                        writeParamsCsv(statusString)
+                    debugStamp(str(params.decode('utf-8')[0:-2]))
     except Exception as e:
         debugStamp(e, "Full")
         # If there is an error, handle the closing of the program
