@@ -226,8 +226,7 @@ void loop() {
   // Check if just stopped and measure time until it's effectively stopped
   if (robotState.current == STATE_INPUT_0) {
     if (abs(robotParams.velocityOptical) < 0.1) {
-      stopTime = millis() - previousMillisStopSpeed;
-      robotParams.currentTime = millis() - previousMillisSpeed;
+      stopTime = robotParams.currentTime + previousMillisSpeed - previousMillisStopSpeed;
       stateChange(&robotState, STATE_STOP);
     }
   }
