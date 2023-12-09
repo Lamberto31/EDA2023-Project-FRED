@@ -25,7 +25,7 @@
 
 // States
 State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
-Params robotParams = {0, 0, 0, 0, 0, true};
+Params robotParams = {0, 0, 0, 0, 0, true, 0};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 0
@@ -39,7 +39,6 @@ Params robotParams = {0, 0, 0, 0, 0, true};
 #define WHEEL_DIAMETER 65  //[mm] Diameter of wheel
 // Bluetooth
 #define BLUETOOTH_WAIT_CONNECTION 10000  // [ms] Wait time to receive Bluetooth connection
-#define PERIOD_BLUETOOTH 500  // [ms] between each message to Bluetooth. Min value 1000, may cause error response if lower
 // Servo
 #define SERVO_HORIZ_CENTER 100 // [angle] [0-180] Angle considered as center for servo, it depends on the construction
 // Feedback Led
@@ -78,9 +77,6 @@ volatile int opticalPulses = 0;
 
 // Bluetooth
 bool bluetoothConnected = false;
-// TODO: Capire se serve questo timer o no
-unsigned long previousMillisMeasureToSend;
-unsigned long currentMillisMeasureToSend;
 
 // Servomotor
 Servo servoH;
@@ -104,12 +100,20 @@ Servo servoH;
 
 // PARAMETERS FRED CONFIGURATION
 #define PERIOD_SPEED 2000 // [ms] Time that, if elapsed, ensure a maximum speed
+#define PERIOD_MAX_STOP 1000 // [ms] Time that, if elapsed, ensure robot stop state
 // Max speed timer
 unsigned long previousMillisSpeed;
 unsigned long currentMillisSpeed;
 // Stop speed timer
 unsigned long previousMillisStopSpeed;
 unsigned long currentMillisStopSpeed;
+// Bluetooth message buffer size (in terms of robotParams)
+#define BLUETOOTH_BUFFER_SIZE (PERIOD_SPEED + PERIOD_MAX_STOP) / PERIOD_MEASURE
+// Bluetooth message buffer
+Params bluetoothBuffer[BLUETOOTH_BUFFER_SIZE];
+byte bluetoothBufferIndex = 0;
+// Bluetooth message timer
+#define PERIOD_BLUETOOTH 50 // [ms] between each message to Bluetooth (while sending buffer). Min value 50, may cause error response if lower
 // END PARAMETERS FRED CONFIGURATION
 
 void setup() {
@@ -120,7 +124,6 @@ void setup() {
 
   //Start time counters
   previousMillisMeasure = millis();
-  previousMillisMeasureToSend = millis();
 
   // IR Receiver
   if (!initPCIInterruptForTinyReceiver()) {
@@ -230,19 +233,21 @@ void loop() {
     }
   }
 
-  // Send Bluetooth message
+  // Fill Bluetooth buffer
+  if ((robotState.current == STATE_STOP || !robotParams.recorded)) {
+    robotParams.state = robotState.current;
+    bluetoothBuffer[bluetoothBufferIndex] = robotParams;
+    robotParams.recorded = true;
+    bluetoothBufferIndex++;
+    robotParams = {0, 0, 0, 0, 0, true, 0};
+    }
+
+  // Send Bluetooth buffer
   // Check if connected
   bluetoothConnection(false);
-  // If connected and stopped or need to send params
-  if (bluetoothConnected && (robotState.current == STATE_STOP || !robotParams.sent)) {
-    bluetoothSendParams();
-    // TODO: Capire se è meglio inviare a fine esperimento e accumulare tutte le misure nel mentre o inviare ogni volta
-    // Non con timer come qua ma quando è in STATE_STOP
-    // currentMillisMeasureToSend = millis();
-    // if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
-    //   bluetoothSendParams();
-    //   previousMillisMeasureToSend = millis();
-    // }
+  // If connected and stopped send buffer
+  if (bluetoothConnected && robotState.current == STATE_STOP) {
+    bluetoothSendBuffer();
   } 
 }
 
@@ -329,7 +334,7 @@ void runMotors(byte direction, byte speed) {
 
 // MEASURE
 void measureAll(unsigned long deltaT) {
-  robotParams.sent = false;
+  robotParams.recorded = false;
   
   int pulses = opticalPulses;
   opticalPulses = 0;
@@ -396,8 +401,23 @@ bool bluetoothConnection(bool waitConnection) {
   bluetoothConnected = digitalRead(PIN_BLUETOOTH_STATE) == HIGH;
   return bluetoothConnected;
 }
+void bluetoothSendBuffer() {
+  unsigned long previousMillisBluetoothSend = 0;
+  // Cycle through buffer and send all messages
+  for (byte i = 0; i < bluetoothBufferIndex; i++) {
+    bluetoothSendParams(i);
+    // Wait PERIOD_BLUETOOTH ms between each message with while and millis
+    previousMillisBluetoothSend = millis();
+    while (millis() - previousMillisBluetoothSend < PERIOD_BLUETOOTH);
+  }
+  // Reset buffer
+  bluetoothBufferIndex = 0;
+  bluetoothBuffer[bluetoothBufferIndex] = {0, 0, 0, 0, 0, true, 0};
 
-void bluetoothSendParams() {
+  stateChange(&robotState, STATE_IDLE);
+
+}
+void bluetoothSendParams(byte index) {
   //BDT: Bluetooth Data Transmission
   Serial.println(F("BDT 1.0 PARAMS"));
 
@@ -406,22 +426,19 @@ void bluetoothSendParams() {
   // INPUT_0 => 3 messages => Decreasing
   // STOP => 4 messages => Stop
   Serial.print(F("Status:"));
-  Serial.println(robotState.current);
+  Serial.println(bluetoothBuffer[index].state);
 
   Serial.print(F("Current_Time:"));
-  Serial.println(robotParams.currentTime);
+  Serial.println(bluetoothBuffer[index].currentTime);
 
   Serial.print(F("Distance_US:"));
-  Serial.println(robotParams.distanceUS, DECIMALS);
+  Serial.println(bluetoothBuffer[index].distanceUS, DECIMALS);
 
   Serial.print(F("Velocity_OPT:"));
-  Serial.println(robotParams.velocityOptical, DECIMALS);
+  Serial.println(bluetoothBuffer[index].velocityOptical, DECIMALS);
 
-  if (robotState.current == STATE_STOP) {
+  if (bluetoothBuffer[index].state == STATE_STOP) {
     Serial.print(F("Stop_Time:"));
-    Serial.println(robotParams.stopTime);
-    stateChange(&robotState, STATE_IDLE);
+    Serial.println(bluetoothBuffer[index].stopTime);
   }
-
-  robotParams.sent = true;
 }

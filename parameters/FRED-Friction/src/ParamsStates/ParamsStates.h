@@ -31,7 +31,9 @@ struct Params {
   unsigned long stopTime;
   unsigned long currentTime;
 
-  bool sent;
+  bool recorded;
+
+  byte state;
 };
 
 void stateChange(State *st, byte dest);
