@@ -273,7 +273,7 @@ if PARAMS:
         "distance": 0,
         "speed": 0,
         "stopTime": 0,
-        "note": "None"
+        "status": STATUS_UNKNOWN
         }
     # Define function that fill params dictionary
     def insertParamsInDict(recvParams):
@@ -297,10 +297,10 @@ if PARAMS:
     # Define function that write a row in csv if enough data are present
     def writeParamsCsv(statusString):
         if statusString == STATUS_STOP:
-            paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "stopTime": paramsData["stopTime"], "note": paramsData["note"]})
+            paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "stopTime": paramsData["stopTime"], "status": paramsData["status"]})
             paramsData["attempt"] += 1
         else:
-            paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "note": paramsData["note"]})
+            paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "status": paramsData["status"]})
         paramsCsvFile.flush()
 
 # MAIN LOOP: receive data from Bluetooth and send to remote server via WiFi
@@ -353,7 +353,7 @@ while True:
                 params = ser.readline()
                 if PARAMS:
                     statusString = getParamsStatusString(params.decode('utf-8')[0:-2])
-                    paramsData["note"] = statusString
+                    paramsData["status"] = statusString
                     messageNumber = 3
                     if statusString == STATUS_STOP:
                         messageNumber = 4
