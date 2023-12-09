@@ -247,7 +247,6 @@ void loop() {
   // Check if connected
   bluetoothConnection(false);
   if (DEBUG_ACTIVE) bluetoothConnected = true;
-  bluetoothConnected = true;
   // If connected and stopped send buffer
   if (bluetoothConnected && robotState.current == STATE_STOP) {
     bluetoothSendBuffer();
