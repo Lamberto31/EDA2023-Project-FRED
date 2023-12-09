@@ -36,12 +36,19 @@ PARAMS = False
 PERIOD_SERVER = 15 # seconds
 STATUS_DISCONNECTED = "Disconnected"
 STATUS_CONNECTED = "Connected"
+
 STATUS_SETUP = "Setup"
+
 STATUS_FREE = "Free walking"
 STATUS_READING = "Reading"
 STATUS_EXPLORATION = "Exploration"
 STATUS_DATA_TRANSMISSION = "Data transmission"
-# TODO: qui aggiungere gli altri stati del caso PARAMS
+
+STATUS_IDLE = "Idle"
+STATUS_INPUT_MAX = "Input max"
+STATUS_INPUT_0 = "Input 0"
+STATUS_STOP = "Stop"
+
 STATUS_UNKNOWN = "Unknown"
 
 # Get secret values from .env file
@@ -247,6 +254,19 @@ lastSendToServer = time.time()
 # PARAMS PROCESSING
 if PARAMS:
     # TODO: Da queste parti rimuovere il codice che gestiva tramite writeCsvParams e writeParamsCsv la scrittura o meno, ora i messaggi e la scrittura dipendono dallo stato
+    def getParamsStatusString(statusNumber):
+        if statusNumber == "0":
+            return STATUS_SETUP
+        elif statusNumber == "1":
+            return STATUS_IDLE
+        elif statusNumber == "2":
+            return STATUS_INPUT_MAX
+        elif statusNumber == "3":
+            return STATUS_INPUT_0
+        elif statusNumber == "4":
+            return STATUS_STOP
+        else:
+            return STATUS_UNKNOWN
     # Init dictionary that contains data received with PARAMS
     paramsData = {
         "attempt": 1,
