@@ -350,11 +350,13 @@ while True:
             elif "PARAMS" in str(recv):
                 debugStamp("New BDT message: PARAMS")
                 debugStamp(str(recv, 'utf-8'), "Full")
-                params = ser.readline()
                 if PARAMS:
                     last = False
                     while not last:
+                        # Read status and configure message receiving
+                        params = ser.readline()
                         statusString = getParamsStatusString(params.decode('utf-8')[0:-2])
+                        debugStamp(statusString, "Full")
                         paramsData["status"] = statusString
                         messageNumber = 3
                         if statusString == STATUS_STOP:
@@ -363,8 +365,9 @@ while True:
                         for i in range(0, messageNumber):
                             params = ser.readline()
                             insertParamsInDict(params)
+                            debugStamp(str(params.decode('utf-8')[0:-2]))
                         writeParamsCsv(statusString)
-                    debugStamp(str(params.decode('utf-8')[0:-2]))
+                    
     except Exception as e:
         debugStamp(e, "Full")
         # If there is an error, handle the closing of the program
