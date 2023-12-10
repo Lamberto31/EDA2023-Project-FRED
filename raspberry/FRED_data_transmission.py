@@ -304,12 +304,12 @@ if PARAMS:
             paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "status": paramsData["status"]})
         paramsCsvFile.flush()
     # Print params in tabular format
-    def stampParams():
+    def stampParams(first):
         if ((DEBUG == "Default" or DEBUG == "Full") and VIEW_DATA):
-            print("\nPARAMS")
-            print("N.\tattempt\tcurrentTime\tdistance\tspeed\tstopTime\tstatus\n")
-            for i in range(0, len(params)):
-                print(str(i + 1) + "\t" + str(params[i]["attempt"]) + "\t" + str(params[i]["currentTime"]) + "\t" + str(params[i]["distance"]) + "\t" + str(params[i]["speed"]) + "\t" + str(params[i]["stopTime"]) + "\t" + str(params[i]["status"]) + "\n")
+            if first:
+                print("\nPARAMS")
+                print("attempt\tcurrentTime\tdistance\tspeed\tstatus\n")
+            print(str(paramsData["attempt"]) + "\t" + str(paramsData["currentTime"]) + "\t" + str(paramsData["distance"]) + "\t" + str(paramsData["speed"]) + "\t" + str(paramsData["stopTime"]) + "\t" + str(paramsData["status"]) + "\n")
 
 
 # MAIN LOOP: receive data from Bluetooth and send to remote server via WiFi
@@ -361,6 +361,7 @@ while True:
                 debugStamp(str(recv, 'utf-8'), "Full")
                 if PARAMS:
                     last = False
+                    first = True # Used for stampParams
                     while not last:
                         # Read status and configure message receiving
                         params = ser.readline()
@@ -375,7 +376,8 @@ while True:
                             params = ser.readline()
                             insertParamsInDict(params)
                             debugStamp(str(params.decode('utf-8')[0:-2]), "Full")
-                        stampParams()
+                        stampParams(first)
+                        first = False
                         writeParamsCsv(statusString)     
                     
     except Exception as e:
