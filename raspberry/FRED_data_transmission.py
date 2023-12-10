@@ -308,8 +308,8 @@ if PARAMS:
         if ((DEBUG == "Default" or DEBUG == "Full") and VIEW_DATA):
             if first:
                 print("\nPARAMS")
-                print("attempt\tcurrentTime\tdistance\tspeed\tstatus\n")
-            print(str(paramsData["attempt"]) + "\t" + str(paramsData["currentTime"]) + "\t" + str(paramsData["distance"]) + "\t" + str(paramsData["speed"]) + "\t" + str(paramsData["stopTime"]) + "\t" + str(paramsData["status"]) + "\n")
+                print("attempt\tcurrentTime\tdistance\tspeed\t\tstopTime\tstatus\n")
+            print(str(paramsData["attempt"]) + "\t" + str(paramsData["currentTime"]) + "\t\t" + str(paramsData["distance"]) + "\t\t" + str(paramsData["speed"]) + "\t\t" + str(paramsData["stopTime"]) + "\t\t" + str(paramsData["status"]) + "\n")
 
 
 # MAIN LOOP: receive data from Bluetooth and send to remote server via WiFi
