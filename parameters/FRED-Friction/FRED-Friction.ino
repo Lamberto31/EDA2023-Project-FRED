@@ -440,7 +440,7 @@ void bluetoothSendParams(byte index) {
   Serial.print(F("Distance_US:"));
   Serial.println(bluetoothBuffer[index].distanceUS, DECIMALS);
 
-  Serial.print(F("Velocity_OPT:"));
+  Serial.print(F("Speed_OPT:"));
   Serial.println(bluetoothBuffer[index].velocityOptical, DECIMALS);
 
   if (bluetoothBuffer[index].state == STATE_STOP) {
