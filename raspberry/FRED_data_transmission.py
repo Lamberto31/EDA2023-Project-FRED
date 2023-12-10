@@ -375,8 +375,8 @@ while True:
                             params = ser.readline()
                             insertParamsInDict(params)
                             debugStamp(str(params.decode('utf-8')[0:-2]), "Full")
-                        writeParamsCsv(statusString)
                         stampParams()
+                        writeParamsCsv(statusString)     
                     
     except Exception as e:
         debugStamp(e, "Full")
