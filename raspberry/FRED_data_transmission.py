@@ -303,6 +303,14 @@ if PARAMS:
         else:
             paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "status": paramsData["status"]})
         paramsCsvFile.flush()
+    # Print params in tabular format
+    def stampParams():
+        if ((DEBUG == "Default" or DEBUG == "Full") and VIEW_DATA):
+            print("\nPARAMS")
+            print("N.\tattempt\tcurrentTime\tdistance\tspeed\tstopTime\tstatus\n")
+            for i in range(0, len(dataToSend)):
+                print(str(i + 1) + "\t" + str(dataToSend[i]["attempt"]) + "\t" + str(dataToSend[i]["currentTime"]) + "\t" + str(dataToSend[i]["distance"]) + "\t" + str(dataToSend[i]["speed"]) + "\t" + str(dataToSend[i]["stopTime"]) + "\t" + str(dataToSend[i]["status"]) + "\n")
+
 
 # MAIN LOOP: receive data from Bluetooth and send to remote server via WiFi
 debugStamp("Starting main loop")
@@ -366,8 +374,9 @@ while True:
                         for i in range(0, messageNumber):
                             params = ser.readline()
                             insertParamsInDict(params)
-                            debugStamp(str(params.decode('utf-8')[0:-2]))
+                            debugStamp(str(params.decode('utf-8')[0:-2]), "Full")
                         writeParamsCsv(statusString)
+                        stampParams()
                     
     except Exception as e:
         debugStamp(e, "Full")
