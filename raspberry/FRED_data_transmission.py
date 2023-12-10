@@ -355,7 +355,7 @@ while True:
                     while not last:
                         # Read status and configure message receiving
                         params = ser.readline()
-                        statusString = getParamsStatusString(params.decode('utf-8')[0:-2])
+                        statusString = getParamsStatusString(((params.decode('utf-8')[0:-2]).split(":"))[1])
                         debugStamp(statusString, "Full")
                         paramsData["status"] = statusString
                         messageNumber = 3
