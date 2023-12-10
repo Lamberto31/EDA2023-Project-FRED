@@ -35,7 +35,7 @@ speed_max = zeros(numAttempts,1);
 speed_mean = zeros(numAttempts,1);
 for i = 1:numAttempts
     % Take only speed when increasing and not 0
-    idx_speed_notNull = T_attempts{i}.speed ~= 0 & T_attempts{i}.note == "Increasing";
+    idx_speed_notNull = T_attempts{i}.speed ~= 0 & T_attempts{i}.status == "Input max";
     T_speed{i} = T_attempts{i}(idx_speed_notNull, :);
     % Statistics
     speed_mean(i) = mean(T_speed{i}.speed);
