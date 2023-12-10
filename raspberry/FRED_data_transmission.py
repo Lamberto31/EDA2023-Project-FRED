@@ -298,6 +298,7 @@ if PARAMS:
     def writeParamsCsv(statusString):
         if statusString == STATUS_STOP:
             paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "stopTime": paramsData["stopTime"], "status": paramsData["status"]})
+            debugStamp("Attempt " + str(paramsData["attempt"]) + " finished")
             paramsData["attempt"] += 1
         else:
             paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "status": paramsData["status"]})
