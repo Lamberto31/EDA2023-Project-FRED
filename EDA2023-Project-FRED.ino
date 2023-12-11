@@ -46,6 +46,12 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 // Derived
 #define FRICTION_COEFFICIENT 5 * (MASS / TIME_TO_STOP) // [kg/s] Friction coefficient
 #define ETA_V SPEED_MAX * (FRICTION_COEFFICIENT / VOLTAGE_PEAK) // [N/V] (Newton in centimeter) Constant used to convert voltage to speed
+// Model
+#define STATE_DIM 2  // [adim] Dimension of state vector
+#define INPUT_DIM 1  // [adim] Dimension of input vector
+#define MEASURE_DIM 2  // [adim] Dimension of measure vector
+#define STATE_INIT {0, 0}  // [adim] Initial state vector
+#define STATE_INIT_COV {0.1, 0.1}  // [adim] Initial state covariance matrix
 // Noise
 #define NOISE_PROCESS_POSITION_STD 0.03  // [cm] Standard deviation of process noise for position
 #define NOISE_PROCESS_VELOCITY_STD 0.03  // [cm/s] Standard deviation of process noise for velocity
@@ -102,6 +108,21 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 
 // Used by TinyIRReceiver library
 volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
+
+// Model matrices
+double F[STATE_DIM][STATE_DIM];  // [adim] State transition matrix
+double G[STATE_DIM][INPUT_DIM];  // [adim] Input matrix
+double H[MEASURE_DIM][STATE_DIM];  // [adim] Measure matrix
+double L[STATE_DIM][INPUT_DIM];  // [adim] Input matrix
+double Q[STATE_DIM][STATE_DIM];  // [adim] Process noise covariance matrix
+double R[MEASURE_DIM][MEASURE_DIM];  // [adim] Measure noise covariance matrix
+// Model matrices pointers
+double *pF[STATE_DIM] = {F[0], F[1]};
+double *pG[STATE_DIM] = {G[0], G[1]};
+double *pH[MEASURE_DIM] = {H[0], H[1]};
+double *pL[STATE_DIM] = {L[0], L[1]};
+double *pQ[STATE_DIM] = {Q[0], Q[1]};
+double *pR[MEASURE_DIM] = {R[0], R[1]};
 
 // Measure
 unsigned long previousMillisMeasure;
