@@ -43,6 +43,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 #define TIME_TO_STOP 0.362  // [s] Time to stop with null input starting from max speed (measured)
 #define WHEEL_DIAMETER 6.5 // [cm] Diameter of wheel
 #define WHEEL_ENCODER_HOLES 20  // [imp/rev] Impulses per revolution of wheel (when counted indicates one round)
+#define DISCRETE_STEP 0.1  // [s] Discrete time step of system. Min value 0.06, may cause error on ultrasonic measure if lower
 // Derived
 #define FRICTION_COEFFICIENT 5 * (MASS / TIME_TO_STOP) // [kg/s] Friction coefficient
 #define ETA_V SPEED_MAX * (FRICTION_COEFFICIENT / VOLTAGE_PEAK) // [N/V] (Newton in centimeter) Constant used to convert voltage to speed
@@ -58,7 +59,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 #define NOISE_MEASURE_POSITION_STD 0.3  // [cm] Standard deviation of measure noise for position
 #define NOISE_MEASURE_VELOCITY_STD 0.1  // [cm/s] Standard deviation of measure noise for velocity
 // Measure
-#define PERIOD_MEASURE 100  // [ms] between each measurement. Min value 60, may cause error on ultrasonic measure if lower
+#define PERIOD_MEASURE DISCRETE_STEP * 1000  // [ms] between each measurement. Min value 60, may cause error on ultrasonic measure if lower
 #define DECIMALS 4  // [digits] Max value 4, it may cause buffer overflow if greater
 // Movement control
 #define STOP_TRESHOLD 0.1  // [cm] Tolerance for diffDist
