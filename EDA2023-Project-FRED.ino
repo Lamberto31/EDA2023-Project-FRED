@@ -36,12 +36,19 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 #define DEBUG_ACTIVE 0
 
 // PARAMETERS
+// Physical TODO: misurare bene e inserire qui
+#define MASS 0.731  // [kg] Mass of robot
+#define VOLTAGE_PEAK 6 // [V] Power supply voltage (Peak)
+#define SPEED_MAX 70  // [cm/s] Max speed of robot (measured)
+#define TIME_TO_STOP 0.362  // [s] Time to stop with null input starting from max speed (measured)
+#define WHEEL_DIAMETER 6.5 // [cm] Diameter of wheel
+#define WHEEL_ENCODER_HOLES 20  // [imp/rev] Impulses per revolution of wheel (when counted indicates one round)
+// Derived
+#define FRICTION_COEFFICIENT 5 * (MASS / TIME_TO_STOP) // [kg/s] Friction coefficient
+#define ETA_V SPEED_MAX * (FRICTION_COEFFICIENT / VOLTAGE_PEAK) // [N/V] (Newton in centimeter) Constant used to convert voltage to speed
 // Measure
 #define PERIOD_MEASURE 100  // [ms] between each measurement. Min value 60, may cause error on ultrasonic measure if lower
 #define DECIMALS 4  // [digits] Max value 4, it may cause buffer overflow if greater
-// Optical
-#define WHEEL_ENCODER_HOLES 20  // Holes in wheel encoder (when counted indicates one round)
-#define WHEEL_DIAMETER 65  //[mm] Diameter of wheel
 // Movement control
 #define STOP_TRESHOLD 0.1  // [cm] Tolerance for diffDist
 #define SLOW_TRESHOLD 50  // [cm] Treshold used to go at max speed until reached
