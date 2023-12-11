@@ -45,3 +45,23 @@ void computeMatrixL(double T, double b, double M, double **L) {
     L[1][0] = 0;
     L[1][1] = bMT;
 }
+/*
+Q = [sigmaQP^2 0;
+    0 sigmaQV^2];
+*/
+void computeMatrixQ(double sigmaQP, double sigmaQV, double **Q) {
+    Q[0][0] = sigmaQP*sigmaQP;
+    Q[0][1] = 0;
+    Q[1][0] = 0;
+    Q[1][1] = sigmaQV*sigmaQV;
+}
+/*
+R = [sigmaRP^2 0;
+    0 sigmaRV^2];
+*/
+void computeMatrixR(double sigmaRP, double sigmaRV, double **R) {
+    R[0][0] = sigmaRP*sigmaRP;
+    R[0][1] = 0;
+    R[1][0] = 0;
+    R[1][1] = sigmaRV*sigmaRV;
+}

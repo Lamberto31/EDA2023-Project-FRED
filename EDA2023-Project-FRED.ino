@@ -46,6 +46,11 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 // Derived
 #define FRICTION_COEFFICIENT 5 * (MASS / TIME_TO_STOP) // [kg/s] Friction coefficient
 #define ETA_V SPEED_MAX * (FRICTION_COEFFICIENT / VOLTAGE_PEAK) // [N/V] (Newton in centimeter) Constant used to convert voltage to speed
+// Noise
+#define NOISE_PROCESS_POSITION_STD 0.03  // [cm] Standard deviation of process noise for position
+#define NOISE_PROCESS_VELOCITY_STD 0.03  // [cm/s] Standard deviation of process noise for velocity
+#define NOISE_MEASURE_POSITION_STD 0.3  // [cm] Standard deviation of measure noise for position
+#define NOISE_MEASURE_VELOCITY_STD 0.1  // [cm/s] Standard deviation of measure noise for velocity
 // Measure
 #define PERIOD_MEASURE 100  // [ms] between each measurement. Min value 60, may cause error on ultrasonic measure if lower
 #define DECIMALS 4  // [digits] Max value 4, it may cause buffer overflow if greater
