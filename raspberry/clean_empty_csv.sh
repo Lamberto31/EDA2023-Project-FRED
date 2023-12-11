@@ -6,8 +6,8 @@ cd ./logs
 # Counter for the number of empty files
 count=0
 
-# Loop through all csv files with "FRED_log" in the name
-for file in FRED_log*.csv; do
+# Loop through all csv files with "FRED_" in the name
+for file in FRED_*.csv; do
     # Count the number of lines in the file
     lines=$(wc -l < "$file")
     # If there is only one line, delete the file

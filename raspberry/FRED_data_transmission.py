@@ -27,15 +27,28 @@ VIEW_DATA = True
 # True: enable wifi connection
 WIFI = True
 
+# PARAMS can be 2 value: False, True, Can be passed as argument (int from 0 to 1)
+# False: disable params processing
+# True: enable params processing
+PARAMS = False
+
 # Parameters Definition
 PERIOD_SERVER = 15 # seconds
 STATUS_DISCONNECTED = "Disconnected"
 STATUS_CONNECTED = "Connected"
+
 STATUS_SETUP = "Setup"
+
 STATUS_FREE = "Free walking"
 STATUS_READING = "Reading"
 STATUS_EXPLORATION = "Exploration"
 STATUS_DATA_TRANSMISSION = "Data transmission"
+
+STATUS_IDLE = "Idle"
+STATUS_INPUT_MAX = "Input max"
+STATUS_INPUT_0 = "Input 0"
+STATUS_STOP = "Stop"
+
 STATUS_UNKNOWN = "Unknown"
 
 # Get secret values from .env file
@@ -58,6 +71,10 @@ parser.add_argument("--wifi", "-w", help="Enable/disable wifi connection:\
                     0 is disable\
                     1 is enable\
                     ", type=int, choices=[0, 1], default=1)
+parser.add_argument("--params", "-p", help="Enable/disable params processing:\
+                    0 is disable\
+                    1 is enable\
+                    ", type=int, choices=[0, 1], default=0)
 args = parser.parse_args()
 
 # Connection status
@@ -155,6 +172,13 @@ def interpretWifiArguments():
     elif args.wifi == 1:
         WIFI = True
     return WIFI
+# PARAMS
+def interpretParamsArguments():
+    if args.params == 0:
+        PARAMS = False
+    elif args.params == 1:
+        PARAMS = True
+    return PARAMS
 
 # INITIAL CONFIGURATION
 
@@ -165,12 +189,14 @@ print("Press CTRL+C or send SIGINT to safely close the script")
 DEBUG = interpretDebugArguments()
 WIFI = interpretWifiArguments()
 VIEW_DATA = interpretViewDataArguments()
+PARAMS = interpretParamsArguments()
 
 # Print initial configuration
 print("Functionalities configuration")
 print("DEBUG: " + DEBUG + " (" + str(args.debug) + ")")
 print("VIEW_DATA: " + str(VIEW_DATA) + " (" + str(args.viewdata) + ")")
 print("WIFI: " + str(WIFI) + " (" + str(args.wifi) + ")")
+print("PARAMS: " + str(PARAMS) + " (" + str(args.params) + ")")
 
 # Serial connection configuration
 ser = serial.Serial(
@@ -225,6 +251,67 @@ csvFile.flush()
 # Init last execution time
 lastSendToServer = time.time()
 
+# PARAMS PROCESSING
+if PARAMS:
+    def getParamsStatusString(statusNumber):
+        if statusNumber == "0":
+            return STATUS_SETUP
+        elif statusNumber == "1":
+            return STATUS_IDLE
+        elif statusNumber == "2":
+            return STATUS_INPUT_MAX
+        elif statusNumber == "3":
+            return STATUS_INPUT_0
+        elif statusNumber == "4":
+            return STATUS_STOP
+        else:
+            return STATUS_UNKNOWN
+    # Init dictionary that contains data received with PARAMS
+    paramsData = {
+        "attempt": 1,
+        "currentTime": 0,
+        "distance": 0,
+        "speed": 0,
+        "stopTime": 0,
+        "status": STATUS_UNKNOWN
+        }
+    # Define function that fill params dictionary
+    def insertParamsInDict(recvParams):
+        decoded = recvParams.decode('utf-8')
+        clean = decoded[0:-2]
+        data = clean.split(":")
+        if "distance" in data[0].lower():
+            paramsData["distance"] = data[1]
+        elif "speed" in data[0].lower():
+            paramsData["speed"] = data[1]
+        elif "current" in data[0].lower():
+            paramsData["currentTime"] = data[1]
+        elif "stop" in data[0].lower():
+            paramsData["stopTime"] = data[1]
+    # Create csv params file and write header
+    paramsCsvFileName = "FRED_params_" + timestamp + ".csv"
+    paramsCsvFile = open(os.path.join("./logs", paramsCsvFileName), mode='w')
+    paramsCsvWriter = csv.DictWriter(paramsCsvFile, fieldnames=paramsData.keys())
+    paramsCsvWriter.writeheader()
+    paramsCsvFile.flush()
+    # Define function that write a row in csv if enough data are present
+    def writeParamsCsv(statusString):
+        if statusString == STATUS_STOP:
+            paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "stopTime": paramsData["stopTime"], "status": paramsData["status"]})
+            debugStamp("Attempt " + str(paramsData["attempt"]) + " finished")
+            paramsData["attempt"] += 1
+        else:
+            paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "status": paramsData["status"]})
+        paramsCsvFile.flush()
+    # Print params in tabular format
+    def stampParams(first):
+        if ((DEBUG == "Default" or DEBUG == "Full") and VIEW_DATA):
+            if first:
+                print("\nPARAMS")
+                print("attempt\tcurrentTime\tdistance\tspeed\t\tstopTime\tstatus\n")
+            print(str(paramsData["attempt"]) + "\t" + str(paramsData["currentTime"]) + "\t\t" + str(paramsData["distance"]) + "\t\t" + str(paramsData["speed"]) + "\t\t" + str(paramsData["stopTime"]) + "\t\t" + str(paramsData["status"]) + "\n")
+
+
 # MAIN LOOP: receive data from Bluetooth and send to remote server via WiFi
 debugStamp("Starting main loop")
 while True:
@@ -268,7 +355,33 @@ while True:
                 debugStamp(str(recv, 'utf-8'), "Full")
                 info = ser.readline().decode('utf-8')[0:-2]
                 debugStamp(str(info))
+            # If contains "PARAMS" it's a PARAMS messagge
+            elif "PARAMS" in str(recv):
+                debugStamp("New BDT message: PARAMS")
+                debugStamp(str(recv, 'utf-8'), "Full")
+                if PARAMS:
+                    last = False
+                    first = True # Used for stampParams
+                    while not last:
+                        # Read status and configure message receiving
+                        params = ser.readline()
+                        statusString = getParamsStatusString(((params.decode('utf-8')[0:-2]).split(":"))[1])
+                        debugStamp(statusString, "Full")
+                        paramsData["status"] = statusString
+                        messageNumber = 3
+                        if statusString == STATUS_STOP:
+                            messageNumber = 4
+                            last = True
+                        for i in range(0, messageNumber):
+                            params = ser.readline()
+                            insertParamsInDict(params)
+                            debugStamp(str(params.decode('utf-8')[0:-2]), "Full")
+                        stampParams(first)
+                        first = False
+                        writeParamsCsv(statusString)     
+                    
     except Exception as e:
+        debugStamp(e, "Full")
         # If there is an error, handle the closing of the program
         if connected:
             connected = False
