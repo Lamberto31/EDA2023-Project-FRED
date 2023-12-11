@@ -51,8 +51,9 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 #define STATE_DIM 2  // [adim] Dimension of state vector
 #define INPUT_DIM 1  // [adim] Dimension of input vector
 #define MEASURE_DIM 2  // [adim] Dimension of measure vector
-#define STATE_INIT {0, 0}  // [adim] Initial state vector
-#define STATE_INIT_COV {0.1, 0.1}  // [adim] Initial state covariance matrix
+// Model initial state and covariance matrix
+#define STATE_INIT {202, 0}  // [adim] Initial state vector
+#define STATE_INIT_COV {66, SPEED_MAX/100}  // [adim] Initial state covariance matrix
 // Noise
 #define NOISE_PROCESS_POSITION_STD 0.03  // [cm] Standard deviation of process noise for position
 #define NOISE_PROCESS_VELOCITY_STD 0.03  // [cm/s] Standard deviation of process noise for velocity
