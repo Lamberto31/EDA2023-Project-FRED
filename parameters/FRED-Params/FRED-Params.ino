@@ -41,9 +41,6 @@ Params robotParams = {0, 0, 0, 0, true, 0};
 #define BLUETOOTH_WAIT_CONNECTION 10000  // [ms] Wait time to receive Bluetooth connection
 // Servo
 #define SERVO_HORIZ_CENTER 100 // [angle] [0-180] Angle considered as center for servo, it depends on the construction
-// Feedback Led
-#define FEEDBACK_BLINK_READ_RECEIVE 1  // [adim] Number of blinks for feedback led when reading a custom distance
-#define FEEDBACK_DURATION_READ_RECEIVE 100  // [ms] Duration of each blink for feedback led when reading a custom distance
 
 // IR
 // Button-Command
@@ -112,7 +109,7 @@ unsigned long stopTime = 0;
 Params bluetoothBuffer[BLUETOOTH_BUFFER_SIZE];
 byte bluetoothBufferIndex = 0;
 // Bluetooth message timer
-#define PERIOD_BLUETOOTH 50 // [ms] between each message to Bluetooth (while sending buffer). Min value 50, may cause error response if lower
+#define PERIOD_BLUETOOTH 50 // [ms] between each message to Bluetooth (while sending buffer). Min value 50, may cause error if lower
 // END PARAMETERS FRED CONFIGURATION
 
 void setup() {
@@ -207,7 +204,7 @@ void loop() {
     stateCmdExecuted(&robotState);
   }
   
-  // Measure
+  // Measure if not idle
   if (robotState.current != STATE_IDLE) {
     currentMillisMeasure = millis();
     if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
@@ -403,6 +400,7 @@ bool bluetoothConnection(bool waitConnection) {
   bluetoothConnected = digitalRead(PIN_BLUETOOTH_STATE) == HIGH;
   return bluetoothConnected;
 }
+
 void bluetoothSendBuffer() {
   unsigned long previousMillisBluetoothSend = 0;
   // Send first message to start communication
@@ -418,7 +416,7 @@ void bluetoothSendBuffer() {
     while (millis() - previousMillisBluetoothSend < PERIOD_BLUETOOTH);
   }
 
-  // Reset buffer
+  // Reset buffer and stop time
   bluetoothBufferIndex = 0;
   bluetoothBuffer[bluetoothBufferIndex] = {0, 0, 0, 0, true, 0};
   stopTime = 0;
@@ -426,8 +424,9 @@ void bluetoothSendBuffer() {
   stateChange(&robotState, STATE_IDLE);
   digitalWrite(LED_BUILTIN, LOW);
 }
+
 void bluetoothSendParams(byte index) {
-  // Send status first to know how much message to expect
+  // Send status first to know how much message to expect (Status message excluded)
   // INPUT_MAX => 3 messages => Increasing
   // INPUT_0 => 3 messages => Decreasing
   // STOP => 4 messages => Stop => last message
