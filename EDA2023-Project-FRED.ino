@@ -233,6 +233,24 @@ void setup() {
   delay(1000);
   attachInterrupt(digitalPinToInterrupt(PIN_OPTICAL), countPulses, RISING);
 
+  // Matrix initialization
+  digitalWrite(LED_BUILTIN, HIGH);
+
+  // State transition matrix
+  computeMatrixF(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, pF);
+  // Input matrix
+  computeMatrixG(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, ETA_V, VOLTAGE_PEAK, pG);
+  // Measure matrix
+  computeMatrixH(WHEEL_ENCODER_HOLES, WHEEL_DIAMETER, pH);
+  // Process noise matrix
+  computeMatrixL(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, pL);
+  // Process noise covariance matrix
+  computeMatrixQ(NOISE_PROCESS_POSITION_STD, NOISE_PROCESS_VELOCITY_STD, pQ);
+  // Measure noise covariance matrix
+  computeMatrixR(NOISE_MEASURE_POSITION_STD, NOISE_MEASURE_VELOCITY_STD, pR);
+
+  digitalWrite(LED_BUILTIN, LOW);
+
   stateChange(&robotState, STATE_FREE);
 }
 
