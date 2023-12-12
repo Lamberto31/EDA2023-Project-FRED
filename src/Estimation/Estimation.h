@@ -22,6 +22,9 @@ void computeMatrixR(double sigmaRP, double sigmaRV, BLA::Matrix<MEASURE_DIM, MEA
 void initilizeVectorX(double Xp0, double Xv0, BLA::Matrix<STATE_DIM> *X);
 void initializeMatrixP(double sigma_0P, double sigma_0V, BLA::Matrix<STATE_DIM, STATE_DIM> *P);
 
+// KALMAN FILTER
+// TODO: implementare predizione e correzione
+
 // SHOW RESULTS
 template <int rows, int cols, typename DType = float>
 void printMatrix(BLA::Matrix<rows, cols, DType> M, const char *name, int decimals) {
