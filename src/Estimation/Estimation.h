@@ -19,7 +19,8 @@ void computeMatrixQ(double sigmaQP, double sigmaQV, BLA::Matrix<STATE_DIM, STATE
 void computeMatrixR(double sigmaRP, double sigmaRV, BLA::Matrix<MEASURE_DIM, MEASURE_DIM> *R);
 
 // INITIAL CONDITIONS
-void computeMatrixP0(double sigma_0P, double sigma_0V, double **P0);
+void initilizeVectorX(double Xp0, double Xv0, BLA::Matrix<STATE_DIM> *X);
+void initializeMatrixP(double sigma_0P, double sigma_0V, BLA::Matrix<STATE_DIM, STATE_DIM> *P);
 
 // SHOW RESULTS
 template <int rows, int cols, typename DType = float>

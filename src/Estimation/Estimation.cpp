@@ -70,9 +70,13 @@ void computeMatrixR(double sigmaRP, double sigmaRV, BLA::Matrix<MEASURE_DIM, MEA
 }
 
 // INITIAL CONDITIONS
-void computeMatrixP0(double sigma_0P, double sigma_0V, double **P0) {
-    P0[0][0] = sigma_0P*sigma_0P;
-    P0[0][1] = 0;
-    P0[1][0] = 0;
-    P0[1][1] = sigma_0V*sigma_0V;
+void initilizeVectorX(double Xp0, double Xv0, BLA::Matrix<STATE_DIM, 1> *X) {
+    X->operator()(0, 0) = Xp0;
+    X->operator()(1, 0) = Xv0;
+}
+void initializeMatrixP(double sigma_0P, double sigma_0V, BLA::Matrix<STATE_DIM, STATE_DIM> *P) {
+    P->operator()(0,0) = sigma_0P*sigma_0P;
+    P->operator()(0,1) = 0;
+    P->operator()(1,0) = 0;
+    P->operator()(1,1) = sigma_0V*sigma_0V;
 }
