@@ -120,7 +120,7 @@ volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 BLA::Matrix<STATE_DIM, STATE_DIM> FF;  // [adim] State transition matrix (Notation: FF to avoid conflict with F macro)
 BLA::Matrix<STATE_DIM, INPUT_DIM> G;  // [adim] Input matrix
 BLA::Matrix<MEASURE_DIM, STATE_DIM> H;  // [adim] Measure matrix
-BLA::Matrix<STATE_DIM, INPUT_DIM> L;  // [adim] Process noise matrix
+BLA::Matrix<STATE_DIM, STATE_DIM> L;  // [adim] Process noise matrix
 BLA::Matrix<STATE_DIM, STATE_DIM> Q;  // [adim] Process noise covariance matrix
 BLA::Matrix<MEASURE_DIM, MEASURE_DIM> R;  // [adim] Measure noise covariance matrix
 

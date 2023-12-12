@@ -41,10 +41,10 @@ void computeMatrixH(int ipr, double D, BLA::Matrix<MEASURE_DIM, STATE_DIM> *H) {
 L = [T (1/2)*T^2;
     0 bmT];
 */
-void computeMatrixL(double T, double b, double M, BLA::Matrix<STATE_DIM, INPUT_DIM> *L) {
+void computeMatrixL(double T, double b, double M, BLA::Matrix<STATE_DIM, STATE_DIM> *L) {
     double bMT = T*(1 - ((b/M) * (T/2)));
     L->operator()(0, 0) = T;
-    L->operator()(0, 1) = (1/2)*T*T;
+    L->operator()(0, 1) = T*T/2;
     L->operator()(1, 0) = 0;
     L->operator()(1, 1) = bMT;
 }

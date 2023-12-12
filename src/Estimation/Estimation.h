@@ -14,7 +14,7 @@ using namespace BLA;
 void computeMatrixF(double T, double b, double M, BLA::Matrix<STATE_DIM,STATE_DIM> *F);
 void computeMatrixG(double T, double b, double M, double eta_V, double V_p , BLA::Matrix<STATE_DIM, INPUT_DIM> *G);
 void computeMatrixH(int ipr, double D, BLA::Matrix<MEASURE_DIM, STATE_DIM> *H);
-void computeMatrixL(double T, double b, double M, BLA::Matrix<STATE_DIM, INPUT_DIM> *L);
+void computeMatrixL(double T, double b, double M, BLA::Matrix<STATE_DIM, STATE_DIM> *L);
 void computeMatrixQ(double sigmaQP, double sigmaQV, BLA::Matrix<STATE_DIM, STATE_DIM> *Q);
 void computeMatrixR(double sigmaRP, double sigmaRV, BLA::Matrix<MEASURE_DIM, MEASURE_DIM> *R);
 
