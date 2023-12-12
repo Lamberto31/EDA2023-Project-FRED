@@ -124,6 +124,12 @@ BLA::Matrix<STATE_DIM, STATE_DIM> L;  // [adim] Process noise matrix
 BLA::Matrix<STATE_DIM, STATE_DIM> Q;  // [adim] Process noise covariance matrix
 BLA::Matrix<MEASURE_DIM, MEASURE_DIM> R;  // [adim] Measure noise covariance matrix
 
+// State, measure and input vectors
+BLA::Matrix<STATE_DIM> x_pred;  // [adim] State vector prediction
+BLA::Matrix<STATE_DIM> x_hat;  // [adim] State vector estimate
+BLA::Matrix<INPUT_DIM> u;  // [adim] Input vector
+BLA::Matrix<MEASURE_DIM> z;  // [adim] Measure vector
+
 // Measure
 unsigned long previousMillisMeasure;
 unsigned long currentMillisMeasure;
