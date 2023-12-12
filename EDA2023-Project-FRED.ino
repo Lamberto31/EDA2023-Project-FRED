@@ -244,6 +244,14 @@ void setup() {
   // Measure noise covariance matrix
   computeMatrixR(NOISE_MEASURE_POSITION_STD, NOISE_MEASURE_VELOCITY_STD, &R);
 
+  // Print matrices
+  if (DEBUG_ACTIVE) {
+    // debugFln("F = ");
+    showMatrixF(&FF, STATE_DIM, STATE_DIM);
+    // Serial << "M: " << setprecision(DECIMALS) <<FF << '\n';
+    // debugFln("G = ");
+  }
+
   digitalWrite(LED_BUILTIN, LOW);
 
   stateChange(&robotState, STATE_FREE);

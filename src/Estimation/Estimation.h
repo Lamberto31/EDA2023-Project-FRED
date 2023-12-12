@@ -8,6 +8,7 @@ using namespace BLA;
 #define STATE_DIM 2  // [adim] Dimension of state vector
 #define INPUT_DIM 1  // [adim] Dimension of input vector
 #define MEASURE_DIM 2  // [adim] Dimension of measure vector
+#define DECIMALS 4
 
 // MODEL MATRICES
 void computeMatrixF(double T, double b, double M, BLA::Matrix<STATE_DIM,STATE_DIM> *F);
@@ -19,5 +20,8 @@ void computeMatrixR(double sigmaRP, double sigmaRV, BLA::Matrix<MEASURE_DIM, MEA
 
 // INITIAL CONDITIONS
 void computeMatrixP0(double sigma_0P, double sigma_0V, double **P0);
+
+// SHOW RESULTS
+void showMatrixF(BLA::Matrix<STATE_DIM, STATE_DIM> *F, int r, int c);
 
 #endif
