@@ -115,7 +115,7 @@ volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 double F[STATE_DIM][STATE_DIM];  // [adim] State transition matrix
 double G[STATE_DIM][INPUT_DIM];  // [adim] Input matrix
 double H[MEASURE_DIM][STATE_DIM];  // [adim] Measure matrix
-double L[STATE_DIM][INPUT_DIM];  // [adim] Input matrix
+double L[STATE_DIM][INPUT_DIM];  // [adim] Process noise matrix
 double Q[STATE_DIM][STATE_DIM];  // [adim] Process noise covariance matrix
 double R[MEASURE_DIM][MEASURE_DIM];  // [adim] Measure noise covariance matrix
 // Model matrices pointers
