@@ -232,17 +232,17 @@ void setup() {
   digitalWrite(LED_BUILTIN, HIGH);
 
   // State transition matrix
-  computeMatrixF(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, pF);
+  computeMatrixF(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, F);
   // Input matrix
-  computeMatrixG(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, ETA_V, VOLTAGE_PEAK, pG);
+  computeMatrixG(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, ETA_V, VOLTAGE_PEAK, G);
   // Measure matrix
-  computeMatrixH(WHEEL_ENCODER_HOLES, WHEEL_DIAMETER, pH);
+  computeMatrixH(WHEEL_ENCODER_HOLES, WHEEL_DIAMETER, H);
   // Process noise matrix
-  computeMatrixL(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, pL);
+  computeMatrixL(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, L);
   // Process noise covariance matrix
-  computeMatrixQ(NOISE_PROCESS_POSITION_STD, NOISE_PROCESS_VELOCITY_STD, pQ);
+  computeMatrixQ(NOISE_PROCESS_POSITION_STD, NOISE_PROCESS_VELOCITY_STD, Q);
   // Measure noise covariance matrix
-  computeMatrixR(NOISE_MEASURE_POSITION_STD, NOISE_MEASURE_VELOCITY_STD, pR);
+  computeMatrixR(NOISE_MEASURE_POSITION_STD, NOISE_MEASURE_VELOCITY_STD, R);
 
   digitalWrite(LED_BUILTIN, LOW);
 
