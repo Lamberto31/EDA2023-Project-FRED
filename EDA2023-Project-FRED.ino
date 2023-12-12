@@ -117,19 +117,12 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 
 // Model matrices
-double F[STATE_DIM][STATE_DIM];  // [adim] State transition matrix
-double G[STATE_DIM][INPUT_DIM];  // [adim] Input matrix
-double H[MEASURE_DIM][STATE_DIM];  // [adim] Measure matrix
-double L[STATE_DIM][INPUT_DIM];  // [adim] Process noise matrix
-double Q[STATE_DIM][STATE_DIM];  // [adim] Process noise covariance matrix
-double R[MEASURE_DIM][MEASURE_DIM];  // [adim] Measure noise covariance matrix
-// Model matrices pointers
-double *pF[STATE_DIM] = {F[0], F[1]};
-double *pG[STATE_DIM] = {G[0], G[1]};
-double *pH[MEASURE_DIM] = {H[0], H[1]};
-double *pL[STATE_DIM] = {L[0], L[1]};
-double *pQ[STATE_DIM] = {Q[0], Q[1]};
-double *pR[MEASURE_DIM] = {R[0], R[1]};
+BLA::Matrix<STATE_DIM, STATE_DIM> F;  // [adim] State transition matrix
+BLA::Matrix<STATE_DIM, INPUT_DIM> G;  // [adim] Input matrix
+BLA::Matrix<MEASURE_DIM, STATE_DIM> H;  // [adim] Measure matrix
+BLA::Matrix<STATE_DIM, INPUT_DIM> L;  // [adim] Process noise matrix
+BLA::Matrix<STATE_DIM, STATE_DIM> Q;  // [adim] Process noise covariance matrix
+BLA::Matrix<MEASURE_DIM, MEASURE_DIM> R;  // [adim] Measure noise covariance matrix
 
 // Measure
 unsigned long previousMillisMeasure;
