@@ -117,7 +117,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 
 // Model matrices
-BLA::Matrix<STATE_DIM, STATE_DIM> F;  // [adim] State transition matrix
+BLA::Matrix<STATE_DIM, STATE_DIM> FF;  // [adim] State transition matrix (Notation: FF to avoid conflict with F macro)
 BLA::Matrix<STATE_DIM, INPUT_DIM> G;  // [adim] Input matrix
 BLA::Matrix<MEASURE_DIM, STATE_DIM> H;  // [adim] Measure matrix
 BLA::Matrix<STATE_DIM, INPUT_DIM> L;  // [adim] Process noise matrix
@@ -232,17 +232,17 @@ void setup() {
   digitalWrite(LED_BUILTIN, HIGH);
 
   // State transition matrix
-  computeMatrixF(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, F);
+  computeMatrixF(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, &FF);
   // Input matrix
-  computeMatrixG(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, ETA_V, VOLTAGE_PEAK, G);
+  computeMatrixG(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, ETA_V, VOLTAGE_PEAK, &G);
   // Measure matrix
-  computeMatrixH(WHEEL_ENCODER_HOLES, WHEEL_DIAMETER, H);
+  computeMatrixH(WHEEL_ENCODER_HOLES, WHEEL_DIAMETER, &H);
   // Process noise matrix
-  computeMatrixL(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, L);
+  computeMatrixL(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, &L);
   // Process noise covariance matrix
-  computeMatrixQ(NOISE_PROCESS_POSITION_STD, NOISE_PROCESS_VELOCITY_STD, Q);
+  computeMatrixQ(NOISE_PROCESS_POSITION_STD, NOISE_PROCESS_VELOCITY_STD, &Q);
   // Measure noise covariance matrix
-  computeMatrixR(NOISE_MEASURE_POSITION_STD, NOISE_MEASURE_VELOCITY_STD, R);
+  computeMatrixR(NOISE_MEASURE_POSITION_STD, NOISE_MEASURE_VELOCITY_STD, &R);
 
   digitalWrite(LED_BUILTIN, LOW);
 
