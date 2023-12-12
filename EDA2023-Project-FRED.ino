@@ -2,6 +2,8 @@
 #define NO_LED_FEEDBACK_CODE  // Defined here because the library requires it
 #include "TinyIRReceiver.hpp"
 #include <Servo.h>
+#include <BasicLinearAlgebra.h>
+using namespace BLA;
 
 // Custom library for states handling
 #include "src/States/States.h"
