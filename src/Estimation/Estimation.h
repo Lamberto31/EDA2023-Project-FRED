@@ -22,8 +22,6 @@ void computeMatrixR(double sigmaRP, double sigmaRV, BLA::Matrix<MEASURE_DIM, MEA
 void computeMatrixP0(double sigma_0P, double sigma_0V, double **P0);
 
 // SHOW RESULTS
-void showMatrixF(BLA::Matrix<STATE_DIM, STATE_DIM> *F, int r, int c);
-
 template <int rows, int cols, typename DType = float>
 void printMatrix(BLA::Matrix<rows, cols, DType> M, const char *name, int decimals) {
     Serial.print(name);

@@ -76,19 +76,3 @@ void computeMatrixP0(double sigma_0P, double sigma_0V, double **P0) {
     P0[1][0] = 0;
     P0[1][1] = sigma_0V*sigma_0V;
 }
-
-// SHOW RESULTS
-void showMatrixF(BLA::Matrix<STATE_DIM, STATE_DIM> *F, int r, int c) {
-    Serial.println("F = ");
-    for (int i = 0; i < r; i++) {
-        Serial.print("[");
-        for (int j = 0; j < c; j++) {
-            Serial.print(F->operator()(i, j), DECIMALS);
-            if (j < c-1) {
-                Serial.print(", ");
-            }
-        }
-        Serial.println("]");
-    }
-    Serial.println();
-}
