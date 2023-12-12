@@ -38,7 +38,7 @@ State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
 Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 
 // Functionalities active/disabled
-#define DEBUG_ACTIVE 0
+#define DEBUG_ACTIVE 1
 
 // PARAMETERS
 // Physical TODO: misurare bene e inserire qui
@@ -247,9 +247,9 @@ void setup() {
   // Print matrices
   if (DEBUG_ACTIVE) {
     // debugFln("F = ");
-    showMatrixF(&FF, STATE_DIM, STATE_DIM);
-    // Serial << "M: " << setprecision(DECIMALS) <<FF << '\n';
+    // showMatrixF(&FF, STATE_DIM, STATE_DIM);
     // debugFln("G = ");
+    printMatrix(FF, STATE_DIM, STATE_DIM, "F", DECIMALS);
   }
 
   digitalWrite(LED_BUILTIN, LOW);
