@@ -12,6 +12,9 @@
 // Custom library for build data to send to remote server
 #include "src/DataHelper/DataHelper.h"
 
+// Custom library for estimation and filtering
+#include "src/Estimation/Estimation.h"
+
 // Digital Pins
 #define PIN_HC05_TX 0
 #define PIN_HC05_RX 1
