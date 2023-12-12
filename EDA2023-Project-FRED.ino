@@ -246,10 +246,12 @@ void setup() {
 
   // Print matrices
   if (DEBUG_ACTIVE) {
-    // debugFln("F = ");
-    // showMatrixF(&FF, STATE_DIM, STATE_DIM);
-    // debugFln("G = ");
-    printMatrix(FF, STATE_DIM, STATE_DIM, "F", DECIMALS);
+    printMatrix(FF, "F", DECIMALS);
+    printMatrix(G, "G", DECIMALS);
+    printMatrix(H, "H", DECIMALS);
+    printMatrix(L, "L", DECIMALS);
+    printMatrix(Q, "Q", DECIMALS);
+    printMatrix(R, "R", DECIMALS);
   }
 
   digitalWrite(LED_BUILTIN, LOW);
