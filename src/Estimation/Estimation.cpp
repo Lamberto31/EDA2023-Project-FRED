@@ -1,6 +1,7 @@
 #include "Estimation.h"
 #include <Arduino.h>
 
+// MODEL MATRICES
 
 // bMT = T*(1 - ((b/M) * (T/2)));
 
@@ -64,4 +65,12 @@ void computeMatrixR(double sigmaRP, double sigmaRV, double **R) {
     R[0][1] = 0;
     R[1][0] = 0;
     R[1][1] = sigmaRV*sigmaRV;
+}
+
+// INITIAL CONDITIONS
+void computeMatrixP0(double sigma_0P, double sigma_0V, double **P0) {
+    P0[0][0] = sigma_0P*sigma_0P;
+    P0[0][1] = 0;
+    P0[1][0] = 0;
+    P0[1][1] = sigma_0V*sigma_0V;
 }
