@@ -16,11 +16,14 @@
 #define DIRECTION_LEFT 4
 
 struct State {
+  // State
   byte current;
+  bool just_changed;
+  // Command
   byte command;
   bool cmd_executed;
+  // Input
   byte direction;
-  bool just_changed;
   int input;
 };
 
@@ -38,8 +41,10 @@ struct Measures {
 };
 
 void stateChange(State *st, byte dest);
+
 void stateNewCmd(State *st, byte command);
 void stateCmdExecuted(State *st);
+
 void stateNewInput(State *st, byte direction, int input);
 
 void printMeasures(Measures *ms);

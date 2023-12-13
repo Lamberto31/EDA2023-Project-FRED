@@ -5,6 +5,7 @@ void stateChange(State *st, byte dest) {
   st->current = dest;
   st->just_changed = true;
 }
+
 void stateNewCmd(State *st, byte command) {
   st->command = command;
   st->cmd_executed = false;
@@ -12,6 +13,7 @@ void stateNewCmd(State *st, byte command) {
 void stateCmdExecuted(State *st) {
   st->cmd_executed = true;
 }
+
 void stateNewInput(State *st, byte direction, int input) {
   st->direction = direction;
   st->input = input;

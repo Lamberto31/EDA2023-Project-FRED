@@ -34,7 +34,7 @@ using namespace BLA;
 #define PIN_MOTOR_IN1 13
 
 // States
-State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP, false, 0};
+State robotState = { STATE_SETUP, false, 0, true, DIRECTION_STOP, 0};
 Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 
 // Functionalities active/disabled
