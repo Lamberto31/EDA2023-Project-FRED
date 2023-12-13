@@ -419,16 +419,18 @@ void loop() {
       }
       // Estimate
       // TODO: Controllare che c'è una nuova misura e procedere solo se c'è
-      // Fill input and measures vectors TODO: forse posso farlo fare direttamente quando cambio i valori (nelle funzioni apposite)
-      // Forse meglio qua dato che serve qua
-      computeVectorU(0, &u);
-      computeVectorZ(robotMeasures.distanceUS, opticalPulses, &z);
-      // Predictor and corrector
-      KalmanPredictor(FF, x_hat, G, u, P_hat, Q, &x_pred, &P_pred);
-      KalmanCorrector(P_pred, H, R, z, x_pred, &W, &x_hat, &P_hat, &innovation, &S);
-      // Update input
-      checkDistance();
-      //TODO: Send results (Capire bene come e cosa inviare, cambieranno un po' di cose...)
+      if (!robotMeasures.sent) {
+        // Update input
+        checkDistance();
+        // Fill input and measures vectors
+        computeVectorU(robotState.input, &u);
+        computeVectorZ(robotMeasures.distanceUS, opticalPulses, &z);
+        // Predictor and corrector
+        KalmanPredictor(FF, x_hat, G, u, P_hat, Q, &x_pred, &P_pred);
+        KalmanCorrector(P_pred, H, R, z, x_pred, &W, &x_hat, &P_hat, &innovation, &S);
+        //TODO: Send results (Capire bene come e cosa inviare, cambieranno un po' di cose...)
+
+      }
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
           case IR_BUTTON_OK: {
