@@ -270,12 +270,12 @@ void setup() {
   }
 
   // Send matrices
-  bluetoothSendMatrix(&FF, 'F');
-  bluetoothSendMatrix(&G, 'G');
-  bluetoothSendMatrix(&H, 'H');
-  bluetoothSendMatrix(&L, 'L');
-  bluetoothSendMatrix(&Q, 'Q');
-  bluetoothSendMatrix(&R, 'R');
+  bluetoothSendMatrix(FF, "F", DECIMALS);
+  bluetoothSendMatrix(G, "G", DECIMALS);
+  bluetoothSendMatrix(H, "H", DECIMALS);
+  bluetoothSendMatrix(L, "L", DECIMALS);
+  bluetoothSendMatrix(Q, "Q", DECIMALS);
+  bluetoothSendMatrix(R, "R", DECIMALS);
 
   digitalWrite(LED_BUILTIN, LOW);
 
@@ -876,27 +876,4 @@ void bluetoothSendFilterResult() {
   Serial.println(P_hat(1, 1), DECIMALS);
 
   Serial.println(F("BDT 1.0 END"));
-}
-template <int rows, int cols, typename DType = float>
-void bluetoothSendMatrix(BLA::Matrix<rows, cols, DType> M, const char *name, int decimals) {
-  //BDT: Bluetooth Data Transmission
-  Serial.println(F("BDT 1.0 MATRIX"));
-
-  Serial.print(name);
-  Serial.print(F("="));
-  Serial.print(rows);
-  Serial.print(F("x"));
-  Serial.println(cols);
-
-  Serial.print(F("_data:"));
-  for (int i = 0; i < rows; i++) {
-    for (int j = 0; j < cols; j++)
-    {
-      Serial.print(M(i, j), decimals);
-      Serial.print(F(","));
-    }
-  }
-
-  Serial.println(F("BDT 1.0 END"));
-
 }
