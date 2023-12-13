@@ -57,8 +57,10 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 #define INPUT_DIM 1  // [adim] Dimension of input vector
 #define MEASURE_DIM 2  // [adim] Dimension of measure vector
 // Model initial state and covariance matrix TODO: Capire se va bene
-#define STATE_INIT {202, 0}  // [adim] Initial state vector
-#define STATE_INIT_COV {66, SPEED_MAX/100}  // [adim] Initial state covariance matrix
+#define STATE_INIT_Xp 202  // [adim] Initial position
+#define STATE_INIT_Xv 0  // [adim] Initial velocity
+#define STATE_INIT_COV_Xp 66  // [adim] Initial position covariance
+#define STATE_INIT_COV_Xv SPEED_MAX/100  // [adim] Initial velocity covariance
 // Noise
 #define NOISE_PROCESS_POSITION_STD 0.03  // [cm] Standard deviation of process noise for position
 #define NOISE_PROCESS_VELOCITY_STD 0.03  // [cm/s] Standard deviation of process noise for velocity
@@ -410,6 +412,8 @@ void loop() {
     // Search state handling
     case STATE_SEARCH: {
       if (robotState.just_changed) {
+        initializeVectorX(STATE_INIT_Xp, STATE_INIT_Xv, &x_hat);
+        initializeMatrixP(STATE_INIT_COV_Xp, STATE_INIT_COV_Xv, &P_hat);
         robotState.just_changed = false;
       }
       checkDistance();
