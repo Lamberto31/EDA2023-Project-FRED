@@ -2,6 +2,8 @@
 #define NO_LED_FEEDBACK_CODE  // Defined here because the library requires it
 #include "TinyIRReceiver.hpp"
 #include <Servo.h>
+#include <BasicLinearAlgebra.h>
+using namespace BLA;
 
 // Custom library for states handling
 #include "src/States/States.h"
@@ -32,11 +34,11 @@
 #define PIN_MOTOR_IN1 13
 
 // States
-State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
-Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
+State robotState = { STATE_SETUP, false, 0, true, DIRECTION_STOP, 0};
+Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 
 // Functionalities active/disabled
-#define DEBUG_ACTIVE 0
+#define DEBUG_ACTIVE 1
 
 // PARAMETERS
 // Physical TODO: misurare bene e inserire qui
@@ -54,9 +56,11 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 #define STATE_DIM 2  // [adim] Dimension of state vector
 #define INPUT_DIM 1  // [adim] Dimension of input vector
 #define MEASURE_DIM 2  // [adim] Dimension of measure vector
-// Model initial state and covariance matrix
-#define STATE_INIT {202, 0}  // [adim] Initial state vector
-#define STATE_INIT_COV {66, SPEED_MAX/100}  // [adim] Initial state covariance matrix
+// Model initial state and covariance matrix TODO: Capire se va bene
+#define STATE_INIT_Xp 202  // [adim] Initial position
+#define STATE_INIT_Xv 0  // [adim] Initial velocity
+#define STATE_INIT_COV_Xp 66  // [adim] Initial position covariance
+#define STATE_INIT_COV_Xv SPEED_MAX/100  // [adim] Initial velocity covariance
 // Noise
 #define NOISE_PROCESS_POSITION_STD 0.03  // [cm] Standard deviation of process noise for position
 #define NOISE_PROCESS_VELOCITY_STD 0.03  // [cm/s] Standard deviation of process noise for velocity
@@ -115,19 +119,25 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 
 // Model matrices
-double F[STATE_DIM][STATE_DIM];  // [adim] State transition matrix
-double G[STATE_DIM][INPUT_DIM];  // [adim] Input matrix
-double H[MEASURE_DIM][STATE_DIM];  // [adim] Measure matrix
-double L[STATE_DIM][INPUT_DIM];  // [adim] Process noise matrix
-double Q[STATE_DIM][STATE_DIM];  // [adim] Process noise covariance matrix
-double R[MEASURE_DIM][MEASURE_DIM];  // [adim] Measure noise covariance matrix
-// Model matrices pointers
-double *pF[STATE_DIM] = {F[0], F[1]};
-double *pG[STATE_DIM] = {G[0], G[1]};
-double *pH[MEASURE_DIM] = {H[0], H[1]};
-double *pL[STATE_DIM] = {L[0], L[1]};
-double *pQ[STATE_DIM] = {Q[0], Q[1]};
-double *pR[MEASURE_DIM] = {R[0], R[1]};
+BLA::Matrix<STATE_DIM, STATE_DIM> FF;  // State transition matrix (Notation: FF to avoid conflict with F macro)
+BLA::Matrix<STATE_DIM, INPUT_DIM> G;  // Input matrix
+BLA::Matrix<MEASURE_DIM, STATE_DIM> H;  // Measure matrix
+BLA::Matrix<STATE_DIM, STATE_DIM> L;  // Process noise matrix
+BLA::Matrix<STATE_DIM, STATE_DIM> Q;  // Process noise covariance matrix
+BLA::Matrix<MEASURE_DIM, MEASURE_DIM> R;  // Measure noise covariance matrix
+
+// State, measure and input vectors
+BLA::Matrix<STATE_DIM> x_pred;  // State vector prediction
+BLA::Matrix<STATE_DIM> x_hat;  // State vector estimate
+BLA::Matrix<INPUT_DIM> u;  // Input vector
+BLA::Matrix<MEASURE_DIM> z;  // Measure vector
+
+// Kalman filter output
+BLA::Matrix<STATE_DIM, STATE_DIM> P_pred;  // State covariance matrix prediction
+BLA::Matrix<STATE_DIM, STATE_DIM> P_hat;  // State covariance matrix estimate
+BLA::Matrix<STATE_DIM, STATE_DIM> W;  // Kalman gain
+BLA::Matrix<MEASURE_DIM> innovation;  // Innovation
+BLA::Matrix<STATE_DIM, STATE_DIM> S;  // Innovation covariance matrix
 
 // Measure
 unsigned long previousMillisMeasure;
@@ -237,17 +247,27 @@ void setup() {
   digitalWrite(LED_BUILTIN, HIGH);
 
   // State transition matrix
-  computeMatrixF(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, pF);
+  computeMatrixF(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, &FF);
   // Input matrix
-  computeMatrixG(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, ETA_V, VOLTAGE_PEAK, pG);
+  computeMatrixG(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, ETA_V, VOLTAGE_PEAK, &G);
   // Measure matrix
-  computeMatrixH(WHEEL_ENCODER_HOLES, WHEEL_DIAMETER, pH);
+  computeMatrixH(WHEEL_ENCODER_HOLES, WHEEL_DIAMETER, &H);
   // Process noise matrix
-  computeMatrixL(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, pL);
+  computeMatrixL(DISCRETE_STEP, FRICTION_COEFFICIENT, MASS, &L);
   // Process noise covariance matrix
-  computeMatrixQ(NOISE_PROCESS_POSITION_STD, NOISE_PROCESS_VELOCITY_STD, pQ);
+  computeMatrixQ(NOISE_PROCESS_POSITION_STD, NOISE_PROCESS_VELOCITY_STD, &Q);
   // Measure noise covariance matrix
-  computeMatrixR(NOISE_MEASURE_POSITION_STD, NOISE_MEASURE_VELOCITY_STD, pR);
+  computeMatrixR(NOISE_MEASURE_POSITION_STD, NOISE_MEASURE_VELOCITY_STD, &R);
+
+  // Print matrices
+  if (DEBUG_ACTIVE) {
+    printMatrix(FF, "F", DECIMALS);
+    printMatrix(G, "G", DECIMALS);
+    printMatrix(H, "H", DECIMALS);
+    printMatrix(L, "L", DECIMALS);
+    printMatrix(Q, "Q", DECIMALS);
+    printMatrix(R, "R", DECIMALS);
+  }
 
   digitalWrite(LED_BUILTIN, LOW);
 
@@ -258,6 +278,9 @@ void loop() {
   switch (robotState.current) {
     // Free state handling
     case STATE_FREE: {
+      if (robotState.just_changed) {
+        robotState.just_changed = false;
+      }
       if (robotState.direction == DIRECTION_FORWARD) {
         preventDamage(CUSTOM_DIST_MIN);
       }
@@ -303,6 +326,9 @@ void loop() {
     }
     // Reading state handling
     case STATE_READ: {
+      if (robotState.just_changed) {
+        robotState.just_changed = false;
+      }
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
           case IR_BUTTON_1: {
@@ -384,7 +410,28 @@ void loop() {
     }
     // Search state handling
     case STATE_SEARCH: {
-      checkDistance();
+      if (robotState.just_changed) {
+        initializeVectorX(STATE_INIT_Xp, STATE_INIT_Xv, &x_hat);
+        initializeMatrixP(STATE_INIT_COV_Xp, STATE_INIT_COV_Xv, &P_hat);
+        computeVectorU(0, &u);
+        computeVectorZ(0, 0, &z);
+        robotState.just_changed = false;
+      }
+      // Estimate
+      // Do only if new measure is available
+      if (!robotMeasures.sent) {
+        // Update input
+        checkDistance();
+        // Fill input and measures vectors
+        computeVectorU(robotState.input, &u);
+        computeVectorZ(robotMeasures.distanceUS, robotMeasures.ppsOptical, &z);
+        // Predictor and corrector
+        KalmanPredictor(FF, x_hat, G, u, P_hat, Q, &x_pred, &P_pred);
+        KalmanCorrector(P_pred, H, R, z, x_pred, &W, &x_hat, &P_hat, &innovation, &S);
+        //Send results
+        bluetoothSendFilterResult();
+
+      }
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
           case IR_BUTTON_OK: {
@@ -411,6 +458,9 @@ void loop() {
     // Measure state handling
     // TODO: Capire che fare di questo stato, al momento non fa più nulla
     case STATE_MEASURE: {
+      if (robotState.just_changed) {
+        robotState.just_changed = false;
+      }
       sendBufferIndex = 0;
       memset(sendBuffer, 0, sizeof(sendBuffer));
       if (!robotState.cmd_executed) {
@@ -431,7 +481,7 @@ void loop() {
       break;
     }
   }
-  // Actions performed for each state
+  // Actions performed for each state (Almost)
   // Measure
   currentMillisMeasure = millis();
   if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
@@ -439,8 +489,8 @@ void loop() {
     previousMillisMeasure = millis();
   }
 
-  // Send measure with Bluetooth
-  if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
+  // Send measure with Bluetooth (don't do if STATE_SEARCH)
+  if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH && robotState.current != STATE_SEARCH) {
     servoH.attach(PIN_SERVO_HORIZ);
     servoH.write(SERVO_HORIZ_CENTER);
     delay(100);
@@ -496,7 +546,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, LOW);
       analogWrite(PIN_MOTOR_ENA, 0);
       analogWrite(PIN_MOTOR_ENB, 0);
-      stateNewDirection(&robotState, DIRECTION_STOP);
+      stateNewInput(&robotState, DIRECTION_STOP, 0);
       break;
     }
     case DIRECTION_FORWARD: {
@@ -507,7 +557,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, LOW);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
-      stateNewDirection(&robotState, DIRECTION_FORWARD);
+      stateNewInput(&robotState, DIRECTION_FORWARD, speed*-1);
       break;
     }
     case DIRECTION_BACKWARD: {
@@ -518,7 +568,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, HIGH);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
-      stateNewDirection(&robotState, DIRECTION_BACKWARD);
+      stateNewInput(&robotState, DIRECTION_BACKWARD, speed);
       break;
     }
     case DIRECTION_RIGHT: {
@@ -529,7 +579,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, HIGH);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
-      stateNewDirection(&robotState, DIRECTION_RIGHT);
+      stateNewInput(&robotState, DIRECTION_RIGHT, 0);
       break;
     }
     case DIRECTION_LEFT: {
@@ -540,7 +590,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, LOW);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
-      stateNewDirection(&robotState, DIRECTION_LEFT);
+      stateNewInput(&robotState, DIRECTION_LEFT, 0);
       break;
     }
   }
@@ -550,7 +600,6 @@ void runMotors(byte direction, byte speed) {
 void measureAll(unsigned long deltaT) {
   robotMeasures.sent = false;
   double prevDistance = robotMeasures.distanceUS;
-  // double prevFilteredDistance = robotMeasures.distanceUSFiltered;
   
   int pulses = opticalPulses;
   opticalPulses = 0;
@@ -560,8 +609,6 @@ void measureAll(unsigned long deltaT) {
 
   // Distance from ultrasonic
   robotMeasures.distanceUS = measureDistance();
-  //DEBUG_TEMP
-  robotMeasures.distanceUSFiltered = int(robotMeasures.distanceUS);
 
   // Velocity from ultrasonic
   robotMeasures.velocityUS = (robotMeasures.distanceUS - prevDistance) / (deltaT * 0.001);
@@ -575,8 +622,9 @@ void measureAll(unsigned long deltaT) {
   // Velocity from optical
   robotMeasures.rpsOptical = travelledRevolution / (deltaT * 0.001);
   robotMeasures.velocityOptical = travelledDistance / (deltaT * 0.001);
-  //DEBUG_TEMP
-  robotMeasures.velocityOpticalFiltered = int(robotMeasures.velocityOptical);
+
+  // Pulses per second from optical
+  robotMeasures.ppsOptical = pulses / (deltaT * 0.001) * directionSign;
 }
 
 // DISTANCE
@@ -636,7 +684,8 @@ void resetCustomDistance() {
   customDistIdx = 0;
 }
 // TODO: Capire bene come sistemare per ottenere risultati migliori
-void checkDistance() {
+int checkDistance() {
+  int speed;
   // Measure diffrence between current and custom distance
   diffDist = robotMeasures.distanceUS - numericCustomDist;
 
@@ -645,15 +694,19 @@ void checkDistance() {
     if (diffDist <= STOP_TRESHOLD + SLOW_TRESHOLD) {
       if (diffDist > STOP_TRESHOLD) {
         // Just slow down
-        int speed = map(diffDist, STOP_TRESHOLD, SLOW_TRESHOLD, SLOW_SPEED_MIN, SLOW_SPEED_MAX);
+        speed = map(diffDist, STOP_TRESHOLD, SLOW_TRESHOLD, SLOW_SPEED_MIN, SLOW_SPEED_MAX);
         runMotors(DIRECTION_FORWARD, speed);
+        return speed * -1;
       } else {
         // Stop
-        runMotors(DIRECTION_STOP, 0);
+        speed = 0;
+        runMotors(DIRECTION_STOP, speed);
         firstCheck = false;
       }
     } else {
-      runMotors(DIRECTION_FORWARD, 255);
+      speed = 255;
+      runMotors(DIRECTION_FORWARD, speed);
+      return speed * -1;
     }
   }
 
@@ -663,7 +716,7 @@ void checkDistance() {
     if (abs(diffDist) <= STOP_TRESHOLD) {
       // Stop
       runMotors(DIRECTION_STOP, 0);
-      // Check and ajust slow factor
+      // Check and adjust slow factor
       if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
       // Stop if slow factor enough high
       if (speedSlowFactor >= SLOW_FACTOR_STOP) {
@@ -672,15 +725,20 @@ void checkDistance() {
         firstCheck = true;
         numericCustomDist = 0;
       }
+      return 0;
     }
     // If difference greater than treshold and not moving forward go ahead and increase slowFactor
     if (diffDist > STOP_TRESHOLD && robotState.direction != DIRECTION_FORWARD) {
-      runMotors(DIRECTION_FORWARD, CHECK_SPEED_MAX - (speedSlowFactor * SLOW_FACTOR_STEP));
+      speed = CHECK_SPEED_MAX - (speedSlowFactor * SLOW_FACTOR_STEP);
+      runMotors(DIRECTION_FORWARD, speed);
       if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
+      return speed * -1;
     // If difference less than treshold and not moving backward go backward and increase slowFactor
     } else if (diffDist < -STOP_TRESHOLD && robotState.direction != DIRECTION_BACKWARD) {
-      runMotors(DIRECTION_BACKWARD, CHECK_SPEED_MAX - (speedSlowFactor * SLOW_FACTOR_STEP));
+      speed = CHECK_SPEED_MAX - (speedSlowFactor * SLOW_FACTOR_STEP);
+      runMotors(DIRECTION_BACKWARD, speed);
       if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
+      return speed;
     }
   }
 }
@@ -761,9 +819,6 @@ void bluetoothSendMeasure() {
   Serial.print(F("Distance_US:"));
   Serial.println(robotMeasures.distanceUS, DECIMALS);
 
-  Serial.print(F("Distance_US_Filtered:"));
-  Serial.println(robotMeasures.distanceUSFiltered, DECIMALS);
-
   Serial.print(F("Distance_OPT:"));
   Serial.println(robotMeasures.distanceOptical, DECIMALS);
 
@@ -775,9 +830,6 @@ void bluetoothSendMeasure() {
 
   Serial.print(F("Velocity_OPT:"));
   Serial.println(robotMeasures.velocityOptical, DECIMALS);
-
-  Serial.print(F("Velocity_OPT_Filtered:"));
-  Serial.println(robotMeasures.velocityOpticalFiltered, DECIMALS);
 
   Serial.print(F("Distance_Custom:"));
   Serial.println(numericCustomDist);
@@ -797,4 +849,23 @@ void bluetoothSendInfo(const char* variable, int value) {
   Serial.print(variable);
   Serial.print(F(": "));
   Serial.println(value);
+}
+
+void bluetoothSendFilterResult() {
+  //BDT: Bluetooth Data Transmission
+  Serial.println(F("BDT 1.0 FILTER"));
+
+  Serial.print(F("Position:"));
+  Serial.println(x_hat(0), DECIMALS);
+
+  Serial.print(F("Velocity:"));
+  Serial.println(x_hat(1), DECIMALS);
+
+  Serial.print(F("Position_covariance:"));
+  Serial.println(P_hat(0, 0), DECIMALS);
+
+  Serial.print(F("Velocity_covariance:"));
+  Serial.println(P_hat(1, 1), DECIMALS);
+
+  Serial.println(F("BDT 1.0 END"));
 }
