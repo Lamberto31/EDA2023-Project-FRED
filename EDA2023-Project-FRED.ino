@@ -39,6 +39,8 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 1
+#define SEND_MEASURE_ACTIVE 0
+#define SEND_FILTER_RESULT_ACTIVE 1
 
 // PARAMETERS
 // Physical TODO: misurare bene e inserire qui
@@ -437,8 +439,10 @@ void loop() {
         KalmanPredictor(FF, x_hat, G, u, P_hat, Q, &x_pred, &P_pred);
         KalmanCorrector(P_pred, H, R, z, x_pred, &W, &x_hat, &P_hat, &innovation, &S);
         //Send results
-        bluetoothSendFilterResult();
-
+        if (SEND_FILTER_RESULT_ACTIVE) {
+          bluetoothConnection(false);
+          bluetoothSendFilterResult();
+        }
       }
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
@@ -498,7 +502,7 @@ void loop() {
   }
 
   // Send measure with Bluetooth (don't do if STATE_SEARCH)
-  if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH && robotState.current != STATE_SEARCH) {
+  if (SEND_MEASURE_ACTIVE && currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH && robotState.current != STATE_SEARCH) {
     servoH.attach(PIN_SERVO_HORIZ);
     servoH.write(SERVO_HORIZ_CENTER);
     delay(100);
