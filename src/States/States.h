@@ -28,15 +28,16 @@ struct State {
 };
 
 struct Measures {
+  // Ultrasonic sensor
   double distanceUS;
-  double distanceUSFiltered;
   double velocityUS;
 
+  // Optical sensor
   double distanceOptical;
   double rpsOptical;
   double velocityOptical;
-  double velocityOpticalFiltered;
 
+  // Used to know if already used
   bool sent;
 };
 

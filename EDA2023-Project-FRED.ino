@@ -35,7 +35,7 @@ using namespace BLA;
 
 // States
 State robotState = { STATE_SETUP, false, 0, true, DIRECTION_STOP, 0};
-Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
+Measures robotMeasures = {0, 0, 0, 0, 0, true};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 1
@@ -599,7 +599,6 @@ void runMotors(byte direction, byte speed) {
 void measureAll(unsigned long deltaT) {
   robotMeasures.sent = false;
   double prevDistance = robotMeasures.distanceUS;
-  // double prevFilteredDistance = robotMeasures.distanceUSFiltered;
   
   int pulses = opticalPulses;
   opticalPulses = 0;
@@ -609,8 +608,6 @@ void measureAll(unsigned long deltaT) {
 
   // Distance from ultrasonic
   robotMeasures.distanceUS = measureDistance();
-  //DEBUG_TEMP
-  robotMeasures.distanceUSFiltered = int(robotMeasures.distanceUS);
 
   // Velocity from ultrasonic
   robotMeasures.velocityUS = (robotMeasures.distanceUS - prevDistance) / (deltaT * 0.001);
@@ -624,8 +621,6 @@ void measureAll(unsigned long deltaT) {
   // Velocity from optical
   robotMeasures.rpsOptical = travelledRevolution / (deltaT * 0.001);
   robotMeasures.velocityOptical = travelledDistance / (deltaT * 0.001);
-  //DEBUG_TEMP
-  robotMeasures.velocityOpticalFiltered = int(robotMeasures.velocityOptical);
 }
 
 // DISTANCE
@@ -820,9 +815,6 @@ void bluetoothSendMeasure() {
   Serial.print(F("Distance_US:"));
   Serial.println(robotMeasures.distanceUS, DECIMALS);
 
-  Serial.print(F("Distance_US_Filtered:"));
-  Serial.println(robotMeasures.distanceUSFiltered, DECIMALS);
-
   Serial.print(F("Distance_OPT:"));
   Serial.println(robotMeasures.distanceOptical, DECIMALS);
 
@@ -834,9 +826,6 @@ void bluetoothSendMeasure() {
 
   Serial.print(F("Velocity_OPT:"));
   Serial.println(robotMeasures.velocityOptical, DECIMALS);
-
-  Serial.print(F("Velocity_OPT_Filtered:"));
-  Serial.println(robotMeasures.velocityOpticalFiltered, DECIMALS);
 
   Serial.print(F("Distance_Custom:"));
   Serial.println(numericCustomDist);
