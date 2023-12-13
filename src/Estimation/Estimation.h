@@ -34,7 +34,22 @@ void KalmanPredictor(BLA::Matrix<STATE_DIM, STATE_DIM> F, BLA::Matrix<STATE_DIM>
 void KalmanCorrector(BLA::Matrix<STATE_DIM, STATE_DIM> P_pred, BLA::Matrix<MEASURE_DIM, STATE_DIM> H, BLA::Matrix<MEASURE_DIM, MEASURE_DIM> R, BLA::Matrix<MEASURE_DIM> Z, BLA::Matrix<STATE_DIM> x_pred,\
                     BLA::Matrix<STATE_DIM, STATE_DIM> *W, BLA::Matrix<STATE_DIM> *x_hat, BLA::Matrix<STATE_DIM, STATE_DIM> *P_hat, BLA::Matrix<MEASURE_DIM> *innovation, BLA::Matrix<STATE_DIM, STATE_DIM> *S);
 
-// SHOW RESULTS
+// MATRIX SUPPORT
+// Create Identity Matrix I of size dim x dim
+template<int dim, typename DType = float>
+void matrixIdentity(BLA::Matrix<dim, dim> *I) {
+    int n = I->Rows;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i == j) {
+                I->operator()(i, j) = 1;
+            } else {
+                I->operator()(i, j) = 0;
+            }
+        }
+    }
+}
+// Print Matrix
 template <int rows, int cols, typename DType = float>
 void printMatrix(BLA::Matrix<rows, cols, DType> M, const char *name, int decimals) {
     Serial.print(name);
