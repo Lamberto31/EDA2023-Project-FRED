@@ -388,7 +388,7 @@ while True:
                     debugStamp(str(recv, 'utf-8'), "Full")
                     if "END" in str(recv):
                         break
-            elif "MATRIX START" in str(recv):
+            elif "MATRIX" in str(recv):
                 # TODO: Gestire bene, per ora solo ricezione e stampa
                 debugStamp("New BDT message: MATRIX")
                 debugStamp(str(recv, 'utf-8'), "Full")
