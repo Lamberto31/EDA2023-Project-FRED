@@ -623,7 +623,7 @@ void measureAll(unsigned long deltaT) {
   robotMeasures.velocityOptical = travelledDistance / (deltaT * 0.001);
 
   // Pulses per second from optical
-  robotMeasures.ppsOptical = pulses / (deltaT * 0.001);
+  robotMeasures.ppsOptical = pulses / (deltaT * 0.001) * directionSign;
 }
 
 // DISTANCE
