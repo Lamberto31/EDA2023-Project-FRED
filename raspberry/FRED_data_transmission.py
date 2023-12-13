@@ -389,9 +389,24 @@ while True:
                     if "END" in str(recv):
                         break
             elif "MATRIX" in str(recv):
-                # TODO: Gestire bene, per ora solo ricezione e stampa
                 debugStamp("New BDT message: MATRIX")
                 debugStamp(str(recv, 'utf-8'), "Full")
+                # Process metadata
+                recv = ser.readline()
+                debugStamp(str(recv, 'utf-8'), "Full")
+                metadata = recv.decode('utf-8')[0:-2]
+                debugStamp(metadata)
+                dimensions = metadata.split("=")[1]
+                rows = int(dimensions.split("x")[0])
+                columns = int(dimensions.split("x")[1])
+                # Process data
+                recv = ser.readline()
+                debugStamp(str(recv, 'utf-8'), "Full")
+                data = recv.decode('utf-8')[0:-2].split(":")[1].split(",")
+                for i in range(0, rows):
+                    for j in range(0, columns):
+                        debugStamp(data[i * columns + j])
+                    debugStamp("\n")
                 while True:
                     recv = ser.readline()
                     debugStamp(str(recv, 'utf-8'), "Full")
