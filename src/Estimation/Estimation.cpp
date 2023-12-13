@@ -70,7 +70,7 @@ void computeMatrixR(double sigmaRP, double sigmaRV, BLA::Matrix<MEASURE_DIM, MEA
 }
 
 // INITIAL CONDITIONS
-void initilizeVectorX(double Xp0, double Xv0, BLA::Matrix<STATE_DIM, 1> *X) {
+void initializeVectorX(double Xp0, double Xv0, BLA::Matrix<STATE_DIM, 1> *X) {
     X->operator()(0, 0) = Xp0;
     X->operator()(1, 0) = Xv0;
 }
