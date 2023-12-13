@@ -279,7 +279,6 @@ void loop() {
     // Free state handling
     case STATE_FREE: {
       if (robotState.just_changed) {
-        runMotors(DIRECTION_STOP, 0);
         robotState.just_changed = false;
       }
       if (robotState.direction == DIRECTION_FORWARD) {
@@ -457,7 +456,6 @@ void loop() {
     // TODO: Capire che fare di questo stato, al momento non fa più nulla
     case STATE_MEASURE: {
       if (robotState.just_changed) {
-        runMotors(DIRECTION_STOP, 0);
         robotState.just_changed = false;
       }
       sendBufferIndex = 0;
