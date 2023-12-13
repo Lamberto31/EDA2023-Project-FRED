@@ -683,7 +683,8 @@ void resetCustomDistance() {
   customDistIdx = 0;
 }
 // TODO: Capire bene come sistemare per ottenere risultati migliori
-void checkDistance() {
+int checkDistance() {
+  int speed;
   // Measure diffrence between current and custom distance
   diffDist = robotMeasures.distanceUS - numericCustomDist;
 
@@ -692,15 +693,19 @@ void checkDistance() {
     if (diffDist <= STOP_TRESHOLD + SLOW_TRESHOLD) {
       if (diffDist > STOP_TRESHOLD) {
         // Just slow down
-        int speed = map(diffDist, STOP_TRESHOLD, SLOW_TRESHOLD, SLOW_SPEED_MIN, SLOW_SPEED_MAX);
+        speed = map(diffDist, STOP_TRESHOLD, SLOW_TRESHOLD, SLOW_SPEED_MIN, SLOW_SPEED_MAX);
         runMotors(DIRECTION_FORWARD, speed);
+        return speed * -1;
       } else {
         // Stop
-        runMotors(DIRECTION_STOP, 0);
+        speed = 0;
+        runMotors(DIRECTION_STOP, speed);
         firstCheck = false;
       }
     } else {
-      runMotors(DIRECTION_FORWARD, 255);
+      speed = 255;
+      runMotors(DIRECTION_FORWARD, speed);
+      return speed * -1;
     }
   }
 
@@ -710,7 +715,7 @@ void checkDistance() {
     if (abs(diffDist) <= STOP_TRESHOLD) {
       // Stop
       runMotors(DIRECTION_STOP, 0);
-      // Check and ajust slow factor
+      // Check and adjust slow factor
       if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
       // Stop if slow factor enough high
       if (speedSlowFactor >= SLOW_FACTOR_STOP) {
@@ -719,15 +724,20 @@ void checkDistance() {
         firstCheck = true;
         numericCustomDist = 0;
       }
+      return 0;
     }
     // If difference greater than treshold and not moving forward go ahead and increase slowFactor
     if (diffDist > STOP_TRESHOLD && robotState.direction != DIRECTION_FORWARD) {
-      runMotors(DIRECTION_FORWARD, CHECK_SPEED_MAX - (speedSlowFactor * SLOW_FACTOR_STEP));
+      speed = CHECK_SPEED_MAX - (speedSlowFactor * SLOW_FACTOR_STEP);
+      runMotors(DIRECTION_FORWARD, speed);
       if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
+      return speed * -1;
     // If difference less than treshold and not moving backward go backward and increase slowFactor
     } else if (diffDist < -STOP_TRESHOLD && robotState.direction != DIRECTION_BACKWARD) {
-      runMotors(DIRECTION_BACKWARD, CHECK_SPEED_MAX - (speedSlowFactor * SLOW_FACTOR_STEP));
+      speed = CHECK_SPEED_MAX - (speedSlowFactor * SLOW_FACTOR_STEP);
+      runMotors(DIRECTION_BACKWARD, speed);
       if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
+      return speed;
     }
   }
 }
