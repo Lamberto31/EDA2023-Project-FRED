@@ -22,6 +22,10 @@ void computeMatrixR(double sigmaRP, double sigmaRV, BLA::Matrix<MEASURE_DIM, MEA
 void initilizeVectorX(double Xp0, double Xv0, BLA::Matrix<STATE_DIM> *X);
 void initializeMatrixP(double sigma_0P, double sigma_0V, BLA::Matrix<STATE_DIM, STATE_DIM> *P);
 
+// MODEL VECTORS
+void computeVectorU(int input, BLA::Matrix<INPUT_DIM> *U);
+void computeVectorZ(double d0, double pulses, BLA::Matrix<MEASURE_DIM> *Z);
+
 // KALMAN FILTER
 // TODO: implementare predizione e correzione
 

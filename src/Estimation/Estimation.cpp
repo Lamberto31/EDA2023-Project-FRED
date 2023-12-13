@@ -80,3 +80,12 @@ void initializeMatrixP(double sigma_0P, double sigma_0V, BLA::Matrix<STATE_DIM, 
     P->operator()(1,0) = 0;
     P->operator()(1,1) = sigma_0V*sigma_0V;
 }
+
+// MODEL VECTORS
+void computeVectorU(int input, BLA::Matrix<INPUT_DIM> *U) {
+    U->operator()(0, 0) = input;
+}
+void computeVectorZ(double d0, double pulses, BLA::Matrix<MEASURE_DIM> *Z) {
+    Z->operator()(0, 0) = d0;
+    Z->operator()(1, 0) = pulses;
+}
