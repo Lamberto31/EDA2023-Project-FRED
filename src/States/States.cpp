@@ -12,8 +12,9 @@ void stateNewCmd(State *st, byte command) {
 void stateCmdExecuted(State *st) {
   st->cmd_executed = true;
 }
-void stateNewDirection(State *st, byte direction) {
+void stateNewInput(State *st, byte direction, int input) {
   st->direction = direction;
+  st->input = input;
 }
 
 void printMeasures(Measures *ms) {

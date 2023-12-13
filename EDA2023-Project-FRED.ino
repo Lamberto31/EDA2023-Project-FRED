@@ -34,7 +34,7 @@ using namespace BLA;
 #define PIN_MOTOR_IN1 13
 
 // States
-State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP, false };
+State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP, false, 0};
 Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 
 // Functionalities active/disabled
@@ -543,7 +543,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, LOW);
       analogWrite(PIN_MOTOR_ENA, 0);
       analogWrite(PIN_MOTOR_ENB, 0);
-      stateNewDirection(&robotState, DIRECTION_STOP);
+      stateNewInput(&robotState, DIRECTION_STOP, 0);
       break;
     }
     case DIRECTION_FORWARD: {
@@ -554,7 +554,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, LOW);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
-      stateNewDirection(&robotState, DIRECTION_FORWARD);
+      stateNewInput(&robotState, DIRECTION_FORWARD, speed*-1);
       break;
     }
     case DIRECTION_BACKWARD: {
@@ -565,7 +565,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, HIGH);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
-      stateNewDirection(&robotState, DIRECTION_BACKWARD);
+      stateNewInput(&robotState, DIRECTION_BACKWARD, speed);
       break;
     }
     case DIRECTION_RIGHT: {
@@ -576,7 +576,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, HIGH);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
-      stateNewDirection(&robotState, DIRECTION_RIGHT);
+      stateNewInput(&robotState, DIRECTION_RIGHT, 0);
       break;
     }
     case DIRECTION_LEFT: {
@@ -587,7 +587,7 @@ void runMotors(byte direction, byte speed) {
       digitalWrite(PIN_MOTOR_IN4, LOW);
       analogWrite(PIN_MOTOR_ENA, speed);
       analogWrite(PIN_MOTOR_ENB, speed);
-      stateNewDirection(&robotState, DIRECTION_LEFT);
+      stateNewInput(&robotState, DIRECTION_LEFT, 0);
       break;
     }
   }

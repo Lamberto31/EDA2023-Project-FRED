@@ -21,6 +21,7 @@ struct State {
   bool cmd_executed;
   byte direction;
   bool just_changed;
+  int input;
 };
 
 struct Measures {
@@ -39,7 +40,7 @@ struct Measures {
 void stateChange(State *st, byte dest);
 void stateNewCmd(State *st, byte command);
 void stateCmdExecuted(State *st);
-void stateNewDirection(State *st, byte direction);
+void stateNewInput(State *st, byte direction, int input);
 
 void printMeasures(Measures *ms);
 
