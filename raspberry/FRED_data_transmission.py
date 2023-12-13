@@ -414,11 +414,6 @@ while True:
                 debugStamp(str(recv, 'utf-8'), "Full")
                 data = recv.decode('utf-8')[0:-2]
                 stampMatrix(metadata, data)
-                # while True:
-                #     recv = ser.readline()
-                #     debugStamp(str(recv, 'utf-8'), "Full")
-                #     if "END" in str(recv):
-                #         break
 
                     
     except Exception as e:
