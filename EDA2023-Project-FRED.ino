@@ -418,7 +418,7 @@ void loop() {
         robotState.just_changed = false;
       }
       // Estimate
-      // TODO: Controllare che c'è una nuova misura e procedere solo se c'è
+      // Do only if new measure is available
       if (!robotMeasures.sent) {
         // Update input
         checkDistance();
@@ -428,7 +428,8 @@ void loop() {
         // Predictor and corrector
         KalmanPredictor(FF, x_hat, G, u, P_hat, Q, &x_pred, &P_pred);
         KalmanCorrector(P_pred, H, R, z, x_pred, &W, &x_hat, &P_hat, &innovation, &S);
-        //TODO: Send results (Capire bene come e cosa inviare, cambieranno un po' di cose...)
+        //Send results
+        bluetoothSendFilterResult();
 
       }
       if (!robotState.cmd_executed) {
@@ -480,7 +481,7 @@ void loop() {
       break;
     }
   }
-  // Actions performed for each state
+  // Actions performed for each state (Almost)
   // Measure
   currentMillisMeasure = millis();
   if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
@@ -488,8 +489,8 @@ void loop() {
     previousMillisMeasure = millis();
   }
 
-  // Send measure with Bluetooth
-  if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
+  // Send measure with Bluetooth (don't do if STATE_SEARCH)
+  if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH && robotState.current != STATE_SEARCH) {
     servoH.attach(PIN_SERVO_HORIZ);
     servoH.write(SERVO_HORIZ_CENTER);
     delay(100);
@@ -848,4 +849,23 @@ void bluetoothSendInfo(const char* variable, int value) {
   Serial.print(variable);
   Serial.print(F(": "));
   Serial.println(value);
+}
+
+void bluetoothSendFilterResult() {
+  //BDT: Bluetooth Data Transmission
+  Serial.println(F("BDT 1.0 FILTER"));
+
+  Serial.print(F("Position:"));
+  Serial.println(x_hat(0), DECIMALS);
+
+  Serial.print(F("Velocity:"));
+  Serial.println(x_hat(1), DECIMALS);
+
+  Serial.print(F("Position_covariance:"));
+  Serial.println(P_hat(0, 0), DECIMALS);
+
+  Serial.print(F("Velocity_covariance:"));
+  Serial.println(P_hat(1, 1), DECIMALS);
+
+  Serial.println(F("BDT 1.0 END"));
 }
