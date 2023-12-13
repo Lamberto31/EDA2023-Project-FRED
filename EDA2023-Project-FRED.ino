@@ -117,14 +117,19 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 volatile struct TinyIRReceiverCallbackDataStruct sCallbackData;
 
 // Model matrices
-BLA::Matrix<STATE_DIM, STATE_DIM> FF;  // [adim] State transition matrix (Notation: FF to avoid conflict with F macro)
-BLA::Matrix<STATE_DIM, INPUT_DIM> G;  // [adim] Input matrix
-BLA::Matrix<MEASURE_DIM, STATE_DIM> H;  // [adim] Measure matrix
-BLA::Matrix<STATE_DIM, STATE_DIM> L;  // [adim] Process noise matrix
-BLA::Matrix<STATE_DIM, STATE_DIM> Q;  // [adim] Process noise covariance matrix
-BLA::Matrix<MEASURE_DIM, MEASURE_DIM> R;  // [adim] Measure noise covariance matrix
+BLA::Matrix<STATE_DIM, STATE_DIM> FF;  // State transition matrix (Notation: FF to avoid conflict with F macro)
+BLA::Matrix<STATE_DIM, INPUT_DIM> G;  // Input matrix
+BLA::Matrix<MEASURE_DIM, STATE_DIM> H;  // Measure matrix
+BLA::Matrix<STATE_DIM, STATE_DIM> L;  // Process noise matrix
+BLA::Matrix<STATE_DIM, STATE_DIM> Q;  // Process noise covariance matrix
+BLA::Matrix<MEASURE_DIM, MEASURE_DIM> R;  // Measure noise covariance matrix
 
 // State, measure and input vectors
+BLA::Matrix<STATE_DIM> x_pred;  // State vector prediction
+BLA::Matrix<STATE_DIM> x_hat;  // State vector estimate
+BLA::Matrix<INPUT_DIM> u;  // Input vector
+BLA::Matrix<MEASURE_DIM> z;  // Measure vector
+
 // Kalman filter output
 BLA::Matrix<STATE_DIM, STATE_DIM> P_pred;  // State covariance matrix prediction
 BLA::Matrix<STATE_DIM, STATE_DIM> P_hat;  // State covariance matrix estimate
