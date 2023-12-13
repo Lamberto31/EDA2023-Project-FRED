@@ -35,7 +35,7 @@ using namespace BLA;
 
 // States
 State robotState = { STATE_SETUP, false, 0, true, DIRECTION_STOP, 0};
-Measures robotMeasures = {0, 0, 0, 0, 0, true};
+Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 1
@@ -424,7 +424,7 @@ void loop() {
         checkDistance();
         // Fill input and measures vectors
         computeVectorU(robotState.input, &u);
-        computeVectorZ(robotMeasures.distanceUS, opticalPulses, &z);
+        computeVectorZ(robotMeasures.distanceUS, robotMeasures.ppsOptical, &z);
         // Predictor and corrector
         KalmanPredictor(FF, x_hat, G, u, P_hat, Q, &x_pred, &P_pred);
         KalmanCorrector(P_pred, H, R, z, x_pred, &W, &x_hat, &P_hat, &innovation, &S);
@@ -621,6 +621,9 @@ void measureAll(unsigned long deltaT) {
   // Velocity from optical
   robotMeasures.rpsOptical = travelledRevolution / (deltaT * 0.001);
   robotMeasures.velocityOptical = travelledDistance / (deltaT * 0.001);
+
+  // Pulses per second from optical
+  robotMeasures.ppsOptical = pulses / (deltaT * 0.001);
 }
 
 // DISTANCE

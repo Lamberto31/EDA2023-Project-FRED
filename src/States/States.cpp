@@ -40,5 +40,8 @@ void printMeasures(Measures *ms) {
   Serial.print(F("Velocity OPT\t[cm/s]\t"));
   Serial.println(ms->velocityOptical);
 
+  Serial.print(F("Pulses per second\t[pps]\t"));
+  Serial.println(ms->ppsOptical);
+
   Serial.println();
 }

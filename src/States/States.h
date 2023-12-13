@@ -36,6 +36,7 @@ struct Measures {
   double distanceOptical;
   double rpsOptical;
   double velocityOptical;
+  double ppsOptical;
 
   // Used to know if already used
   bool sent;
