@@ -141,6 +141,20 @@ def stampDataToSend():
         for i in range(0, len(dataToSend)):
             print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\t" + str(dataToSend[i]["field8"]) + "\t" + str(dataToSend[i]["status"]) + "\n")
 
+# Print matrix in tabular format
+def stampMatrix(metadata, data):
+    # Process metadata
+    dimensions = metadata.split("=")[1]
+    rows = int(dimensions.split("x")[0])
+    columns = int(dimensions.split("x")[1])
+    print(metadata)
+    # Process data
+    data = data.split(":")[1].split(",")
+    if ((DEBUG == "Default" or DEBUG == "Full")):
+        for i in range(0, rows):
+            for j in range(0, columns):
+                print(data[i * columns + j], end=" ")
+            print()
 # Handle CTRL+C
 def interruptHandler(sig, frame):
     print("\nInterrupt received, waiting for data to send and then close the script")
@@ -391,27 +405,20 @@ while True:
             elif "MATRIX" in str(recv):
                 debugStamp("New BDT message: MATRIX")
                 debugStamp(str(recv, 'utf-8'), "Full")
-                # Process metadata
+                # Receive metadata
                 recv = ser.readline()
                 debugStamp(str(recv, 'utf-8'), "Full")
                 metadata = recv.decode('utf-8')[0:-2]
-                debugStamp(metadata)
-                dimensions = metadata.split("=")[1]
-                rows = int(dimensions.split("x")[0])
-                columns = int(dimensions.split("x")[1])
-                # Process data
+                # Receive data
                 recv = ser.readline()
                 debugStamp(str(recv, 'utf-8'), "Full")
-                data = recv.decode('utf-8')[0:-2].split(":")[1].split(",")
-                for i in range(0, rows):
-                    for j in range(0, columns):
-                        debugStamp(data[i * columns + j])
-                    debugStamp("\n")
-                while True:
-                    recv = ser.readline()
-                    debugStamp(str(recv, 'utf-8'), "Full")
-                    if "END" in str(recv):
-                        break
+                data = recv.decode('utf-8')[0:-2]
+                stampMatrix(metadata, data)
+                # while True:
+                #     recv = ser.readline()
+                #     debugStamp(str(recv, 'utf-8'), "Full")
+                #     if "END" in str(recv):
+                #         break
 
                     
     except Exception as e:
