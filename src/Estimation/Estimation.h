@@ -71,21 +71,26 @@ void bluetoothSendMatrix(BLA::Matrix<rows, cols, DType> M, const char *name, int
   //BDT: Bluetooth Data Transmission
   Serial.println(F("BDT 1.0 MATRIX"));
 
+  int elements = rows * cols;
+
   Serial.print(name);
   Serial.print(F("="));
   Serial.print(rows);
   Serial.print(F("x"));
   Serial.println(cols);
 
-  Serial.print(F("_data:"));
+  Serial.print(F("Data:"));
   for (int i = 0; i < rows; i++) {
     for (int j = 0; j < cols; j++)
     {
       Serial.print(M(i, j), decimals);
-      Serial.print(F(","));
+      if (i * cols + j < elements - 1)
+        Serial.print(F(","));
+      else
+        Serial.println();
     }
   }
-  
+
   Serial.println(F("BDT 1.0 END"));
 }
 #endif
