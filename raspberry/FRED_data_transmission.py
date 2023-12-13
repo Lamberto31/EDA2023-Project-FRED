@@ -378,7 +378,16 @@ while True:
                             debugStamp(str(params.decode('utf-8')[0:-2]), "Full")
                         stampParams(first)
                         first = False
-                        writeParamsCsv(statusString)     
+                        writeParamsCsv(statusString)
+            elif "FILTER" in str(recv):
+                # TODO: Gestire bene, per ora solo ricezione e stampa
+                debugStamp("New BDT message: FILTER")
+                debugStamp(str(recv, 'utf-8'), "Full")
+                while True:
+                    recv = ser.readline()
+                    debugStamp(str(recv, 'utf-8'), "Full")
+                    if "END" in str(recv):
+                        break
                     
     except Exception as e:
         debugStamp(e, "Full")
