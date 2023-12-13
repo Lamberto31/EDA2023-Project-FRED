@@ -34,7 +34,7 @@ using namespace BLA;
 #define PIN_MOTOR_IN1 13
 
 // States
-State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP };
+State robotState = { STATE_SETUP, 0, true, DIRECTION_STOP, false };
 Measures robotMeasures = {0, 0, 0, 0, 0, 0, 0, true};
 
 // Functionalities active/disabled
@@ -276,6 +276,10 @@ void loop() {
   switch (robotState.current) {
     // Free state handling
     case STATE_FREE: {
+      if (robotState.just_changed) {
+        runMotors(DIRECTION_STOP, 0);
+        robotState.just_changed = false;
+      }
       if (robotState.direction == DIRECTION_FORWARD) {
         preventDamage(CUSTOM_DIST_MIN);
       }
@@ -321,6 +325,9 @@ void loop() {
     }
     // Reading state handling
     case STATE_READ: {
+      if (robotState.just_changed) {
+        robotState.just_changed = false;
+      }
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
           case IR_BUTTON_1: {
@@ -402,6 +409,9 @@ void loop() {
     }
     // Search state handling
     case STATE_SEARCH: {
+      if (robotState.just_changed) {
+        robotState.just_changed = false;
+      }
       checkDistance();
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
@@ -429,6 +439,10 @@ void loop() {
     // Measure state handling
     // TODO: Capire che fare di questo stato, al momento non fa più nulla
     case STATE_MEASURE: {
+      if (robotState.just_changed) {
+        runMotors(DIRECTION_STOP, 0);
+        robotState.just_changed = false;
+      }
       sendBufferIndex = 0;
       memset(sendBuffer, 0, sizeof(sendBuffer));
       if (!robotState.cmd_executed) {

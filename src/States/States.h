@@ -20,6 +20,7 @@ struct State {
   byte command;
   bool cmd_executed;
   byte direction;
+  bool just_changed;
 };
 
 struct Measures {

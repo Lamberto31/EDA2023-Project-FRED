@@ -3,6 +3,7 @@
 
 void stateChange(State *st, byte dest) {
   st->current = dest;
+  st->just_changed = true;
 }
 void stateNewCmd(State *st, byte command) {
   st->command = command;
