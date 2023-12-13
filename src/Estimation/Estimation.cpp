@@ -89,3 +89,29 @@ void computeVectorZ(double d0, double pulses, BLA::Matrix<MEASURE_DIM> *Z) {
     Z->operator()(0, 0) = d0;
     Z->operator()(1, 0) = pulses;
 }
+
+// KALMAN FILTER
+// Predictor
+void KalmanPredictor(BLA::Matrix<STATE_DIM, STATE_DIM> F, BLA::Matrix<STATE_DIM> x_hat, BLA::Matrix<STATE_DIM, INPUT_DIM> G, BLA::Matrix<INPUT_DIM> U, BLA::Matrix<STATE_DIM, STATE_DIM> P_hat, BLA::Matrix<STATE_DIM, STATE_DIM> Q, BLA::Matrix<STATE_DIM> *x_pred, BLA::Matrix<STATE_DIM, STATE_DIM> *P_pred) {
+    *x_pred = F * x_hat + G * U;
+    *P_pred = F*P_hat*~F + Q;
+}
+// Corrector
+void KalmanCorrector(BLA::Matrix<STATE_DIM, STATE_DIM> P_pred, BLA::Matrix<MEASURE_DIM, STATE_DIM> H, BLA::Matrix<MEASURE_DIM, MEASURE_DIM> R, BLA::Matrix<MEASURE_DIM> Z, BLA::Matrix<STATE_DIM> x_pred,\
+                    BLA::Matrix<STATE_DIM, STATE_DIM> *W, BLA::Matrix<STATE_DIM> *x_hat, BLA::Matrix<STATE_DIM, STATE_DIM> *P_hat, BLA::Matrix<MEASURE_DIM> *innovation, BLA::Matrix<STATE_DIM, STATE_DIM> *S) {
+    BLA::Matrix<STATE_DIM, STATE_DIM> I;
+    for (int i = 0; i < STATE_DIM; i++) {
+        for (int j = 0; j < STATE_DIM; j++) {
+            if (i == j) {
+                I(i, j) = 1;
+            } else {
+                I(i, j) = 0;
+            }
+        }
+    }
+    *W = P_pred * ~H * Inverse(H * P_pred * ~H + R);
+    *innovation = Z - H * x_pred;
+    *x_hat = x_pred + *W * *innovation;
+    *P_hat = (I - *W * H) * P_pred;
+    *S = H * P_pred * ~H + R;
+}

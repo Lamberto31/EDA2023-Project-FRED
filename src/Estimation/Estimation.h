@@ -27,7 +27,12 @@ void computeVectorU(int input, BLA::Matrix<INPUT_DIM> *U);
 void computeVectorZ(double d0, double pulses, BLA::Matrix<MEASURE_DIM> *Z);
 
 // KALMAN FILTER
-// TODO: implementare predizione e correzione
+// Predictor
+void KalmanPredictor(BLA::Matrix<STATE_DIM, STATE_DIM> F, BLA::Matrix<STATE_DIM> x_hat, BLA::Matrix<STATE_DIM, INPUT_DIM> G, BLA::Matrix<INPUT_DIM> U, BLA::Matrix<STATE_DIM, STATE_DIM> P_hat, BLA::Matrix<STATE_DIM, STATE_DIM> Q,\
+                    BLA::Matrix<STATE_DIM> *x_ped, BLA::Matrix<STATE_DIM, STATE_DIM> *P_pred);
+// Corrector
+void KalmanCorrector(BLA::Matrix<STATE_DIM, STATE_DIM> P_pred, BLA::Matrix<MEASURE_DIM, STATE_DIM> H, BLA::Matrix<MEASURE_DIM, MEASURE_DIM> R, BLA::Matrix<MEASURE_DIM> Z, BLA::Matrix<STATE_DIM> x_pred,\
+                    BLA::Matrix<STATE_DIM, STATE_DIM> *W, BLA::Matrix<STATE_DIM> *x_hat, BLA::Matrix<STATE_DIM, STATE_DIM> *P_hat, BLA::Matrix<MEASURE_DIM> *innovation, BLA::Matrix<STATE_DIM, STATE_DIM> *S);
 
 // SHOW RESULTS
 template <int rows, int cols, typename DType = float>
