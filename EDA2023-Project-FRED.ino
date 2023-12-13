@@ -63,7 +63,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 #define STATE_INIT_COV_Xv SPEED_MAX/100  // [adim] Initial velocity covariance
 // Noise
 #define NOISE_PROCESS_POSITION_STD 0.03  // [cm] Standard deviation of process noise for position
-#define NOISE_PROCESS_VELOCITY_STD 0.03  // [cm/s] Standard deviation of process noise for velocity
+#define NOISE_PROCESS_VELOCITY_STD 0.01  // [cm/s] Standard deviation of process noise for velocity
 #define NOISE_MEASURE_POSITION_STD 0.3  // [cm] Standard deviation of measure noise for position
 #define NOISE_MEASURE_VELOCITY_STD 0.1  // [cm/s] Standard deviation of measure noise for velocity
 // Measure
