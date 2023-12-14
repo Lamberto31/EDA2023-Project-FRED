@@ -138,7 +138,7 @@ BLA::Matrix<MEASURE_DIM> z;  // Measure vector
 // Kalman filter output
 BLA::Matrix<STATE_DIM, STATE_DIM> P_pred;  // State covariance matrix prediction
 BLA::Matrix<STATE_DIM, STATE_DIM> P_hat;  // State covariance matrix estimate
-BLA::Matrix<STATE_DIM, STATE_DIM> W;  // Kalman gain
+BLA::Matrix<STATE_DIM, MEASURE_DIM> W;  // Kalman gain
 BLA::Matrix<MEASURE_DIM> innovation;  // Innovation
 BLA::Matrix<STATE_DIM, STATE_DIM> S;  // Innovation covariance matrix
 

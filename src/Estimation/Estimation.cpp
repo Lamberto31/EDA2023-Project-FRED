@@ -105,7 +105,7 @@ void KalmanPredictor(BLA::Matrix<STATE_DIM, STATE_DIM> F, BLA::Matrix<STATE_DIM>
 }
 // Corrector
 void KalmanCorrector(BLA::Matrix<STATE_DIM, STATE_DIM> P_pred, BLA::Matrix<MEASURE_DIM, STATE_DIM> H, BLA::Matrix<MEASURE_DIM, MEASURE_DIM> R, BLA::Matrix<MEASURE_DIM> Z, BLA::Matrix<STATE_DIM> x_pred,\
-                    BLA::Matrix<STATE_DIM, STATE_DIM> *W, BLA::Matrix<STATE_DIM> *x_hat, BLA::Matrix<STATE_DIM, STATE_DIM> *P_hat, BLA::Matrix<MEASURE_DIM> *innovation, BLA::Matrix<STATE_DIM, STATE_DIM> *S) {
+                    BLA::Matrix<STATE_DIM, MEASURE_DIM> *W, BLA::Matrix<STATE_DIM> *x_hat, BLA::Matrix<STATE_DIM, STATE_DIM> *P_hat, BLA::Matrix<MEASURE_DIM> *innovation, BLA::Matrix<STATE_DIM, STATE_DIM> *S) {
     BLA::Matrix<STATE_DIM, STATE_DIM> I;
     matrixIdentity(&I);
     *W = P_pred * ~H * Inverse(H * P_pred * ~H + R);
