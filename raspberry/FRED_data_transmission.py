@@ -465,6 +465,7 @@ while True:
                     
     except Exception as e:
         debugStamp(e, "Full")
+        # TODO: Spostare modifiche fatte in interruptHandler qui per gestire il caso senza WIFI
         # If there is an error, handle the closing of the program
         if connected:
             connected = False
