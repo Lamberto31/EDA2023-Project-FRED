@@ -278,7 +278,7 @@ estimates = {
     "field6": 0,
     "field7": 0,
     "field8": 0,
-    "status": STATUS_UNKNOWN
+    "status": STATUS_EXPLORATION
     }
 
 # Init list of dataToSend
