@@ -133,16 +133,16 @@ def insertEstimateInDict(recvData):
         estimates["field1"] = data[1]
     elif data[0] == "Measures":
         vector = data[1].split(",")
-        estimates["field2"] = vector[1]
-        estimates["field3"] = vector[2]
+        estimates["field2"] = vector[0]
+        estimates["field3"] = vector[1]
     elif data[0] == "State":
         vector = data[1].split(",")
-        estimates["field4"] = vector[1]
-        estimates["field5"] = vector[2]
+        estimates["field4"] = vector[0]
+        estimates["field5"] = vector[1]
     elif data[0] == "Covariance":
         vector = data[1].split(",")
-        estimates["field6"] = vector[1]
-        estimates["field7"] = vector[2]
+        estimates["field6"] = vector[0]
+        estimates["field7"] = vector[1]
 
 # Conditional print
 def debugStamp(str, level="Default"):
