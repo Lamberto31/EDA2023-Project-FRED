@@ -896,7 +896,7 @@ void bluetoothSendFilterResult() {
   Serial.println(F("BDT 1.0 ESTIMATE"));
 
   Serial.print(F("Input:"));
-  Serial.println(u(0), DECIMALS);
+  Serial.println(u(0), 0);
 
   Serial.print(F("Measures:"));
   // Ultrasonic
