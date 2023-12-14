@@ -178,10 +178,14 @@ def stampMatrix(metadata, data):
 
 # Handle CTRL+C
 def interruptHandler(sig, frame):
-    print("\nInterrupt received, waiting for data to send and then close the script")
-    print("If you want to close the script immediately send interrupt again")
-    signal.signal(signal.SIGINT, signal.default_int_handler)
     ser.close()  # Close serial connection, this will cause error and so the script will stop but safely
+    if (WIFI):
+        print("\nInterrupt received, waiting for data to send and then close the script")
+        print("If you want to close the script immediately send interrupt again")
+        signal.signal(signal.SIGINT, signal.default_int_handler)
+    else:
+        print("\nInterrupt received, closing the script")
+        exit()
 
 # Interpret input arguments
 # DEBUG
