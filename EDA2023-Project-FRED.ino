@@ -442,11 +442,20 @@ void loop() {
         // Predictor and corrector
         KalmanPredictor(FF, x_hat, G, u, P_hat, Q, &x_pred, &P_pred);
         KalmanCorrector(P_pred, H, R, z, x_pred, &W, &x_hat, &P_hat, &innovation, &S);
-        //Send results
+        // Send results
         if (SEND_FILTER_RESULT_ACTIVE) {
           bluetoothConnection(false);
           bluetoothSendFilterResult();
         }
+        // DEBUG_TEMP
+        if (robotState.direction == DIRECTION_STOP) {
+          // Change state to free
+          stateChange(&robotState, STATE_FREE);
+          speedSlowFactor = 0;
+          firstCheck = true;
+          numericCustomDist = 0;
+        }
+        // DEBUG_TEMP
       }
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
@@ -701,6 +710,16 @@ void resetCustomDistance() {
 }
 // TODO: Capire bene come sistemare per ottenere risultati migliori
 int checkDistance() {
+  //DEBUG_TEMP
+  int speed = (robotState.input*-1) - 5;
+  if (speed == 0) {
+    runMotors(DIRECTION_STOP, 0);
+    return 0;
+  }
+  runMotors(DIRECTION_FORWARD, speed);
+  return speed*-1;
+  //DEBUG_TEMP
+  /*
   int speed;
   // Measure diffrence between current and custom distance
   diffDist = robotMeasures.distanceUS - numericCustomDist;
@@ -757,6 +776,7 @@ int checkDistance() {
       return speed;
     }
   }
+  */
 }
 
 void preventDamage(int minDistance) {
