@@ -529,6 +529,7 @@ void loop() {
 
   // TODO_CAPIRE: CAPIRE SE SERVE
   // Insert new data in sendBuffer
+  /*
   currentMillisMeasureToSend = millis();
   if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
     // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, robotMeasures.distanceUS, robotMeasures.distanceUSFiltered);
@@ -539,6 +540,7 @@ void loop() {
 
     previousMillisMeasureToSend = millis();
   }
+  */
 }
 
 // This is the function, which is called if a complete ir command was received
