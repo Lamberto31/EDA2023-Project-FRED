@@ -429,6 +429,7 @@ void loop() {
         initializeMatrixP(STATE_INIT_COV_Xp, STATE_INIT_COV_Xv, &P_hat);
         computeVectorU(0, &u);
         computeVectorZ(0, 0, &z);
+        runMotors(DIRECTION_FORWARD, 255);
         robotState.just_changed = false;
       }
       // Estimate
@@ -450,10 +451,10 @@ void loop() {
         // DEBUG_TEMP
         if (robotState.direction == DIRECTION_STOP) {
           // Change state to free
-          stateChange(&robotState, STATE_FREE);
           speedSlowFactor = 0;
           firstCheck = true;
           numericCustomDist = 0;
+          stateChange(&robotState, STATE_FREE);
         }
         // DEBUG_TEMP
       }
