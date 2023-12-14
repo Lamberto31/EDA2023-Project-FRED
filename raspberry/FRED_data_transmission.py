@@ -432,9 +432,9 @@ while True:
                         stampParams(first)
                         first = False
                         writeParamsCsv(statusString)
-            elif "FILTER" in str(recv):
-                # TODO: Gestire bene, per ora solo ricezione e stampa
-                debugStamp("New BDT message: FILTER")
+            # If contains "ESTIMATE" it's a ESTIMATE messagge
+            elif "ESTIMATE" in str(recv):
+                debugStamp("New BDT message: ESTIMATE")
                 debugStamp(str(recv, 'utf-8'), "Full")
                 while True:
                     recv = ser.readline()

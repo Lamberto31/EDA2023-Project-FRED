@@ -869,7 +869,7 @@ void bluetoothSendInfo(const char* variable, int value) {
 
 void bluetoothSendFilterResult() {
   //BDT: Bluetooth Data Transmission
-  Serial.println(F("BDT 1.0 FILTER"));
+  Serial.println(F("BDT 1.0 ESTIMATE"));
 
   Serial.print(F("Input:"));
   Serial.println(u(0), DECIMALS);
