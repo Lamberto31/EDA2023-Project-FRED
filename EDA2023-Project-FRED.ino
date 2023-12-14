@@ -871,17 +871,34 @@ void bluetoothSendFilterResult() {
   //BDT: Bluetooth Data Transmission
   Serial.println(F("BDT 1.0 FILTER"));
 
-  Serial.print(F("Position:"));
-  Serial.println(x_hat(0), DECIMALS);
+  Serial.print(F("Input:"));
+  Serial.println(u(0), DECIMALS);
 
-  Serial.print(F("Velocity:"));
+  Serial.print(F("Measures:"));
+  // Ultrasonic
+  Serial.print(z(0), DECIMALS);
+  // Optical
+  Serial.println(z(1), DECIMALS);
+
+  Serial.print(F("State:"));
+  // Position
+  Serial.print(x_hat(0), DECIMALS);
+  // Velocity
   Serial.println(x_hat(1), DECIMALS);
 
-  Serial.print(F("Position_covariance:"));
-  Serial.println(P_hat(0, 0), DECIMALS);
-
-  Serial.print(F("Velocity_covariance:"));
+  Serial.print(F("Covariance:"));
+  // TODO: Capire se va bene così o tutta la matrice (STATE_DIM x STATE_DIM)
+  // Position_covariance
+  Serial.print(P_hat(0, 0), DECIMALS);
+  // Velocity_covariance
   Serial.println(P_hat(1, 1), DECIMALS);
+
+  Serial.print(F("Gain:"));
+  // TODO: Capire se va bene così o tutta la matrice (STATE_DIM x MEASURE_DIM)
+  // Position_gain
+  Serial.print(W(0, 0), DECIMALS);
+  // Velocity_gain
+  Serial.println(W(1, 0), DECIMALS);
 
   Serial.println(F("BDT 1.0 END"));
 }
