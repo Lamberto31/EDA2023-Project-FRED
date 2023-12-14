@@ -439,8 +439,16 @@ while True:
                 while True:
                     recv = ser.readline()
                     debugStamp(str(recv, 'utf-8'), "Full")
+                    insertEstimateInDict(recv)
                     if "END" in str(recv):
+                        debugStamp("New BDT message: END")
+                        estimates["created_at"] = int((time.time()*1000))  # milliseconds
+                        if (dataToSend and dataToSend[-1]["created_at"] == estimates["created_at"]):
+                            break
+                        dataToSend.append(estimates.copy())
+                        stampDataToSend()
                         break
+            # If contains "MATRIX" it's a MATRIX messagge
             elif "MATRIX" in str(recv):
                 debugStamp("New BDT message: MATRIX")
                 debugStamp(str(recv, 'utf-8'), "Full")
