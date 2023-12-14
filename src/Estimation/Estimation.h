@@ -17,6 +17,8 @@ void computeMatrixH(int ipr, double D, BLA::Matrix<MEASURE_DIM, STATE_DIM> *H);
 void computeMatrixL(double T, double b, double M, BLA::Matrix<STATE_DIM, STATE_DIM> *L);
 void computeMatrixQ(double sigmaQP, double sigmaQV, BLA::Matrix<STATE_DIM, STATE_DIM> *Q);
 void computeMatrixR(double sigmaRP, double sigmaRV, BLA::Matrix<MEASURE_DIM, MEASURE_DIM> *R);
+// Matrix correction if fixed position
+void corretMatricesFGL(BLA::Matrix<STATE_DIM, STATE_DIM> *F, BLA::Matrix<STATE_DIM, INPUT_DIM> *G, BLA::Matrix<STATE_DIM, STATE_DIM> *L);
 
 // INITIAL CONDITIONS
 void initializeVectorX(double Xp0, double Xv0, BLA::Matrix<STATE_DIM> *X);

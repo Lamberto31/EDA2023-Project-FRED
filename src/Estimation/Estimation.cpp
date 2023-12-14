@@ -69,6 +69,13 @@ void computeMatrixR(double sigmaRP, double sigmaRV, BLA::Matrix<MEASURE_DIM, MEA
     R->operator()(1, 1) = sigmaRV*sigmaRV;
 }
 
+// Matrix correction if fixed position
+void corretMatricesFGL(BLA::Matrix<STATE_DIM, STATE_DIM> *F, BLA::Matrix<STATE_DIM, INPUT_DIM> *G, BLA::Matrix<STATE_DIM, STATE_DIM> *L) {
+    F->operator()(0, 1) = 0;
+    G->operator()(0, 0) = 0;
+    L->operator()(0, 1) = 0;
+}
+
 // INITIAL CONDITIONS
 void initializeVectorX(double Xp0, double Xv0, BLA::Matrix<STATE_DIM, 1> *X) {
     X->operator()(0, 0) = Xp0;

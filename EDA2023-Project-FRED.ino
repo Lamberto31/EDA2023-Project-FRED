@@ -41,6 +41,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 #define DEBUG_ACTIVE 1
 #define SEND_MEASURE_ACTIVE 0
 #define SEND_FILTER_RESULT_ACTIVE 1
+#define FIXED_POSITION 1
 
 // PARAMETERS
 // Physical TODO: misurare bene e inserire qui
@@ -260,6 +261,9 @@ void setup() {
   computeMatrixQ(NOISE_PROCESS_POSITION_STD, NOISE_PROCESS_VELOCITY_STD, &Q);
   // Measure noise covariance matrix
   computeMatrixR(NOISE_MEASURE_POSITION_STD, NOISE_MEASURE_VELOCITY_STD, &R);
+
+  // Matrix correction if fixed position (so that the position is indipedent from the velocity)
+  if (FIXED_POSITION) corretMatricesFGL(&FF, &G, &L);
 
   // Print matrices
   if (DEBUG_ACTIVE) {
