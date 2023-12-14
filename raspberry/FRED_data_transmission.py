@@ -101,7 +101,7 @@ def getStatusString(statusNumber):
         return STATUS_UNKNOWN
 
 # Insert received data in stored measures
-def insertDataInDict(recvData):
+def insertMeasureInDict(recvData):
     decoded = recvData.decode('utf-8')
     clean = decoded[0:-2]
     data = clean.split(":")
@@ -352,7 +352,7 @@ while True:
                 while True:
                     recv = ser.readline()
                     debugStamp(str(recv, 'utf-8'), "Full")
-                    insertDataInDict(recv)
+                    insertMeasureInDict(recv)
                     if "END" in str(recv):
                         debugStamp("New BDT message: END")
                         measures["created_at"] = int(time.time())  # seconds
