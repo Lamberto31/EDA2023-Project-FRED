@@ -446,7 +446,8 @@ void loop() {
         // Send results
         if (SEND_FILTER_RESULT_ACTIVE) {
           bluetoothConnection(false);
-          bluetoothSendFilterResult();
+          if (bluetoothConnected) bluetoothSendFilterResult();
+          else robotMeasures.sent = true;
         }
         // DEBUG_TEMP
         if (robotState.direction == DIRECTION_STOP) {
@@ -930,4 +931,6 @@ void bluetoothSendFilterResult() {
   */
 
   Serial.println(F("BDT 1.0 END"));
+
+  robotMeasures.sent = true;
 }
