@@ -877,12 +877,14 @@ void bluetoothSendFilterResult() {
   Serial.print(F("Measures:"));
   // Ultrasonic
   Serial.print(z(0), DECIMALS);
+  Serial.print(F(","));
   // Optical
   Serial.println(z(1), DECIMALS);
 
   Serial.print(F("State:"));
   // Position
   Serial.print(x_hat(0), DECIMALS);
+  Serial.print(F(","));
   // Velocity
   Serial.println(x_hat(1), DECIMALS);
 
@@ -890,6 +892,7 @@ void bluetoothSendFilterResult() {
   // TODO: Capire se va bene così o tutta la matrice (STATE_DIM x STATE_DIM)
   // Position_covariance
   Serial.print(P_hat(0, 0), DECIMALS);
+  Serial.print(F(","));
   // Velocity_covariance
   Serial.println(P_hat(1, 1), DECIMALS);
 

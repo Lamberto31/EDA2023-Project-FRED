@@ -125,9 +125,24 @@ def insertMeasureInDict(recvData):
         measures["status"] = getStatusString(data[1])
 
 # Insert received data in stored estimation
-def insertEstimationInDict(recvData):
-    # TODO: Da definire
-    Temp = 0
+def insertEstimateInDict(recvData):
+    decoded = recvData.decode('utf-8')
+    clean = decoded[0:-2]
+    data = clean.split(":")
+    if data[0] == "Input":
+        estimates["field1"] = data[1]
+    elif data[0] == "Measures":
+        vector = data[1].split(",")
+        estimates["field2"] = vector[1]
+        estimates["field3"] = vector[2]
+    elif data[0] == "State":
+        vector = data[1].split(",")
+        estimates["field4"] = vector[1]
+        estimates["field5"] = vector[2]
+    elif data[0] == "Covariance":
+        vector = data[1].split(",")
+        estimates["field6"] = vector[1]
+        estimates["field7"] = vector[2]
 
 # Conditional print
 def debugStamp(str, level="Default"):
@@ -248,9 +263,8 @@ measures = {
     "status": STATUS_UNKNOWN
     }
 
-# Init dictionary that contains estimation (declared as field as in the remote server)
-estimation = {
-    # TODO: Da definire
+# Init dictionary that contains estimates (declared as field as in the remote server)
+estimates = {
     "created_at": 0,
     "field1": 0,
     "field2": 0,
