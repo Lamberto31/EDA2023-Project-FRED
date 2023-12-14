@@ -124,6 +124,11 @@ def insertMeasureInDict(recvData):
     elif data[0] == "Status":
         measures["status"] = getStatusString(data[1])
 
+# Insert received data in stored estimation
+def insertEstimationInDict(recvData):
+    # TODO: Da definire
+    Temp = 0
+
 # Conditional print
 def debugStamp(str, level="Default"):
     if DEBUG == "None":
@@ -155,6 +160,7 @@ def stampMatrix(metadata, data):
             for j in range(0, columns):
                 print(data[i * columns + j], end=" ")
             print()
+
 # Handle CTRL+C
 def interruptHandler(sig, frame):
     print("\nInterrupt received, waiting for data to send and then close the script")
@@ -230,6 +236,21 @@ else:
 
 # Init dictionary that contains measures (declared as field as in the remote server)
 measures = {
+    "created_at": 0,
+    "field1": 0,
+    "field2": 0,
+    "field3": 0,
+    "field4": 0,
+    "field5": 0,
+    "field6": 0,
+    "field7": 0,
+    "field8": 0,
+    "status": STATUS_UNKNOWN
+    }
+
+# Init dictionary that contains estimation (declared as field as in the remote server)
+estimation = {
+    # TODO: Da definire
     "created_at": 0,
     "field1": 0,
     "field2": 0,
@@ -357,7 +378,7 @@ while True:
                         debugStamp("New BDT message: END")
                         measures["created_at"] = int(time.time())  # seconds
                         # Check if the last measure has the same timestamp of the new one, if so don't add it
-                        # TODO_DOPO: Per ora scarto le misure, da capire cosa farci dopo aver visto il filtraggio
+                        # TODO: Per ora scarto le misure, da capire cosa farci dopo aver visto il filtraggio
                         if (dataToSend and dataToSend[-1]["created_at"] == measures["created_at"]):
                             break
                         dataToSend.append(measures.copy())
