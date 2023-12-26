@@ -101,7 +101,7 @@ def getStatusString(statusNumber):
         return STATUS_UNKNOWN
 
 # Insert received data in stored measures
-def insertDataInDict(recvData):
+def insertMeasureInDict(recvData):
     decoded = recvData.decode('utf-8')
     clean = decoded[0:-2]
     data = clean.split(":")
@@ -124,6 +124,26 @@ def insertDataInDict(recvData):
     elif data[0] == "Status":
         measures["status"] = getStatusString(data[1])
 
+# Insert received data in stored estimation
+def insertEstimateInDict(recvData):
+    decoded = recvData.decode('utf-8')
+    clean = decoded[0:-2]
+    data = clean.split(":")
+    if data[0] == "Input":
+        estimates["field1"] = data[1]
+    elif data[0] == "Measures":
+        vector = data[1].split(",")
+        estimates["field2"] = vector[0]
+        estimates["field3"] = vector[1]
+    elif data[0] == "State":
+        vector = data[1].split(",")
+        estimates["field4"] = vector[0]
+        estimates["field5"] = vector[1]
+    elif data[0] == "Covariance":
+        vector = data[1].split(",")
+        estimates["field6"] = vector[0]
+        estimates["field7"] = vector[1]
+
 # Conditional print
 def debugStamp(str, level="Default"):
     if DEBUG == "None":
@@ -141,12 +161,31 @@ def stampDataToSend():
         for i in range(0, len(dataToSend)):
             print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\t" + str(dataToSend[i]["field8"]) + "\t" + str(dataToSend[i]["status"]) + "\n")
 
+# Print matrix in tabular format
+def stampMatrix(metadata, data):
+    # Process metadata
+    dimensions = metadata.split("=")[1]
+    rows = int(dimensions.split("x")[0])
+    columns = int(dimensions.split("x")[1])
+    print(metadata)
+    # Process data
+    data = data.split(":")[1].split(",")
+    if ((DEBUG == "Default" or DEBUG == "Full")):
+        for i in range(0, rows):
+            for j in range(0, columns):
+                print(data[i * columns + j], end=" ")
+            print()
+
 # Handle CTRL+C
 def interruptHandler(sig, frame):
-    print("\nInterrupt received, waiting for data to send and then close the script")
-    print("If you want to close the script immediately send interrupt again")
-    signal.signal(signal.SIGINT, signal.default_int_handler)
     ser.close()  # Close serial connection, this will cause error and so the script will stop but safely
+    if (WIFI):
+        print("\nInterrupt received, waiting for data to send and then close the script")
+        print("If you want to close the script immediately send interrupt again")
+        signal.signal(signal.SIGINT, signal.default_int_handler)
+    else:
+        print("\nInterrupt received, closing the script")
+        exit()
 
 # Interpret input arguments
 # DEBUG
@@ -226,6 +265,20 @@ measures = {
     "field7": 0,
     "field8": 0,
     "status": STATUS_UNKNOWN
+    }
+
+# Init dictionary that contains estimates (declared as field as in the remote server)
+estimates = {
+    "created_at": 0,
+    "field1": 0,
+    "field2": 0,
+    "field3": 0,
+    "field4": 0,
+    "field5": 0,
+    "field6": 0,
+    "field7": 0,
+    "field8": 0,
+    "status": STATUS_EXPLORATION
     }
 
 # Init list of dataToSend
@@ -338,12 +391,12 @@ while True:
                 while True:
                     recv = ser.readline()
                     debugStamp(str(recv, 'utf-8'), "Full")
-                    insertDataInDict(recv)
+                    insertMeasureInDict(recv)
                     if "END" in str(recv):
                         debugStamp("New BDT message: END")
                         measures["created_at"] = int(time.time())  # seconds
                         # Check if the last measure has the same timestamp of the new one, if so don't add it
-                        # TODO_DOPO: Per ora scarto le misure, da capire cosa farci dopo aver visto il filtraggio
+                        # TODO: Per ora scarto le misure, da capire cosa farci dopo aver visto il filtraggio
                         if (dataToSend and dataToSend[-1]["created_at"] == measures["created_at"]):
                             break
                         dataToSend.append(measures.copy())
@@ -379,18 +432,40 @@ while True:
                         stampParams(first)
                         first = False
                         writeParamsCsv(statusString)
-            elif "FILTER" in str(recv):
-                # TODO: Gestire bene, per ora solo ricezione e stampa
-                debugStamp("New BDT message: FILTER")
+            # If contains "ESTIMATE" it's a ESTIMATE messagge
+            elif "ESTIMATE" in str(recv):
+                debugStamp("New BDT message: ESTIMATE")
                 debugStamp(str(recv, 'utf-8'), "Full")
                 while True:
                     recv = ser.readline()
                     debugStamp(str(recv, 'utf-8'), "Full")
+                    insertEstimateInDict(recv)
                     if "END" in str(recv):
+                        debugStamp("New BDT message: END")
+                        estimates["created_at"] = int((time.time()*1000))  # milliseconds
+                        if (dataToSend and dataToSend[-1]["created_at"] == estimates["created_at"]):
+                            break
+                        dataToSend.append(estimates.copy())
+                        stampDataToSend()
                         break
+            # If contains "MATRIX" it's a MATRIX messagge
+            elif "MATRIX" in str(recv):
+                debugStamp("New BDT message: MATRIX")
+                debugStamp(str(recv, 'utf-8'), "Full")
+                # Receive metadata
+                recv = ser.readline()
+                debugStamp(str(recv, 'utf-8'), "Full")
+                metadata = recv.decode('utf-8')[0:-2]
+                # Receive data
+                recv = ser.readline()
+                debugStamp(str(recv, 'utf-8'), "Full")
+                data = recv.decode('utf-8')[0:-2]
+                stampMatrix(metadata, data)
+
                     
     except Exception as e:
         debugStamp(e, "Full")
+        # TODO: Spostare modifiche fatte in interruptHandler qui per gestire il caso senza WIFI
         # If there is an error, handle the closing of the program
         if connected:
             connected = False

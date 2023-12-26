@@ -39,6 +39,9 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 1
+#define SEND_MEASURE_ACTIVE 0
+#define SEND_FILTER_RESULT_ACTIVE 1
+#define FIXED_POSITION 1
 
 // PARAMETERS
 // Physical TODO: misurare bene e inserire qui
@@ -63,7 +66,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 #define STATE_INIT_COV_Xv SPEED_MAX/100  // [adim] Initial velocity covariance
 // Noise
 #define NOISE_PROCESS_POSITION_STD 0.03  // [cm] Standard deviation of process noise for position
-#define NOISE_PROCESS_VELOCITY_STD 0.03  // [cm/s] Standard deviation of process noise for velocity
+#define NOISE_PROCESS_VELOCITY_STD 0.01  // [cm/s] Standard deviation of process noise for velocity
 #define NOISE_MEASURE_POSITION_STD 0.3  // [cm] Standard deviation of measure noise for position
 #define NOISE_MEASURE_VELOCITY_STD 0.1  // [cm/s] Standard deviation of measure noise for velocity
 // Measure
@@ -135,7 +138,7 @@ BLA::Matrix<MEASURE_DIM> z;  // Measure vector
 // Kalman filter output
 BLA::Matrix<STATE_DIM, STATE_DIM> P_pred;  // State covariance matrix prediction
 BLA::Matrix<STATE_DIM, STATE_DIM> P_hat;  // State covariance matrix estimate
-BLA::Matrix<STATE_DIM, STATE_DIM> W;  // Kalman gain
+BLA::Matrix<STATE_DIM, MEASURE_DIM> W;  // Kalman gain
 BLA::Matrix<MEASURE_DIM> innovation;  // Innovation
 BLA::Matrix<STATE_DIM, STATE_DIM> S;  // Innovation covariance matrix
 
@@ -259,6 +262,9 @@ void setup() {
   // Measure noise covariance matrix
   computeMatrixR(NOISE_MEASURE_POSITION_STD, NOISE_MEASURE_VELOCITY_STD, &R);
 
+  // Matrix correction if fixed position (so that the position is indipedent from the velocity)
+  if (FIXED_POSITION) corretMatricesFGL(&FF, &G, &L);
+
   // Print matrices
   if (DEBUG_ACTIVE) {
     printMatrix(FF, "F", DECIMALS);
@@ -268,6 +274,14 @@ void setup() {
     printMatrix(Q, "Q", DECIMALS);
     printMatrix(R, "R", DECIMALS);
   }
+
+  // Send matrices
+  bluetoothSendMatrix(FF, "F", DECIMALS);
+  bluetoothSendMatrix(G, "G", DECIMALS);
+  bluetoothSendMatrix(H, "H", DECIMALS);
+  bluetoothSendMatrix(L, "L", DECIMALS);
+  bluetoothSendMatrix(Q, "Q", DECIMALS);
+  bluetoothSendMatrix(R, "R", DECIMALS);
 
   digitalWrite(LED_BUILTIN, LOW);
 
@@ -415,6 +429,7 @@ void loop() {
         initializeMatrixP(STATE_INIT_COV_Xp, STATE_INIT_COV_Xv, &P_hat);
         computeVectorU(0, &u);
         computeVectorZ(0, 0, &z);
+        runMotors(DIRECTION_FORWARD, 255);
         robotState.just_changed = false;
       }
       // Estimate
@@ -428,9 +443,21 @@ void loop() {
         // Predictor and corrector
         KalmanPredictor(FF, x_hat, G, u, P_hat, Q, &x_pred, &P_pred);
         KalmanCorrector(P_pred, H, R, z, x_pred, &W, &x_hat, &P_hat, &innovation, &S);
-        //Send results
-        bluetoothSendFilterResult();
-
+        // Send results
+        if (SEND_FILTER_RESULT_ACTIVE) {
+          bluetoothConnection(false);
+          if (bluetoothConnected) bluetoothSendFilterResult();
+          else robotMeasures.sent = true;
+        }
+        // DEBUG_TEMP
+        if (robotState.direction == DIRECTION_STOP) {
+          // Change state to free
+          speedSlowFactor = 0;
+          firstCheck = true;
+          numericCustomDist = 0;
+          stateChange(&robotState, STATE_FREE);
+        }
+        // DEBUG_TEMP
       }
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
@@ -490,7 +517,7 @@ void loop() {
   }
 
   // Send measure with Bluetooth (don't do if STATE_SEARCH)
-  if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH && robotState.current != STATE_SEARCH) {
+  if (SEND_MEASURE_ACTIVE && currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH && robotState.current != STATE_SEARCH) {
     servoH.attach(PIN_SERVO_HORIZ);
     servoH.write(SERVO_HORIZ_CENTER);
     delay(100);
@@ -503,6 +530,7 @@ void loop() {
 
   // TODO_CAPIRE: CAPIRE SE SERVE
   // Insert new data in sendBuffer
+  /*
   currentMillisMeasureToSend = millis();
   if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
     // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, robotMeasures.distanceUS, robotMeasures.distanceUSFiltered);
@@ -513,6 +541,7 @@ void loop() {
 
     previousMillisMeasureToSend = millis();
   }
+  */
 }
 
 // This is the function, which is called if a complete ir command was received
@@ -685,6 +714,16 @@ void resetCustomDistance() {
 }
 // TODO: Capire bene come sistemare per ottenere risultati migliori
 int checkDistance() {
+  //DEBUG_TEMP
+  int speed = (robotState.input*-1) - 5;
+  if (speed == 0) {
+    runMotors(DIRECTION_STOP, 0);
+    return 0;
+  }
+  runMotors(DIRECTION_FORWARD, speed);
+  return speed*-1;
+  //DEBUG_TEMP
+  /*
   int speed;
   // Measure diffrence between current and custom distance
   diffDist = robotMeasures.distanceUS - numericCustomDist;
@@ -741,6 +780,7 @@ int checkDistance() {
       return speed;
     }
   }
+  */
 }
 
 void preventDamage(int minDistance) {
@@ -853,19 +893,44 @@ void bluetoothSendInfo(const char* variable, int value) {
 
 void bluetoothSendFilterResult() {
   //BDT: Bluetooth Data Transmission
-  Serial.println(F("BDT 1.0 FILTER"));
+  Serial.println(F("BDT 1.0 ESTIMATE"));
 
-  Serial.print(F("Position:"));
-  Serial.println(x_hat(0), DECIMALS);
+  Serial.print(F("Input:"));
+  Serial.println(u(0), 0);
 
-  Serial.print(F("Velocity:"));
+  Serial.print(F("Measures:"));
+  // Ultrasonic
+  Serial.print(z(0), DECIMALS);
+  Serial.print(F(","));
+  // Optical
+  Serial.println(z(1), DECIMALS);
+
+  Serial.print(F("State:"));
+  // Position
+  Serial.print(x_hat(0), DECIMALS);
+  Serial.print(F(","));
+  // Velocity
   Serial.println(x_hat(1), DECIMALS);
 
-  Serial.print(F("Position_covariance:"));
-  Serial.println(P_hat(0, 0), DECIMALS);
-
-  Serial.print(F("Velocity_covariance:"));
+  Serial.print(F("Covariance:"));
+  // TODO: Capire se va bene così o tutta la matrice (STATE_DIM x STATE_DIM)
+  // Position_covariance
+  Serial.print(P_hat(0, 0), DECIMALS);
+  Serial.print(F(","));
+  // Velocity_covariance
   Serial.println(P_hat(1, 1), DECIMALS);
 
+  // TODO: Capire se serve
+  /*
+  Serial.print(F("Gain:"));
+  // TODO: Capire se va bene così o tutta la matrice (STATE_DIM x MEASURE_DIM)
+  // Position_gain
+  Serial.print(W(0, 0), DECIMALS);
+  // Velocity_gain
+  Serial.println(W(1, 0), DECIMALS);
+  */
+
   Serial.println(F("BDT 1.0 END"));
+
+  robotMeasures.sent = true;
 }
