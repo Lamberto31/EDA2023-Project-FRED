@@ -530,11 +530,19 @@ void loop() {
 
       // Send measure with Bluetooth
       if (SEND_MEASURE_ACTIVE && currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
+        // Adjust servo
         servoH.attach(PIN_SERVO_HORIZ);
         servoH.write(SERVO_HORIZ_CENTER);
         delay(100);
         servoH.detach();
 
+        // Prepare data to send
+        computeVectorU(robotState.input, &u);
+        computeVectorZ(robotMeasures.distanceUS, robotMeasures.ppsOptical, &z);
+        x_hat(0) = robotMeasures.distanceUS;
+        x_hat(1) = robotMeasures.velocityOptical;
+
+        // Send data
         bluetoothConnection(false);
         if (bluetoothConnected && !robotMeasures.sent) bluetoothSendData(false);
         previousMillisMeasureToSend = millis();
