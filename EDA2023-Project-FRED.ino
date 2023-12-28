@@ -446,7 +446,7 @@ void loop() {
         // Send results
         if (SEND_FILTER_RESULT_ACTIVE) {
           bluetoothConnection(false);
-          if (bluetoothConnected) bluetoothSendFilterResult();
+          if (bluetoothConnected) bluetoothSendData(true);
           else robotMeasures.sent = true;
         }
         // DEBUG_TEMP
@@ -536,7 +536,7 @@ void loop() {
         servoH.detach();
 
         bluetoothConnection(false);
-        if (bluetoothConnected && !robotMeasures.sent) bluetoothSendMeasure();
+        if (bluetoothConnected && !robotMeasures.sent) bluetoothSendData(false);
         previousMillisMeasureToSend = millis();
   }
       break;
@@ -874,48 +874,10 @@ bool bluetoothConnection(bool waitConnection) {
   return bluetoothConnected;
 }
 
-void bluetoothSendMeasure() {
+void bluetoothSendData(bool filtering) {
   //BDT: Bluetooth Data Transmission
-  Serial.println(F("BDT 1.0 START"));
-
-  Serial.print(F("Distance_US:"));
-  Serial.println(robotMeasures.distanceUS, DECIMALS);
-
-  Serial.print(F("Distance_OPT:"));
-  Serial.println(robotMeasures.distanceOptical, DECIMALS);
-
-  Serial.print(F("Rev_per_second:"));
-  Serial.println(robotMeasures.rpsOptical, DECIMALS);
-
-  Serial.print(F("Velocity_US:"));
-  Serial.println(robotMeasures.velocityUS, DECIMALS);
-
-  Serial.print(F("Velocity_OPT:"));
-  Serial.println(robotMeasures.velocityOptical, DECIMALS);
-
-  Serial.print(F("Distance_Custom:"));
-  Serial.println(numericCustomDist);
-
-  Serial.print(F("Status:"));
-  Serial.println(robotState.current);
-
-  Serial.println(F("BDT 1.0 END"));
-
-  robotMeasures.sent = true;
-}
-
-void bluetoothSendInfo(const char* variable, int value) {
-  //BDT: Bluetooth Data Transmission
-  Serial.println(F("BDT 1.0 INFO"));
-
-  Serial.print(variable);
-  Serial.print(F(": "));
-  Serial.println(value);
-}
-
-void bluetoothSendFilterResult() {
-  //BDT: Bluetooth Data Transmission
-  Serial.println(F("BDT 1.0 ESTIMATE"));
+  if (filtering) Serial.println(F("BDT 1.0 ESTIMATE"));
+  else Serial.println(F("BDT 1.0 DATA"));
 
   Serial.print(F("Input:"));
   Serial.println(u(0), 0);
@@ -934,25 +896,37 @@ void bluetoothSendFilterResult() {
   // Velocity
   Serial.println(x_hat(1), DECIMALS);
 
-  Serial.print(F("Covariance:"));
-  // TODO: Capire se va bene così o tutta la matrice (STATE_DIM x STATE_DIM)
-  // Position_covariance
-  Serial.print(P_hat(0, 0), DECIMALS);
-  Serial.print(F(","));
-  // Velocity_covariance
-  Serial.println(P_hat(1, 1), DECIMALS);
+  if (filtering) {
+    Serial.print(F("Covariance:"));
+    // TODO: Capire se va bene così o tutta la matrice (STATE_DIM x STATE_DIM)
+    // Position_covariance
+    Serial.print(P_hat(0, 0), DECIMALS);
+    Serial.print(F(","));
+    // Velocity_covariance
+    Serial.println(P_hat(1, 1), DECIMALS);
 
-  // TODO: Capire se serve
-  /*
-  Serial.print(F("Gain:"));
-  // TODO: Capire se va bene così o tutta la matrice (STATE_DIM x MEASURE_DIM)
-  // Position_gain
-  Serial.print(W(0, 0), DECIMALS);
-  // Velocity_gain
-  Serial.println(W(1, 0), DECIMALS);
-  */
+    // TODO: Capire se serve
+    /*
+    Serial.print(F("Gain:"));
+    // TODO: Capire se va bene così o tutta la matrice (STATE_DIM x MEASURE_DIM)
+    // Position_gain
+    Serial.print(W(0, 0), DECIMALS);
+    // Velocity_gain
+    Serial.println(W(1, 0), DECIMALS);
+    */
+  }
 
-  Serial.println(F("BDT 1.0 END"));
+  Serial.print(F("Status:"));
+  Serial.println(robotState.current);
 
   robotMeasures.sent = true;
+}
+
+void bluetoothSendInfo(const char* variable, int value) {
+  //BDT: Bluetooth Data Transmission
+  Serial.println(F("BDT 1.0 INFO"));
+
+  Serial.print(variable);
+  Serial.print(F(": "));
+  Serial.println(value);
 }
