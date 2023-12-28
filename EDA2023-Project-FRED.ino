@@ -399,6 +399,7 @@ void loop() {
             if (composeNumericDistance()) stateChange(&robotState, STATE_SEARCH); else stateChange(&robotState, STATE_FREE);
             debugF("numericCustomDist = ");
             debugln(numericCustomDist);
+            bluetoothSendInfo("Custom distance", numericCustomDist);
             // Feedback led
             digitalWrite(LED_BUILTIN, LOW);
             break;
@@ -935,6 +936,6 @@ void bluetoothSendInfo(const char* variable, int value) {
   Serial.println(F("BDT 1.0 INFO"));
 
   Serial.print(variable);
-  Serial.print(F(": "));
+  Serial.print(F(":"));
   Serial.println(value);
 }
