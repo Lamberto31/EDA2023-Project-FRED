@@ -101,6 +101,7 @@ def getStatusString(statusNumber):
         return STATUS_UNKNOWN
 
 # Insert received data in stored measures
+# TODO: rimuovere
 def insertMeasureInDict(recvData):
     decoded = recvData.decode('utf-8')
     clean = decoded[0:-2]
@@ -125,6 +126,7 @@ def insertMeasureInDict(recvData):
         measures["status"] = getStatusString(data[1])
 
 # Insert received data in stored estimation
+# TODO: rinominare e adattare?
 def insertEstimateInDict(recvData):
     decoded = recvData.decode('utf-8')
     clean = decoded[0:-2]
@@ -154,6 +156,7 @@ def debugStamp(str, level="Default"):
         print(str)
 
 # Print dataToSend in tabular format
+# TODO: Riadattare per nuovo formato
 def stampDataToSend():
     if ((DEBUG == "Default" or DEBUG == "Full") and VIEW_DATA):
         print("\nDATA TO SEND")
@@ -254,6 +257,7 @@ else:
     exit()
 
 # Init dictionary that contains measures (declared as field as in the remote server)
+# TODO: rimuovere
 measures = {
     "created_at": 0,
     "field1": 0,
@@ -268,6 +272,7 @@ measures = {
     }
 
 # Init dictionary that contains estimates (declared as field as in the remote server)
+# TODO: rinominare e adattare?
 estimates = {
     "created_at": 0,
     "field1": 0,
@@ -296,6 +301,7 @@ timestamp = datetime.datetime.now().replace(microsecond=0).isoformat()
 csvFileName = "FRED_log_" + timestamp + ".csv"
 
 # Create file and write header
+# TODO: Modificare per nuovo formato
 csvFile = open(os.path.join("./logs", csvFileName), mode='w')
 csvWriter = csv.DictWriter(csvFile, fieldnames=measures.keys())
 csvWriter.writeheader()
@@ -401,6 +407,7 @@ while True:
                         debugStamp("New BDT message: END")
                         estimates["created_at"] = int((time.time()*1000))  # milliseconds
                         # TODO: inserire solo valore di stima più recente e non il primo?
+                        # TODO: Rimuovere questo controllo e farlo direttamente in fase di invio, così facendo qui si avrà tutto e sarà più facile scrivere il csv
                         if (dataToSend and dataToSend[-1]["created_at"] == int(estimates["created_at"]/1000)):
                             break
                         estimateToSend = estimates.copy()
@@ -469,7 +476,8 @@ while True:
     # SEND DATA TO REMOTE SERVER
     # Do it every PERIOD_SERVER seconds and if dataToSend is not empty
     if time.time() - lastSendToServer >= PERIOD_SERVER and dataToSend:
-        debugStamp("Sending " + str(len(dataToSend)) + " measures to remote server")
+        # TODO: Filtrare qui i dati da inviare in base al fatto se rappresentano lo stesso secondo o meno
+        debugStamp("Sending " + str(len(dataToSend)) + " data to remote server")
         # Build json to send
         jsonDict["updates"] = dataToSend
         debugStamp(jsonDict, "Full")
@@ -480,6 +488,7 @@ while True:
             debugStamp(str(r.status_code) + " " + str(r.reason))
 
         # Write data to csv
+        # TODO: Spostare sopra in modo tale da scrivere prima di filtrare per secondo (oppure va bene qua ma filtraggio in copia)
         csvWriter.writerows(dataToSend)
         csvFile.flush()
 
