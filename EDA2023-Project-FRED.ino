@@ -450,15 +450,6 @@ void loop() {
           if (bluetoothConnected) bluetoothSendData(true);
           else robotMeasures.sent = true;
         }
-        // DEBUG_TEMP
-        if (robotState.direction == DIRECTION_STOP) {
-          // Change state to free
-          speedSlowFactor = 0;
-          firstCheck = true;
-          numericCustomDist = 0;
-          stateChange(&robotState, STATE_FREE);
-        }
-        // DEBUG_TEMP
       }
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
