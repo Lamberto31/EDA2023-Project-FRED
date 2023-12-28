@@ -384,22 +384,28 @@ while True:
                 signal.signal(signal.SIGINT, interruptHandler)
             # Read data
             recv = ser.readline()
-            # If contains "START" it's a BDT messagge
-            if "START" in str(recv):
-                debugStamp("New BDT message: START")
+            # If contains "DATA" or "ESTIMATE" it's a DATA/ESTIMATE messagge
+            if "DATA" in str(recv) or "ESTIMATE" in str(recv):
+                if "DATA" in str(recv):
+                    messageNumber = 3
+                    debugStamp("New BDT message: DATA")
+                elif "ESTIMATE" in str(recv):
+                    messageNumber = 4
+                    debugStamp("New BDT message: ESTIMATE")
                 debugStamp(str(recv, 'utf-8'), "Full")
                 while True:
                     recv = ser.readline()
                     debugStamp(str(recv, 'utf-8'), "Full")
-                    insertMeasureInDict(recv)
+                    insertEstimateInDict(recv)
                     if "END" in str(recv):
                         debugStamp("New BDT message: END")
-                        measures["created_at"] = int(time.time())  # seconds
-                        # Check if the last measure has the same timestamp of the new one, if so don't add it
-                        # TODO: Per ora scarto le misure, da capire cosa farci dopo aver visto il filtraggio
-                        if (dataToSend and dataToSend[-1]["created_at"] == measures["created_at"]):
+                        estimates["created_at"] = int((time.time()*1000))  # milliseconds
+                        # TODO: inserire solo valore di stima più recente e non il primo?
+                        if (dataToSend and dataToSend[-1]["created_at"] == int(estimates["created_at"]/1000)):
                             break
-                        dataToSend.append(measures.copy())
+                        estimateToSend = estimates.copy()
+                        estimateToSend["created_at"] = int(estimates["created_at"]/1000)
+                        dataToSend.append(estimateToSend.copy())
                         stampDataToSend()
                         break
             # If contains "INFO" it's a INFO messagge
@@ -432,22 +438,6 @@ while True:
                         stampParams(first)
                         first = False
                         writeParamsCsv(statusString)
-            # If contains "ESTIMATE" it's a ESTIMATE messagge
-            elif "ESTIMATE" in str(recv):
-                debugStamp("New BDT message: ESTIMATE")
-                debugStamp(str(recv, 'utf-8'), "Full")
-                while True:
-                    recv = ser.readline()
-                    debugStamp(str(recv, 'utf-8'), "Full")
-                    insertEstimateInDict(recv)
-                    if "END" in str(recv):
-                        debugStamp("New BDT message: END")
-                        estimates["created_at"] = int((time.time()*1000))  # milliseconds
-                        if (dataToSend and dataToSend[-1]["created_at"] == estimates["created_at"]):
-                            break
-                        dataToSend.append(estimates.copy())
-                        stampDataToSend()
-                        break
             # If contains "MATRIX" it's a MATRIX messagge
             elif "MATRIX" in str(recv):
                 debugStamp("New BDT message: MATRIX")
