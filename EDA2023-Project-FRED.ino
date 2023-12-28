@@ -171,6 +171,9 @@ char customDist[CUSTOM_DIST_CHAR];
 byte customDistIdx = 0;
 int numericCustomDist = 0;
 
+// Filtering boolean (Used to avoid sending filtered data when not needed)
+bool filtering = false;
+
 // Debug macro
 #if DEBUG_ACTIVE == 1
 #define debug(x) Serial.print(x)
@@ -477,6 +480,13 @@ void loop() {
     // Measure state handling
     case STATE_MEASURE: {
       if (robotState.just_changed) {
+        filtering = waitFilteringChoice();
+        if (filtering) {
+          initializeVectorX(STATE_INIT_Xp, STATE_INIT_Xv, &x_hat);
+          initializeMatrixP(STATE_INIT_COV_Xp, STATE_INIT_COV_Xv, &P_hat);
+          computeVectorU(0, &u);
+          computeVectorZ(0, 0, &z);
+        }
         robotState.just_changed = false;
       }
       sendBufferIndex = 0;
@@ -520,6 +530,21 @@ void loop() {
         stateCmdExecuted(&robotState);
       }
 
+      // Filter only if filtering is true
+      if (filtering) {
+        // Do only if new measure is available
+        if (!robotMeasures.sent) {
+          // Fill input and measures vectors
+          computeVectorU(robotState.input, &u);
+          computeVectorZ(robotMeasures.distanceUS, robotMeasures.ppsOptical, &z);
+          // Predictor and corrector
+          KalmanPredictor(FF, x_hat, G, u, P_hat, Q, &x_pred, &P_pred);
+          KalmanCorrector(P_pred, H, R, z, x_pred, &W, &x_hat, &P_hat, &innovation, &S);
+          // Set measure as used
+          robotMeasures.send = true;
+        }
+      }
+
       // Send measure with Bluetooth
       if (SEND_MEASURE_ACTIVE && currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
         // Adjust servo
@@ -528,15 +553,17 @@ void loop() {
         delay(100);
         servoH.detach();
 
-        // Prepare data to send
-        computeVectorU(robotState.input, &u);
-        computeVectorZ(robotMeasures.distanceUS, robotMeasures.ppsOptical, &z);
-        x_hat(0) = robotMeasures.distanceUS;
-        x_hat(1) = robotMeasures.velocityOptical;
+        // Prepare data to send if not filtering
+        if (!filtering) {
+          computeVectorU(robotState.input, &u);
+          computeVectorZ(robotMeasures.distanceUS, robotMeasures.ppsOptical, &z);
+          x_hat(0) = robotMeasures.distanceUS;
+          x_hat(1) = robotMeasures.velocityOptical;
+        }
 
         // Send data
         bluetoothConnection(false);
-        if (bluetoothConnected && !robotMeasures.sent) bluetoothSendData(false);
+        if (bluetoothConnected) bluetoothSendData(filtering);
         previousMillisMeasureToSend = millis();
   }
       break;
@@ -929,4 +956,33 @@ void bluetoothSendInfo(const char* variable, int value) {
   Serial.print(variable);
   Serial.print(F(":"));
   Serial.println(value);
+}
+
+// FILTERING
+bool waitFilteringChoice() {
+  unsigned long previousMillisFiltering = millis();
+  bool skip = false;
+  bool filtering = false;
+
+  digitalWrite(LED_BUILTIN, HIGH);
+  while (millis() - previousMillisFiltering < BLUETOOTH_WAIT_CONNECTION) {
+    if (skip) break;
+    if (!robotState.cmd_executed) {
+      switch (robotState.command) {
+        // If OK go ahead without wait for connection
+        case IR_BUTTON_OK: {
+          skip = true;
+          break;
+        }
+        case IR_BUTTON_AST: {
+          skip = true;
+          filtering = true;
+          break;
+        }
+      }
+      stateCmdExecuted(&robotState);
+    }
+  }
+  digitalWrite(LED_BUILTIN, LOW);
+  return filtering;
 }
