@@ -483,7 +483,6 @@ void loop() {
       break;
     }
     // Measure state handling
-    // TODO: Capire che fare di questo stato, al momento non fa più nulla
     case STATE_MEASURE: {
       if (robotState.just_changed) {
         robotState.just_changed = false;
@@ -505,6 +504,18 @@ void loop() {
         }
         stateCmdExecuted(&robotState);
       }
+
+      // Send measure with Bluetooth
+      if (SEND_MEASURE_ACTIVE && currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
+        servoH.attach(PIN_SERVO_HORIZ);
+        servoH.write(SERVO_HORIZ_CENTER);
+        delay(100);
+        servoH.detach();
+
+        bluetoothConnection(false);
+        if (bluetoothConnected && !robotMeasures.sent) bluetoothSendMeasure();
+        previousMillisMeasureToSend = millis();
+  }
       break;
     }
   }
@@ -514,18 +525,6 @@ void loop() {
   if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
     measureAll(currentMillisMeasure - previousMillisMeasure);
     previousMillisMeasure = millis();
-  }
-
-  // Send measure with Bluetooth (don't do if STATE_SEARCH)
-  if (SEND_MEASURE_ACTIVE && currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH && robotState.current != STATE_SEARCH) {
-    servoH.attach(PIN_SERVO_HORIZ);
-    servoH.write(SERVO_HORIZ_CENTER);
-    delay(100);
-    servoH.detach();
-
-    bluetoothConnection(false);
-    if (bluetoothConnected && !robotMeasures.sent) bluetoothSendMeasure();
-    previousMillisMeasureToSend = millis();
   }
 
   // TODO_CAPIRE: CAPIRE SE SERVE
