@@ -492,10 +492,33 @@ void loop() {
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
           case IR_BUTTON_OK: {
+            if (DEBUG_ACTIVE) printMeasures(&robotMeasures);
+            runMotors(DIRECTION_STOP, 0);
+            break;
+          }
+          case IR_BUTTON_UP: {
+            runMotors(DIRECTION_FORWARD, 255);
+            break;
+          }
+          case IR_BUTTON_DOWN: {
+            runMotors(DIRECTION_BACKWARD, 100);
+            break;
+          }
+          case IR_BUTTON_RIGHT: {
+            runMotors(DIRECTION_RIGHT, 100);
+            break;
+          }
+          case IR_BUTTON_LEFT: {
+            runMotors(DIRECTION_LEFT, 100);
+            break;
+          }
+          case IR_BUTTON_HASH: {
+            runMotors(DIRECTION_STOP, 0);
             stateChange(&robotState, STATE_FREE);
             break;
           }
           case IR_BUTTON_AST: {
+            runMotors(DIRECTION_STOP, 0);
             stateChange(&robotState, STATE_READ);
             // Feedback led
             digitalWrite(LED_BUILTIN, HIGH);
