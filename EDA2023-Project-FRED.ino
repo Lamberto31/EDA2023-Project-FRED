@@ -541,11 +541,11 @@ void loop() {
           KalmanPredictor(FF, x_hat, G, u, P_hat, Q, &x_pred, &P_pred);
           KalmanCorrector(P_pred, H, R, z, x_pred, &W, &x_hat, &P_hat, &innovation, &S);
           // Set measure as used
-          robotMeasures.send = true;
+          robotMeasures.sent = true;
         }
       }
 
-      // Send measure with Bluetooth
+      // Send data with Bluetooth
       if (SEND_MEASURE_ACTIVE && currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
         // Adjust servo
         servoH.attach(PIN_SERVO_HORIZ);
@@ -569,7 +569,7 @@ void loop() {
       break;
     }
   }
-  // Actions performed for each state (Almost)
+  // Actions performed for each state
   // Measure
   currentMillisMeasure = millis();
   if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
@@ -614,6 +614,96 @@ void ledFeedback(byte blinkNumber, unsigned int blinkDuration, bool reverse) {
   }
 }
 
+// MEASURE
+void measureAll(unsigned long deltaT) {
+  robotMeasures.sent = false;
+  double prevDistance = robotMeasures.distanceUS;
+  
+  int pulses = opticalPulses;
+  opticalPulses = 0;
+  int directionSign;
+  double travelledRevolution;
+  double travelledDistance;
+
+  // Distance from ultrasonic
+  robotMeasures.distanceUS = measureDistance();
+
+  // Velocity from ultrasonic
+  robotMeasures.velocityUS = (robotMeasures.distanceUS - prevDistance) / (deltaT * 0.001);
+
+  // Position from optical
+  directionSign = measureDirection();
+  travelledRevolution = (pulses / (double)WHEEL_ENCODER_HOLES);
+  travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution * directionSign;
+  robotMeasures.distanceOptical = travelledDistance + prevDistance;
+
+  // Velocity from optical
+  robotMeasures.rpsOptical = travelledRevolution / (deltaT * 0.001);
+  robotMeasures.velocityOptical = travelledDistance / (deltaT * 0.001);
+
+  // Pulses per second from optical
+  robotMeasures.ppsOptical = pulses / (deltaT * 0.001) * directionSign;
+}
+
+// DISTANCE
+double measureDistance() {
+  long tripTime;
+  double distance;
+
+  digitalWrite(PIN_ULTRASONIC_TRIG, LOW);
+  delayMicroseconds(5);
+  digitalWrite(PIN_ULTRASONIC_TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(PIN_ULTRASONIC_TRIG, LOW);
+
+  tripTime = pulseIn(PIN_ULTRASONIC_ECHO, HIGH);
+  distance = 0.0343 * tripTime / 2.0;
+
+  return distance;
+}
+
+// CUSTOM DISTANCE
+void readCustomDistance(char digit) {
+  if (customDistIdx == (CUSTOM_DIST_CHAR - 1)) {
+    resetCustomDistance();
+    stateChange(&robotState, STATE_FREE);
+    // Feedback led
+    digitalWrite(LED_BUILTIN, LOW);
+  } else {
+    customDist[customDistIdx] = digit;
+    customDistIdx++;
+  }
+}
+
+bool composeNumericDistance() {
+  // No digits
+  if (customDistIdx == 0) {
+    numericCustomDist = 0;
+    return false;
+  }
+  // Create numericCustomDist
+  char buff[customDistIdx + 1];
+  for (byte i = 0; i <= customDistIdx - 1; i++) {
+    buff[i] = customDist[i];
+  }
+  buff[customDistIdx] = '\0';
+  numericCustomDist = atoi(buff);
+  resetCustomDistance();
+
+  // Check if not in [CUSTOM_DIST_MIN, CUSTOM_DIST_MAX]
+  if (numericCustomDist < CUSTOM_DIST_MIN || numericCustomDist > CUSTOM_DIST_MAX) {
+    numericCustomDist = 0;
+    return false;
+  }
+  return true;
+}
+
+void resetCustomDistance() {
+  memset(customDist, '0', sizeof(customDist));
+  customDistIdx = 0;
+}
+
+// MOVEMENT CONTROL
 void runMotors(byte direction, byte speed) {
   switch (direction) {
     case DIRECTION_STOP: {
@@ -674,93 +764,6 @@ void runMotors(byte direction, byte speed) {
   }
 }
 
-// MEASURE
-void measureAll(unsigned long deltaT) {
-  robotMeasures.sent = false;
-  double prevDistance = robotMeasures.distanceUS;
-  
-  int pulses = opticalPulses;
-  opticalPulses = 0;
-  int directionSign;
-  double travelledRevolution;
-  double travelledDistance;
-
-  // Distance from ultrasonic
-  robotMeasures.distanceUS = measureDistance();
-
-  // Velocity from ultrasonic
-  robotMeasures.velocityUS = (robotMeasures.distanceUS - prevDistance) / (deltaT * 0.001);
-
-  // Position from optical
-  directionSign = measureDirection();
-  travelledRevolution = (pulses / (double)WHEEL_ENCODER_HOLES);
-  travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution * directionSign;
-  robotMeasures.distanceOptical = travelledDistance + prevDistance;
-
-  // Velocity from optical
-  robotMeasures.rpsOptical = travelledRevolution / (deltaT * 0.001);
-  robotMeasures.velocityOptical = travelledDistance / (deltaT * 0.001);
-
-  // Pulses per second from optical
-  robotMeasures.ppsOptical = pulses / (deltaT * 0.001) * directionSign;
-}
-
-// DISTANCE
-double measureDistance() {
-  long tripTime;
-  double distance;
-
-  digitalWrite(PIN_ULTRASONIC_TRIG, LOW);
-  delayMicroseconds(5);
-  digitalWrite(PIN_ULTRASONIC_TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(PIN_ULTRASONIC_TRIG, LOW);
-
-  tripTime = pulseIn(PIN_ULTRASONIC_ECHO, HIGH);
-  distance = 0.0343 * tripTime / 2.0;
-
-  return distance;
-}
-
-void readCustomDistance(char digit) {
-  if (customDistIdx == (CUSTOM_DIST_CHAR - 1)) {
-    resetCustomDistance();
-    stateChange(&robotState, STATE_FREE);
-    // Feedback led
-    digitalWrite(LED_BUILTIN, LOW);
-  } else {
-    customDist[customDistIdx] = digit;
-    customDistIdx++;
-  }
-}
-
-bool composeNumericDistance() {
-  // No digits
-  if (customDistIdx == 0) {
-    numericCustomDist = 0;
-    return false;
-  }
-  // Create numericCustomDist
-  char buff[customDistIdx + 1];
-  for (byte i = 0; i <= customDistIdx - 1; i++) {
-    buff[i] = customDist[i];
-  }
-  buff[customDistIdx] = '\0';
-  numericCustomDist = atoi(buff);
-  resetCustomDistance();
-
-  // Check if not in [CUSTOM_DIST_MIN, CUSTOM_DIST_MAX]
-  if (numericCustomDist < CUSTOM_DIST_MIN || numericCustomDist > CUSTOM_DIST_MAX) {
-    numericCustomDist = 0;
-    return false;
-  }
-  return true;
-}
-
-void resetCustomDistance() {
-  memset(customDist, '0', sizeof(customDist));
-  customDistIdx = 0;
-}
 // TODO: Capire bene come sistemare per ottenere risultati migliori
 int checkDistance() {
   //DEBUG_TEMP
