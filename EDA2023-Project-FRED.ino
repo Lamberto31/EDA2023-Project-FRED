@@ -461,6 +461,7 @@ void loop() {
             speedSlowFactor = 0;
             firstCheck = true;
             numericCustomDist = 0;
+            sendBluetoothInfo("Custom distance", 0);
             stateChange(&robotState, STATE_FREE);
             break;
           }
@@ -469,6 +470,7 @@ void loop() {
             speedSlowFactor = 0;
             firstCheck = true;
             numericCustomDist = 0;
+            sendBluetoothInfo("Custom distance", 0);
             stateChange(&robotState, STATE_MEASURE);
             break;
           }

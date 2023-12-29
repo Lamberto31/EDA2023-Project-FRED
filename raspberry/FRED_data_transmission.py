@@ -34,6 +34,7 @@ PARAMS = False
 
 # Parameters Definition
 PERIOD_SERVER = 15 # seconds
+# Status strings
 STATUS_DISCONNECTED = "Disconnected"
 STATUS_CONNECTED = "Connected"
 
@@ -50,6 +51,9 @@ STATUS_INPUT_0 = "Input 0"
 STATUS_STOP = "Stop"
 
 STATUS_UNKNOWN = "Unknown"
+
+# Info strings
+INFO_CUSTOM_DISTANCE = "Custom distance"
 
 # Get secret values from .env file
 API_KEY = config('API_KEY')
@@ -254,6 +258,9 @@ jsonDict = {}
 jsonDict["write_api_key"] = API_KEY
 jsonDict["updates"] = dataToSend
 
+# Info dictionary
+infoDict = {}
+
 # CSV file
 # Init csv file
 # Create file name
@@ -368,6 +375,7 @@ while True:
                     if messageCounter == messageNumber:
                         debugStamp("Last message received")
                         dataDict["created_at"] = int((time.time()*1000))  # milliseconds
+                        dataDict["field8"] = infoDict[INFO_CUSTOM_DISTANCE]
                         # Append all data in dataToWrite
                         dataToWrite.append(dataDict.copy())
                         # Append only one data for each second in dataToSend (first one)
@@ -382,8 +390,9 @@ while True:
             elif "INFO" in str(recv):
                 debugStamp("New BDT message: INFO")
                 debugStamp(str(recv, 'utf-8'), "Full")
-                info = ser.readline().decode('utf-8')[0:-2]
-                debugStamp(str(info))
+                info = ser.readline().decode('utf-8')[0:-2].split(":")
+                infoDict[str(info[0])] = str(info[1])
+                debugStamp(infoDict)
             # If contains "PARAMS" it's a PARAMS messagge
             elif "PARAMS" in str(recv):
                 debugStamp("New BDT message: PARAMS")
