@@ -100,51 +100,27 @@ def getStatusString(statusNumber):
     else:
         return STATUS_UNKNOWN
 
-# Insert received data in stored measures
-# TODO: rimuovere
-def insertMeasureInDict(recvData):
-    decoded = recvData.decode('utf-8')
-    clean = decoded[0:-2]
-    data = clean.split(":")
-    if data[0] == "Distance_US":
-        measures["field1"] = data[1]
-    elif data[0] == "Distance_OPT":
-        measures["field2"] = data[1]
-    elif data[0] == "Distance_US_Filtered":
-        measures["field3"] = data[1]
-    elif data[0] == "Rev_per_second":
-        measures["field4"] = data[1]
-    elif data[0] == "Velocity_US":
-        measures["field5"] = data[1]
-    elif data[0] == "Velocity_OPT":
-        measures["field6"] = data[1]
-    elif data[0] == "Velocity_OPT_Filtered":
-        measures["field7"] = data[1]
-    elif data[0] == "Distance_Custom":
-        measures["field8"] = data[1]
-    elif data[0] == "Status":
-        measures["status"] = getStatusString(data[1])
-
-# Insert received data in stored estimation
-# TODO: rinominare e adattare?
-def insertEstimateInDict(recvData):
+# Insert received data in stored data
+def insertDataInDict(recvData):
     decoded = recvData.decode('utf-8')
     clean = decoded[0:-2]
     data = clean.split(":")
     if data[0] == "Input":
-        estimates["field1"] = data[1]
+        dataDict["field1"] = data[1]
     elif data[0] == "Measures":
         vector = data[1].split(",")
-        estimates["field2"] = vector[0]
-        estimates["field3"] = vector[1]
+        dataDict["field2"] = vector[0]
+        dataDict["field3"] = vector[1]
     elif data[0] == "State":
         vector = data[1].split(",")
-        estimates["field4"] = vector[0]
-        estimates["field5"] = vector[1]
+        dataDict["field4"] = vector[0]
+        dataDict["field5"] = vector[1]
     elif data[0] == "Covariance":
         vector = data[1].split(",")
-        estimates["field6"] = vector[0]
-        estimates["field7"] = vector[1]
+        dataDict["field6"] = vector[0]
+        dataDict["field7"] = vector[1]
+    elif data[0] == "Status":
+        dataDict["status"] = getStatusString(data[1])
 
 # Conditional print
 def debugStamp(str, level="Default"):
@@ -156,7 +132,7 @@ def debugStamp(str, level="Default"):
         print(str)
 
 # Print dataToSend in tabular format
-# TODO: Riadattare per nuovo formato
+# TODO_DOPO: Riadattare per nuovo formato
 def stampDataToSend():
     if ((DEBUG == "Default" or DEBUG == "Full") and VIEW_DATA):
         print("\nDATA TO SEND")
@@ -256,9 +232,8 @@ else:
     debugStamp("Serial connection not started, try again")
     exit()
 
-# Init dictionary that contains measures (declared as field as in the remote server)
-# TODO: rimuovere
-measures = {
+# Init dictionary that contains data (declared as field as in the remote server)
+dataDict = {
     "created_at": 0,
     "field1": 0,
     "field2": 0,
@@ -269,21 +244,6 @@ measures = {
     "field7": 0,
     "field8": 0,
     "status": STATUS_UNKNOWN
-    }
-
-# Init dictionary that contains estimates (declared as field as in the remote server)
-# TODO: rinominare e adattare?
-estimates = {
-    "created_at": 0,
-    "field1": 0,
-    "field2": 0,
-    "field3": 0,
-    "field4": 0,
-    "field5": 0,
-    "field6": 0,
-    "field7": 0,
-    "field8": 0,
-    "status": STATUS_EXPLORATION
     }
 
 # Init list of dataToSend
@@ -301,9 +261,8 @@ timestamp = datetime.datetime.now().replace(microsecond=0).isoformat()
 csvFileName = "FRED_log_" + timestamp + ".csv"
 
 # Create file and write header
-# TODO: Modificare per nuovo formato
 csvFile = open(os.path.join("./logs", csvFileName), mode='w')
-csvWriter = csv.DictWriter(csvFile, fieldnames=measures.keys())
+csvWriter = csv.DictWriter(csvFile, fieldnames=dataDict.keys())
 csvWriter.writeheader()
 csvFile.flush()
 
@@ -399,20 +358,23 @@ while True:
                     messageNumber = 4
                     debugStamp("New BDT message: ESTIMATE")
                 debugStamp(str(recv, 'utf-8'), "Full")
+                messageCounter = 0
                 while True:
                     recv = ser.readline()
+                    messageCounter += 1
                     debugStamp(str(recv, 'utf-8'), "Full")
-                    insertEstimateInDict(recv)
-                    if "END" in str(recv):
-                        debugStamp("New BDT message: END")
-                        estimates["created_at"] = int((time.time()*1000))  # milliseconds
-                        # TODO: inserire solo valore di stima più recente e non il primo?
-                        # TODO: Rimuovere questo controllo e farlo direttamente in fase di invio, così facendo qui si avrà tutto e sarà più facile scrivere il csv
-                        if (dataToSend and dataToSend[-1]["created_at"] == int(estimates["created_at"]/1000)):
+                    insertDataInDict(recv)
+                    # If it's the last message, add timestamp and append to dataToSend
+                    if messageCounter == messageNumber:
+                        debugStamp("Last message received")
+                        dataDict["created_at"] = int((time.time()*1000))  # milliseconds
+                        # TODO: Inserire solo valore di stima più recente e non il primo?
+                        # Rimuovere questo controllo e farlo direttamente in fase di invio, così facendo qui si avrà tutto e sarà più facile scrivere il csv
+                        if (dataToSend and dataToSend[-1]["created_at"] == int(dataDict["created_at"]/1000)):
                             break
-                        estimateToSend = estimates.copy()
-                        estimateToSend["created_at"] = int(estimates["created_at"]/1000)
-                        dataToSend.append(estimateToSend.copy())
+                        dataToAdjust = dataDict.copy()
+                        dataToAdjust["created_at"] = int(dataToAdjust["created_at"]/1000)
+                        dataToSend.append(dataToAdjust.copy())
                         stampDataToSend()
                         break
             # If contains "INFO" it's a INFO messagge
@@ -462,7 +424,7 @@ while True:
                     
     except Exception as e:
         debugStamp(e, "Full")
-        # TODO: Spostare modifiche fatte in interruptHandler qui per gestire il caso senza WIFI
+        # TODO_DOPO: Spostare modifiche fatte in interruptHandler qui per gestire il caso senza WIFI
         # If there is an error, handle the closing of the program
         if connected:
             connected = False
