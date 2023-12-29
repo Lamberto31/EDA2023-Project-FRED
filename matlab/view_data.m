@@ -19,10 +19,11 @@ T = T(max(1,(end-(numPoints - 1))):end, :);
 
 % Extract timestamp and convert from epoch to datetime
 timestampEpoch = T.created_at;
-timestampDate = datetime(timestampEpoch,'ConvertFrom','posixtime','TimeZone','Europe/Zurich','Format','dd-MMM-yyyy HH:mm:ss');
-
+% timestampDate = datetime(timestampEpoch,'ConvertFrom','posixtime','TimeZone','Europe/Zurich','Format','dd-MMM-yyyy HH:mm:ss');
+timestampDate = datetime(timestampEpoch,'ConvertFrom','epochtime','TicksPerSecond',1e3,'TimeZone','Europe/Zurich','Format','dd-MMM-yyyy HH:mm:ss.SSS');
 
 %% VISUALIZE DATA %%
+% TODO: ridefinire i grafici in funzione dei nuovi dati
 % Layout definition
 tiledlayout(3,1);
 
