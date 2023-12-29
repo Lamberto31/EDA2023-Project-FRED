@@ -131,14 +131,13 @@ def debugStamp(str, level="Default"):
     elif DEBUG == level:
         print(str)
 
-# Print dataToSend in tabular format
-# TODO_DOPO: Riadattare per nuovo formato
-def stampDataToSend():
+# Print data in tabular format
+def stampData(dataToPrint):
     if ((DEBUG == "Default" or DEBUG == "Full") and VIEW_DATA):
-        print("\nDATA TO SEND")
+        print("\nDATA")
         print("N.\tcreated_at\tfield1\tfield2\tfield3\tfield4\tfield5\tfield6\tfield7\tfield8\tstatus\n")
-        for i in range(0, len(dataToSend)):
-            print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\t" + str(dataToSend[i]["field8"]) + "\t" + str(dataToSend[i]["status"]) + "\n")
+        for i in range(0, len(dataToPrint)):
+            print(str(i + 1) + "\t" + str(dataToPrint[i]["created_at"]) + "\t" + str(dataToPrint[i]["field1"]) + "\t" + str(dataToPrint[i]["field2"]) + "\t" + str(dataToPrint[i]["field3"]) + "\t" + str(dataToPrint[i]["field4"]) + "\t" + str(dataToPrint[i]["field5"]) + "\t" + str(dataToPrint[i]["field6"]) + "\t" + str(dataToPrint[i]["field7"]) + "\t" + str(dataToPrint[i]["field8"]) + "\t" + str(dataToPrint[i]["status"]) + "\n")
 
 # Print matrix in tabular format
 def stampMatrix(metadata, data):
@@ -246,7 +245,8 @@ dataDict = {
     "status": STATUS_UNKNOWN
     }
 
-# Init list of dataToSend
+# Init list of dataToWrite and dataToSend
+dataToWrite = []
 dataToSend = []
 
 # Init json to send
@@ -364,18 +364,19 @@ while True:
                     messageCounter += 1
                     debugStamp(str(recv, 'utf-8'), "Full")
                     insertDataInDict(recv)
-                    # If it's the last message, add timestamp and append to dataToSend
+                    # If it's the last message, add timestamp and append to dataToWrite and dataToSend
                     if messageCounter == messageNumber:
                         debugStamp("Last message received")
                         dataDict["created_at"] = int((time.time()*1000))  # milliseconds
-                        # TODO: Inserire solo valore di stima più recente e non il primo?
-                        # Rimuovere questo controllo e farlo direttamente in fase di invio, così facendo qui si avrà tutto e sarà più facile scrivere il csv
+                        # Append all data in dataToWrite
+                        dataToWrite.append(dataDict.copy())
+                        # Append only one data for each second in dataToSend (first one)
                         if (dataToSend and dataToSend[-1]["created_at"] == int(dataDict["created_at"]/1000)):
                             break
                         dataToAdjust = dataDict.copy()
                         dataToAdjust["created_at"] = int(dataToAdjust["created_at"]/1000)
                         dataToSend.append(dataToAdjust.copy())
-                        stampDataToSend()
+                        stampData(dataToWrite)
                         break
             # If contains "INFO" it's a INFO messagge
             elif "INFO" in str(recv):
@@ -435,26 +436,26 @@ while True:
             ser.close()
             exit()
     
-    # SEND DATA TO REMOTE SERVER
+    # WRITE AND SEND DATA TO REMOTE SERVER
     # Do it every PERIOD_SERVER seconds and if dataToSend is not empty
     if time.time() - lastSendToServer >= PERIOD_SERVER and dataToSend:
-        # TODO: Filtrare qui i dati da inviare in base al fatto se rappresentano lo stesso secondo o meno
-        debugStamp("Sending " + str(len(dataToSend)) + " data to remote server")
-        # Build json to send
-        jsonDict["updates"] = dataToSend
-        debugStamp(jsonDict, "Full")
+        # Write full data to csv with all data
+        csvWriter.writerows(dataToWrite)
+        csvFile.flush()
 
-        # Send data
+        # Prepare and send data
         if WIFI:
+            # Build json to send
+            jsonDict["updates"] = dataToSend
+            debugStamp(jsonDict, "Full")
+
+            # Send data
+            debugStamp("Sending " + str(len(dataToSend)) + " data to remote server")
             r = requests.post("https://api.thingspeak.com/channels/"+ CHANNEL_ID +"/bulk_update.json", json=jsonDict)
             debugStamp(str(r.status_code) + " " + str(r.reason))
 
-        # Write data to csv
-        # TODO: Spostare sopra in modo tale da scrivere prima di filtrare per secondo (oppure va bene qua ma filtraggio in copia)
-        csvWriter.writerows(dataToSend)
-        csvFile.flush()
-
         # Reset data
+        dataToWrite = []
         dataToSend = []
         jsonDict["updates"] = dataToSend
 
