@@ -39,7 +39,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 1
-#define SEND_MEASURE_ACTIVE 0
+#define SEND_MEASURE_ACTIVE 1
 #define SEND_FILTER_RESULT_ACTIVE 1
 #define FIXED_POSITION 1
 
