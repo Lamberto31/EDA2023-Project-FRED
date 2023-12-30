@@ -3,10 +3,10 @@
 logsPath = '../raspberry/logs/';
 
 % Name of csv file with extension
-csvName = 'FRED_log_2023-10-17T16_07_56_objective.csv';
+csvName = 'FRED_log_2023-12-30T17_34_49.csv';
 
 % Number of values to show
-numPoints = 50;
+numPoints = 100;
 
 
 %% GET DATA FROM CSV%%
