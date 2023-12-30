@@ -23,37 +23,59 @@ timestampEpoch = T.created_at;
 timestampDate = datetime(timestampEpoch,'ConvertFrom','epochtime','TicksPerSecond',1e3,'TimeZone','Europe/Zurich','Format','dd-MMM-yyyy HH:mm:ss.SSS');
 
 %% VISUALIZE DATA %%
-% TODO: ridefinire i grafici in funzione dei nuovi dati
+
+% Input
+figure();
+hold on;
+plot(timestampDate, T.field1, '-square');
+title('Input');
+xlabel('Time');
+ylabel('Input');
+grid on
+
+% State (measured and estimated)
+figure();
 % Layout definition
-tiledlayout(3,1);
+tiledlayout(2,1);
 
 % Position
 ax1 = nexttile;
 hold on
-hplot1 = plot(timestampDate, T.field1, '-o', 'DisplayName', 'US');
-hplot2 = plot(timestampDate, T.field2, '-*', 'DisplayName', 'Optical');
-hplot3 = plot(timestampDate, T.field3, '-pentagram', 'DisplayName', 'Filtered');
-hplot8 = plot(timestampDate, T.field8, '-.', 'DisplayName', 'Objective');
+hplot1 = plot(timestampDate, T.field2, '-o', 'DisplayName', 'Ultrasonic distance');
+hplot2 = plot(timestampDate, T.field4, '-*', 'DisplayName', 'Position estimate');
 title('Position');
-legend([hplot1, hplot2, hplot3, hplot8]);
+legend([hplot1, hplot2]);
 grid(ax1,'on')
 hold off
 
 % Velocity
 ax2 = nexttile;
 hold on
-hplot5 = plot(timestampDate, T.field5, '-o', 'DisplayName', 'US');
-hplot6 = plot(timestampDate, T.field6, '-*', 'DisplayName', 'Optical');
-hplot7 = plot(timestampDate, T.field7, '-pentagram', 'DisplayName', 'Filtered');
+hplot3 = plot(timestampDate, T.field3, '-o', 'DisplayName', 'Optical pulses');
+hplot4 = plot(timestampDate, T.field5, '-*', 'DisplayName', 'Velocity estimate');
 title('Velocity');
-legend([hplot5, hplot6, hplot7]);
+legend([hplot3, hplot4]);
 grid(ax2,'on')
 hold off
 
-% Rps
+% State Covariance
+figure();
+% Layout definition
+tiledlayout(2,1);
+
+% Position
 ax3 = nexttile;
-hplot4 = plot(timestampDate, T.field4, '-*', 'DisplayName', 'Optical');
-title('RPS');
-legend(hplot4);
+hold on
+hplot5 = plot(timestampDate, T.field6, '-', 'DisplayName', 'Position covariance');
+title('Position Covariance');
 grid(ax3,'on')
+hold off
+
+% Velocity
+ax4 = nexttile;
+hold on
+hplot6 = plot(timestampDate, T.field7, '-', 'DisplayName', 'Velocity covariance');
+title('Velocity Covariance');
+grid(ax4,'on')
+hold off
 
