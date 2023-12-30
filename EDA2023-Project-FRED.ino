@@ -493,6 +493,9 @@ void loop() {
       }
       sendBufferIndex = 0;
       memset(sendBuffer, 0, sizeof(sendBuffer));
+      if (robotState.direction == DIRECTION_FORWARD) {
+        preventDamage(CUSTOM_DIST_MIN);
+      }
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
           case IR_BUTTON_OK: {
