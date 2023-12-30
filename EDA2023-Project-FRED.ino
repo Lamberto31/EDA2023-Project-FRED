@@ -548,6 +548,7 @@ void loop() {
       }
 
       // Send data with Bluetooth
+      currentMillisMeasureToSend = millis();
       if (SEND_MEASURE_ACTIVE && currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
         // Adjust servo
         servoH.attach(PIN_SERVO_HORIZ);
