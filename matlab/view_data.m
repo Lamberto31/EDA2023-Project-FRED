@@ -3,7 +3,7 @@
 logsPath = '../raspberry/logs/';
 
 % Name of csv file with extension
-csvName = 'FRED_log_2023-12-30T17_34_49.csv';
+csvName = 'FRED_log_2023-12-30T18_55_28_debug_disabled.csv';
 
 % Number of values to show
 numPoints = 100;
