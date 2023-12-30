@@ -259,7 +259,10 @@ jsonDict["write_api_key"] = API_KEY
 jsonDict["updates"] = dataToSend
 
 # Info dictionary
-infoDict = {}
+infoDict = {
+    INFO_CUSTOM_DISTANCE: 0
+}
+
 
 # CSV file
 # Init csv file
