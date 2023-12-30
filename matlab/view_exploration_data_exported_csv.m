@@ -3,7 +3,7 @@
 logsPath = './logs/';
 
 % Name of csv file with extension
-csvName = 'feeds.csv';
+csvName = 'feeds_new_bdt.csv';
 
 % Number of values to show
 numPoints = 50;
@@ -24,40 +24,63 @@ T = T(max(1,(end-(numPoints - 1))):end, :);
 T = T(T.status == explorationStatusName,:);
 
 % Convert created_at to datetime (inputformat like "2023-10-09T09:49:20+02:00")
-timestampDate = datetime(T.created_at,'InputFormat','yyyy-MM-dd''T''HH:mm:ssXXX','TimeZone','Europe/Zurich');
+timestampDate = datetime(T.created_at,'InputFormat','yyyy-MM-dd''T''HH:mm:ssXXX','TimeZone','Europe/Rome');
 
 
 %% VISUALIZE DATA %%
+
+% Input
+figure();
+hold on;
+plot(timestampDate, T.field1, '-', 'Color', [0.9290 0.6940 0.1250]);
+title('Input');
+xlabel('Time');
+ylabel('Input');
+grid on
+
+% State (measured and estimated)
+figure();
 % Layout definition
-tiledlayout(3,1);
+tiledlayout(2,1);
 
 % Position
 ax1 = nexttile;
 hold on
-hplot1 = plot(timestampDate, T.field1, '-o', 'DisplayName', 'US');
-hplot2 = plot(timestampDate, T.field2, '-*', 'DisplayName', 'Optical');
-hplot3 = plot(timestampDate, T.field3, '-pentagram', 'DisplayName', 'Filtered');
-hplot8 = plot(timestampDate, T.field8, '-.', 'DisplayName', 'Objective');
+hplot1 = plot(timestampDate, T.field2, '-o', 'DisplayName', 'Ultrasonic distance', 'Color', [0.4940 0.1840 0.5560]);
+hplot2 = plot(timestampDate, T.field4, '-*', 'DisplayName', 'Position estimate', 'Color', [0.4660 0.6740 0.1880]);
 title('Position');
-legend([hplot1, hplot2, hplot3, hplot8]);
+legend([hplot1, hplot2]);
 grid(ax1,'on')
 hold off
 
 % Velocity
 ax2 = nexttile;
 hold on
-hplot5 = plot(timestampDate, T.field5, '-o', 'DisplayName', 'US');
-hplot6 = plot(timestampDate, T.field6, '-*', 'DisplayName', 'Optical');
-hplot7 = plot(timestampDate, T.field7, '-pentagram', 'DisplayName', 'Filtered');
+hplot3 = plot(timestampDate, T.field3, '-o', 'DisplayName', 'Optical pulses', 'Color', [0.4940 0.1840 0.5560]);
+hplot4 = plot(timestampDate, T.field5, '-*', 'DisplayName', 'Velocity estimate', 'Color', [0.4660 0.6740 0.1880]);
 title('Velocity');
-legend([hplot5, hplot6, hplot7]);
+legend([hplot3, hplot4]);
 grid(ax2,'on')
 hold off
 
-% Rps
+% State Covariance
+figure();
+% Layout definition
+tiledlayout(2,1);
+
+% Position
 ax3 = nexttile;
-hplot4 = plot(timestampDate, T.field4, '-*', 'DisplayName', 'Optical');
-title('RPS');
-legend(hplot4);
+hold on
+hplot5 = plot(timestampDate, T.field6, '-', 'DisplayName', 'Position covariance');
+title('Position Covariance');
 grid(ax3,'on')
+hold off
+
+% Velocity
+ax4 = nexttile;
+hold on
+hplot6 = plot(timestampDate, T.field7, '-', 'DisplayName', 'Velocity covariance');
+title('Velocity Covariance');
+grid(ax4,'on')
+hold off
 
