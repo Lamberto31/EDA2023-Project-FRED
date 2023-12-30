@@ -440,7 +440,7 @@ void loop() {
       // Do only if new measure is available
       if (!robotMeasures.sent) {
         // Update input
-        checkDistance();
+        if (robotState.direction != DIRECTION_STOP) checkDistance();
         // Fill input and measures vectors
         computeVectorU(robotState.input, &u);
         computeVectorZ(robotMeasures.distanceUS, robotMeasures.ppsOptical, &z);
