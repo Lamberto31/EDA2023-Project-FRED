@@ -27,7 +27,7 @@ timestampDate = datetime(timestampEpoch,'ConvertFrom','epochtime','TicksPerSecon
 % Input
 figure();
 hold on;
-plot(timestampDate, T.field1, '-square');
+plot(timestampDate, T.field1, '-', 'Color', [0.9290 0.6940 0.1250]);
 title('Input');
 xlabel('Time');
 ylabel('Input');
@@ -41,8 +41,8 @@ tiledlayout(2,1);
 % Position
 ax1 = nexttile;
 hold on
-hplot1 = plot(timestampDate, T.field2, '-o', 'DisplayName', 'Ultrasonic distance');
-hplot2 = plot(timestampDate, T.field4, '-*', 'DisplayName', 'Position estimate');
+hplot1 = plot(timestampDate, T.field2, '-o', 'DisplayName', 'Ultrasonic distance', 'Color', [0.4940 0.1840 0.5560]);
+hplot2 = plot(timestampDate, T.field4, '-*', 'DisplayName', 'Position estimate', 'Color', [0.4660 0.6740 0.1880]);
 title('Position');
 legend([hplot1, hplot2]);
 grid(ax1,'on')
@@ -51,8 +51,8 @@ hold off
 % Velocity
 ax2 = nexttile;
 hold on
-hplot3 = plot(timestampDate, T.field3, '-o', 'DisplayName', 'Optical pulses');
-hplot4 = plot(timestampDate, T.field5, '-*', 'DisplayName', 'Velocity estimate');
+hplot3 = plot(timestampDate, T.field3, '-o', 'DisplayName', 'Optical pulses', 'Color', [0.4940 0.1840 0.5560]);
+hplot4 = plot(timestampDate, T.field5, '-*', 'DisplayName', 'Velocity estimate', 'Color', [0.4660 0.6740 0.1880]);
 title('Velocity');
 legend([hplot3, hplot4]);
 grid(ax2,'on')
