@@ -359,10 +359,10 @@ while True:
             # If contains "DATA" or "ESTIMATE" it's a DATA/ESTIMATE messagge
             if "DATA" in str(recv) or "ESTIMATE" in str(recv):
                 if "DATA" in str(recv):
-                    messageNumber = 3
+                    messageNumber = 4
                     debugStamp("New BDT message: DATA")
                 elif "ESTIMATE" in str(recv):
-                    messageNumber = 4
+                    messageNumber = 5
                     debugStamp("New BDT message: ESTIMATE")
                 debugStamp(str(recv, 'utf-8'), "Full")
                 messageCounter = 0
