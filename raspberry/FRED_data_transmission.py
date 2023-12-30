@@ -389,7 +389,9 @@ while True:
             elif "INFO" in str(recv):
                 debugStamp("New BDT message: INFO")
                 debugStamp(str(recv, 'utf-8'), "Full")
-                info = ser.readline().decode('utf-8')[0:-2].split(":")
+                recv = ser.readline()
+                debugStamp(str(recv, 'utf-8'), "Full")
+                info = recv.decode('utf-8')[0:-2].split(":")
                 infoDict[str(info[0])] = str(info[1])
                 debugStamp(infoDict)
             # If contains "PARAMS" it's a PARAMS messagge
