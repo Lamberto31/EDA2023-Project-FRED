@@ -19,8 +19,8 @@ T = T(max(1,(end-(numPoints - 1))):end, :);
 
 % Extract timestamp and convert from epoch to datetime
 timestampEpoch = T.created_at;
-% timestampDate = datetime(timestampEpoch,'ConvertFrom','posixtime','TimeZone','Europe/Zurich','Format','dd-MMM-yyyy HH:mm:ss');
-timestampDate = datetime(timestampEpoch,'ConvertFrom','epochtime','TicksPerSecond',1e3,'TimeZone','Europe/Zurich','Format','dd-MMM-yyyy HH:mm:ss.SSS');
+timestampDateGMT = datetime(timestampEpoch,'ConvertFrom','epochtime','TicksPerSecond',1e3,'TimeZone', 'Etc/GMT', 'Format','dd-MMM-yyyy HH:mm:ss.SSS');
+timestampDate = datetime(timestampDateGMT, 'TimeZone', 'Europe/Rome');
 
 %% VISUALIZE DATA %%
 
