@@ -439,7 +439,7 @@ while True:
             connected = False
             disconnected = True
             debugStamp("Bluetooth connection lost")
-            if (WIFI):
+            if (WIFI and dataToSend):
                 debugStamp("Waiting for data to send and then close the script")
             # If WIFI disabled the script can be closed immediately
             else:
