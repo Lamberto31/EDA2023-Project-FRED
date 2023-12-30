@@ -161,13 +161,9 @@ def stampMatrix(metadata, data):
 # Handle CTRL+C
 def interruptHandler(sig, frame):
     ser.close()  # Close serial connection, this will cause error and so the script will stop but safely
-    if (WIFI):
-        print("\nInterrupt received, waiting for data to send and then close the script")
-        print("If you want to close the script immediately send interrupt again")
-        signal.signal(signal.SIGINT, signal.default_int_handler)
-    else:
-        print("\nInterrupt received, closing the script")
-        exit()
+    signal.signal(signal.SIGINT, signal.default_int_handler)
+    print("Interrupt received")
+    print("If you want to close the script immediately send interrupt again")
 
 # Interpret input arguments
 # DEBUG
@@ -437,12 +433,20 @@ while True:
                     
     except Exception as e:
         debugStamp(e, "Full")
-        # TODO_DOPO: Spostare modifiche fatte in interruptHandler qui per gestire il caso senza WIFI
         # If there is an error, handle the closing of the program
+        # This is the case when the bluetooth connection is active
         if connected:
             connected = False
             disconnected = True
-            debugStamp("Bluetooth connection lost, waiting for data to send and then close the script")
+            debugStamp("Bluetooth connection lost")
+            if (WIFI):
+                debugStamp("Waiting for data to send and then close the script")
+            # If WIFI disabled the script can be closed immediately
+            else:
+                debugStamp("Closing the script")
+                ser.close()
+                exit()
+        # This is the case when the bluetooth connection is not active, so the script can be closed
         else:
             debugStamp("Bluetooth connection not established, run the script again")
             ser.close()
