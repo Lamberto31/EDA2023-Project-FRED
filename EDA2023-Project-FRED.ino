@@ -440,6 +440,7 @@ void loop() {
       // Do only if new measure is available
       if (!robotMeasures.sent) {
         // Update input
+        // TODO: Quando si modifica la checkDistance() bisogna modificare anche qui
         if (robotState.direction != DIRECTION_STOP) checkDistance();
         // Fill input and measures vectors
         computeVectorU(robotState.input, &u);
@@ -472,6 +473,14 @@ void loop() {
             numericCustomDist = 0;
             bluetoothSendInfo("Custom distance", 0);
             stateChange(&robotState, STATE_MEASURE);
+            break;
+          }
+          case IR_BUTTON_AST: {
+            // TODO: Quando si modifica la checkDistance() bisogna modificare anche qui
+            runMotors(DIRECTION_FORWARD, 255);
+            robotState.just_changed = false;
+            speedSlowFactor = 0;
+            firstCheck = true;
             break;
           }
         }
