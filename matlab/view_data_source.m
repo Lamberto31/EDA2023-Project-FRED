@@ -49,10 +49,10 @@ if source == Constants.SOURCE_LOCAL || source == Constants.SOURCE_EXPORTED
         % Extract timestamp and convert from epoch to datetime
         timestampEpoch = T.created_at;
         timestampDateGMT = datetime(timestampEpoch,'ConvertFrom','epochtime','TicksPerSecond',1e3,'TimeZone', 'Etc/GMT', 'Format','dd-MMM-yyyy HH:mm:ss.SSS');
-        timestampDate = datetime(timestampDateGMT, 'TimeZone', 'Europe/Rome');
+        T.created_at = datetime(timestampDateGMT, 'TimeZone', 'Europe/Rome');
     else
         % Convert created_at to datetime (inputformat like "2023-10-09T09:49:20+02:00")
-        timestampDate = datetime(T.created_at,'InputFormat','yyyy-MM-dd''T''HH:mm:ssXXX','TimeZone','Europe/Rome');
+        T.created_at = datetime(T.created_at,'InputFormat','yyyy-MM-dd''T''HH:mm:ssXXX','TimeZone','Europe/Rome');
     end
 % Get data from ThingSpeak
 else
@@ -94,7 +94,6 @@ else
     T = table(time1, input, positionMeasure, velocityMeasure, positionEstimate, velocityEstimate, positionCovariance, velocityCovariance, customDistance, status);
     T.Properties.VariableNames = {'created_at', 'field1', 'field2', 'field3', 'field4', 'field5', 'field6', 'field7', 'field8', 'status'};
     T.created_at.TimeZone = 'Europe/Rome';
-    timestampDate = T.created_at;
 
     % Status
     % Get status from Thingspeak with rest api (not available with thingSpeakRead)
@@ -114,12 +113,10 @@ end
 
 
 %% STATUS FILTER
-T.created_at = timestampDate;
 if statusToView ~= Constants.STATUS_ALL
     % Get the rows where status is statusToView
     T = T(T.status == statusToView,:);
 end
-timestampDate = T.created_at;
 
 
 %% VISUALIZE DATA %%
@@ -127,7 +124,7 @@ timestampDate = T.created_at;
 % Input
 figure();
 hold on;
-plot(timestampDate, T.field1, '-', 'Color', [0.9290 0.6940 0.1250]);
+plot(T.created_at, T.field1, '-', 'Color', [0.9290 0.6940 0.1250]);
 title('Input');
 xlabel('Time');
 ylabel('Input');
@@ -141,8 +138,8 @@ tiledlayout(2,1);
 % Position
 ax1 = nexttile;
 hold on
-hplot1 = plot(timestampDate, T.field2, '-o', 'DisplayName', 'Ultrasonic distance', 'Color', [0.4940 0.1840 0.5560]);
-hplot2 = plot(timestampDate, T.field4, '-*', 'DisplayName', 'Position estimate', 'Color', [0.4660 0.6740 0.1880]);
+hplot1 = plot(T.created_at, T.field2, '-o', 'DisplayName', 'Ultrasonic distance', 'Color', [0.4940 0.1840 0.5560]);
+hplot2 = plot(T.created_at, T.field4, '-*', 'DisplayName', 'Position estimate', 'Color', [0.4660 0.6740 0.1880]);
 title('Position');
 legend([hplot1, hplot2]);
 grid(ax1,'on')
@@ -151,8 +148,8 @@ hold off
 % Velocity
 ax2 = nexttile;
 hold on
-hplot3 = plot(timestampDate, T.field3, '-o', 'DisplayName', 'Optical pulses', 'Color', [0.4940 0.1840 0.5560]);
-hplot4 = plot(timestampDate, T.field5, '-*', 'DisplayName', 'Velocity estimate', 'Color', [0.4660 0.6740 0.1880]);
+hplot3 = plot(T.created_at, T.field3, '-o', 'DisplayName', 'Optical pulses', 'Color', [0.4940 0.1840 0.5560]);
+hplot4 = plot(T.created_at, T.field5, '-*', 'DisplayName', 'Velocity estimate', 'Color', [0.4660 0.6740 0.1880]);
 title('Velocity');
 legend([hplot3, hplot4]);
 grid(ax2,'on')
@@ -166,7 +163,7 @@ tiledlayout(2,1);
 % Position
 ax3 = nexttile;
 hold on
-hplot5 = plot(timestampDate, T.field6, '-', 'DisplayName', 'Position covariance');
+hplot5 = plot(T.created_at, T.field6, '-', 'DisplayName', 'Position covariance');
 title('Position Covariance');
 grid(ax3,'on')
 hold off
@@ -174,7 +171,7 @@ hold off
 % Velocity
 ax4 = nexttile;
 hold on
-hplot6 = plot(timestampDate, T.field7, '-', 'DisplayName', 'Velocity covariance');
+hplot6 = plot(T.created_at, T.field7, '-', 'DisplayName', 'Velocity covariance');
 title('Velocity Covariance');
 grid(ax4,'on')
 hold off
