@@ -8,8 +8,12 @@ numPoints = 10;
 % Filter by state option
 statusToView = Constants.STATUS_EXPLORE;
 
-% Take only the last execution option
-% TODO
+% Filter by time ( consider data if time difference from previous < timeDiff)
+    % Constants.TIME_ALL: don't filter by time difference
+    % Constants.TIME_MINUTE: consider data if time difference from previous < 1 minute
+    % Constants.TIME_HOUR: consider data if time difference from previous < 1 hour
+    % Constants.TIME_DAY: consider data if time difference from previous > 1 day
+maxTimeDiff = Constants.TIME_MINUTE;
 
 % Name of csv file with extension
 csvName = 'FRED_log_2023-12-30T18_55_28_debug_disabled.csv';
@@ -109,6 +113,20 @@ else
         % Insert feeds(i).status in matching T.status
         T.status(match) = feeds(i).status;
     end
+end
+
+
+%% TIME FILTER
+if maxTimeDiff ~= Constants.TIME_ALL
+    lastIndex = 1;
+    % Get the index of the last row that satisfies the time difference
+    for i = dataLength:-1:2
+        if seconds(T.created_at(i) - T.created_at(i-1)) > maxTimeDiff
+            lastIndex = i;
+            break;
+        end
+    end
+    T = T(lastIndex:end,:);
 end
 
 
