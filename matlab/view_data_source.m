@@ -7,13 +7,13 @@ source = Constants.SOURCE_REMOTE;
 
 % Number of values to show (from the end)
 % If more than available it will show all the available values
-numPoints = 20;
+numPoints = 100;
 
 % Filter by state option
     % Constants.STATUS_ALL: show all the values
     % Constants.STATUS_EXPLORE: show only the values with status "Exploration"
     % Constants.STATUS_DATA_TRANSMISSION: show only the values with status "data transmission"
-statusToView = Constants.STATUS_EXPLORE;
+statusToView = Constants.STATUS_ALL;
 
 % Filter by time ( consider data if time difference from previous < timeDiff)
     % Constants.TIME_ALL: don't filter by time difference
