@@ -55,6 +55,7 @@ if source == Constants.SOURCE_LOCAL || source == Constants.SOURCE_EXPORTED
 
     % Get the last numPoints rows
     T = T(max(1,(end-(numPoints - 1))):end, :);
+    dataLength = height(T);
     % Time processing depends on local or exported choice
     if source == Constants.SOURCE_LOCAL
         % Extract timestamp and convert from epoch to datetime
