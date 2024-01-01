@@ -5,9 +5,9 @@ classdef Constants
         SOURCE_EXPORTED = 1;
         SOURCE_REMOTE = 2;
         % Status of the data
-        STATUS_ALL = "All"
+        STATUS_ALL = "All";
         STATUS_EXPLORE = "Exploration";
-        STATUS_DATA_TRANSMISSION = "Data transmission"
+        STATUS_DATA_TRANSMISSION = "Data transmission";
         % Time constants
         TIME_ALL = 0;
         TIME_MINUTE = 60;

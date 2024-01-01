@@ -29,13 +29,13 @@ csvName = 'FRED_log_2023-12-30T18_55_28_debug_disabled.csv';
 %% BASIC CONFIGURATION FOR EACH SOURCE
 switch source
     case Constants.SOURCE_LOCAL
-        disp("Getting data from local csv")
+        sourceInfo = "Local csv";
         logsPath = '../raspberry/logs/';
     case Constants.SOURCE_EXPORTED
-        disp("Getting data from csv exported from ThingSpeak")
+        sourceInfo = "Csv exported from ThingSpeak";
         logsPath = './logs/';
     case Constants.SOURCE_REMOTE
-        disp('Getting data from ThingSpeak')
+        sourceInfo = "ThingSpeak";
         cred_opts = detectImportOptions("credentials.csv");
         C = readtable("credentials.csv", cred_opts);
         channelID = C.channelid;
@@ -146,6 +146,15 @@ end
 
 
 %% VISUALIZE DATA %%
+% Update dataLength
+dataLength = height(T);
+
+% Print some information
+disp("Source: " + sourceInfo);
+disp("Number of points: " + string(dataLength));
+disp("Time difference between first and last timestamp: " + seconds(T.created_at(end) - T.created_at(1)) + " seconds");
+disp("First timestamp: " + string(T.created_at(1)));
+disp("Last timestamp: " + string(T.created_at(end)));
 
 % Input
 figure();
