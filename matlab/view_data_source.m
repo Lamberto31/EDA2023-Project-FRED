@@ -87,21 +87,39 @@ else
     % Custom distance
     [customDistance, time8] = thingSpeakRead(channelID, 'Field', customDistanceId, 'NumPoints', numPoints, 'ReadKey', readAPIKey);
 
-    % Status
-    % TODO: Capire come ottenere status da thingSpeakRead
-
-    % Build table
+    % Build table (with empty status)
+    % Get the length of data read from ThingSpeak
+    dataLength = length(time1);
+    status = strings(dataLength,1);
     T = table(time1, input, positionMeasure, velocityMeasure, positionEstimate, velocityEstimate, positionCovariance, velocityCovariance, customDistance, status);
     T.Properties.VariableNames = {'created_at', 'field1', 'field2', 'field3', 'field4', 'field5', 'field6', 'field7', 'field8', 'status'};
+    T.created_at.TimeZone = 'Europe/Rome';
     timestampDate = T.created_at;
+
+    % Status
+    % Get status from Thingspeak with rest api (not available with thingSpeakRead)
+    thingSpeakUrl = "https://api.thingspeak.com/channels/"+channelID+"/status.json?api_key="+readAPIKey+"&results="+dataLength+"&days=3";
+    thingSpeakStatusAns = webread(thingSpeakUrl);
+    feeds = thingSpeakStatusAns.feeds;
+    % Insert feeds.status in T
+    for i = 1:dataLength
+        % Convert feeds_created_at in datetime
+        feeds(i).created_at = datetime(feeds(i).created_at,'InputFormat','yyyy-MM-dd''T''HH:mm:ssXXX', 'TimeZone', 'Europe/Rome');
+        % Find the matching T.created_at
+        match = feeds(i).created_at == T.created_at;
+        % Insert feeds(i).status in matching T.status
+        T.status(match) = feeds(i).status;
+    end
 end
 
 
 %% STATUS FILTER
+T.created_at = timestampDate;
 if statusToView ~= Constants.STATUS_ALL
     % Get the rows where status is statusToView
     T = T(T.status == statusToView,:);
 end
+timestampDate = T.created_at;
 
 
 %% VISUALIZE DATA %%
