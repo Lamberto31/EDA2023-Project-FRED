@@ -1,11 +1,18 @@
 %% PARAMS %%
 % Source (Use Constants to assign value)
+    % Constants.SOURCE_LOCAL: get data from local csv
+    % Constants.SOURCE_EXPORTED: get data from csv exported from ThingSpeak
+    % Constants.SOURCE_REMOTE: get data from ThingSpeak
 source = Constants.SOURCE_REMOTE;
 
 % Number of values to show (from the end)
-numPoints = 10;
+% If more than available it will show all the available values
+numPoints = 20;
 
 % Filter by state option
+    % Constants.STATUS_ALL: show all the values
+    % Constants.STATUS_EXPLORE: show only the values with status "Exploration"
+    % Constants.STATUS_DATA_TRANSMISSION: show only the values with status "data transmission"
 statusToView = Constants.STATUS_EXPLORE;
 
 % Filter by time ( consider data if time difference from previous < timeDiff)
