@@ -266,7 +266,7 @@ void setup() {
   computeMatrixR(NOISE_MEASURE_POSITION_STD, NOISE_MEASURE_VELOCITY_STD, &R);
 
   // Matrix correction if fixed position (so that the position is indipedent from the velocity)
-  if (FIXED_POSITION) corretMatricesFGL(&FF, &G, &L);
+  if (FIXED_POSITION) correctMatricesFGL(&FF, &G, &L);
 
   // Print matrices
   if (DEBUG_ACTIVE) {
