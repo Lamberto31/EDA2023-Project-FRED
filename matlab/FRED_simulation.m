@@ -262,3 +262,78 @@ disp("Errore posizione reale: " + string(abs(obj - x(1,end))));
 disp("Errore posizione stimato: " + string(abs(obj - x_hat(1,end))));
 disp("Velocità finale reale: " + string(x(2,end)));
 disp("Velocità finale stimata: " + string(x_hat(2,end)));
+
+
+%% GRAFICI
+timeStepString = "time step ["+ string(T) + " s]";
+% Input
+figure;
+plot(u(1,:)); hold on;
+xlabel('time step');
+ylabel('input');
+title('Input');
+
+% Posizione
+figure;
+plot(zn(1,:),'r'); hold on; 
+plot(x_hat(1,:),'b');
+plot(x(1,:),'g');   
+plot(ones(1,K)*obj);
+plot(ones(1,K)*x_slowMode);
+plot(ones(1,K)*x_stopMode);
+legend('measurement','estimate','real', 'objective','slow position','stop position');
+xlabel('time step');
+ylabel('position [cm]');
+title('Position');
+
+% Velocità
+figure;
+plot(zn(2,:), 'r'); hold on;
+plot(x_hat(2,:),'b');
+plot(x(2,:),'g');
+plot(-ones(1,K)*v_fast);
+plot(-ones(1,K)*v_slow);
+legend('measurement','estimate','real','max fast','max slow');
+xlabel('time step');
+ylabel('velocity [cm/s]');
+title('Velocity');
+
+% Mappa robot-ostacolo
+figure;
+%set(gca, 'XAxisLocation', 'origin'); 
+plot(0, 0, 'o'); hold on;
+plot(x(1,1), 0, '+');
+plot(x(1,2:end), zeros(K,1), 'g');
+plot(x(1,end), 0, 'x');
+plot(obj, 0, '*');
+axis equal;
+grid on;
+legend('Obstacle', 'Start poisition', 'Trajectory', 'Final position', 'Objective');
+xlabel('Position (cm)')
+title('Tracjectory');
+
+
+% Covarianza errore di stima posizione
+figure;
+plot(P1); hold on;
+xlabel('time step');
+ylabel('position estimation error covariance [cm^2]');
+legend('P(1,1)')
+title('Position estimation error covariance');
+
+% Covarianza errore di stima velocità
+figure;
+plot(P2); hold on;
+xlabel('time step');
+ylabel('velocity estimation error covariance [(cm/s)^2]');
+legend('P(2,2)')
+title('Velocity estimation error covariance');
+
+% Errore stima posizione
+figure;
+plot(error(1,:)); hold on;
+plot(measurement_error(1,:),'--');
+legend('estimation error','measurement error');
+xlabel('time step');
+ylabel('position [cm]');
+title('Position error');
