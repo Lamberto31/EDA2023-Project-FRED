@@ -252,3 +252,13 @@ for k = 1:K
 end
 pause(1);
 close(f)
+
+
+%% RISULTATI
+disp("Distanza obiettivo: " + string(obj));
+disp("Posizione finale reale: " + string(x(1,end)));
+disp("Posizione finale stimata: " + string(x_hat(1,end)));
+disp("Errore posizione reale: " + string(abs(obj - x(1,end))));
+disp("Errore posizione stimato: " + string(abs(obj - x_hat(1,end))));
+disp("Velocità finale reale: " + string(x(2,end)));
+disp("Velocità finale stimata: " + string(x_hat(2,end)));
