@@ -119,8 +119,6 @@ x_hat(:,1) = x(:,1) + diag(sigma_0) * randn(n,1);
 
 % Covarianza stima iniziale
 P = P0;
-P1 = [];
-P2 = [];
 
 % Input iniziale
 u_0 = C_fast;
@@ -140,6 +138,8 @@ W_tot = zeros(1, K);
 innovation = zeros(p, K);
 error = zeros(n, K);
 measurement_error = zeros(p, K);
+P1 = zeros(1, 2*K);
+P2 = zeros(1, 2*K);
 
 % Per controllare incidente
 crash = false;
@@ -195,10 +195,12 @@ for k = 1:K
     measurement_error(:,k+1) = z(:,k+1) - zn(:,k+1);  
     
     % Covarianza errore stima posizione
-    P1 = [P1, P_pred(1,1) P(1,1)];
+    P1(1+(k-1)*2) = P_pred(1,1);
+    P1(1+k*2) = P(1,1);
     
     % Covarianza errore stima velocità
-    P2 = [P2, P_pred(2,2) P(2,2)];
+    P2(1+(k-1)*2) = P_pred(2,2);
+    P2(1+k*2) = P(2,2);
 
     % Controllo incidente e uscita
     if crash
