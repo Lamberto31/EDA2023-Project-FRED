@@ -109,7 +109,7 @@ else
 
     % Status
     % Get status from Thingspeak with rest api (not available with thingSpeakRead)
-    thingSpeakUrl = "https://api.thingspeak.com/channels/"+channelID+"/status.json?api_key="+readAPIKey+"&results="+dataLength+"&days=3";
+    thingSpeakUrl = "https://api.thingspeak.com/channels/"+channelID+"/status.json?api_key="+readAPIKey+"&results="+dataLength+"&days=365";
     thingSpeakStatusAns = webread(thingSpeakUrl);
     feeds = thingSpeakStatusAns.feeds;
     % Insert feeds.status in T
