@@ -105,3 +105,23 @@ if r == n
 else
     disp("Sistema non osservabile")
 end
+
+
+%% INIZIALIZZAZIONE MODELLO
+% Condizione iniziale reale
+x(:,1) = [202 0]'; %[cm cm/s]
+% Covarianza stima iniziale
+sigma_0 = [66 v_max/100]; %[cm cm/s]
+P0 = diag(sigma_0.^2);
+% Stima iniziale
+% (in media valore reale distribuita gaussianamente con varianza sigma_0
+x_hat(:,1) = x(:,1) + diag(sigma_0) * randn(n,1);
+
+% Covarianza stima iniziale
+P = P0;
+P1 = [];
+P2 = [];
+
+% Input iniziale
+u_0 = C_fast;
+
