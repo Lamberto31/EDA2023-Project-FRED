@@ -125,3 +125,92 @@ P2 = [];
 % Input iniziale
 u_0 = C_fast;
 
+
+%% SIMULAZIONE (reale simulato e filtrato)
+% Secondi da considerare
+sec = 10;
+K = round(sec/T);
+% Pre-allocazioni varie (performance)
+z = zeros(p, K);
+u = zeros(1, K);
+u(:,1) = u_0;
+zn = zeros(p, K);
+x_pred = zeros(n, K);
+W_tot = zeros(1, K);
+innovation = zeros(p, K);
+error = zeros(n, K);
+measurement_error = zeros(p, K);
+
+% Per controllare incidente
+crash = false;
+
+% Per controllare input
+slowMode = false;
+stopMode = false;
+
+f = waitbar(0, "Inizio simulazione");
+% Loop principale
+for k = 1:K
+    % MODELLO REALE
+    % Evoluzione
+    % Stato reale
+    x(:,k+1) = F * x(:,k) + G * u(:,k) + L * sqrt(Q) * randn(n,1);
+    % Output reale
+    z(:,k+1) = H * x(:,k+1);
+    % Output misurato (rumoroso)
+    zn(:,k+1) = H * x(:,k+1) + sqrt(R) * randn(p,1);
+
+    % Controllo scontro con ostacolo
+    if x(1,k+1) <= 0
+        x(:,k+1) = 0;
+        crash = true;
+    end
+    
+    
+    % STIMA CON FILTRO DI KALMAN
+    % Predictor
+    % Predizione: x(k+1|k)
+    x_pred(:,k+1) = F * x_hat(:,k) + G * u(:, k);
+    % Covarianza predizione: P(k+1|k)
+    P_pred = F * P * F' + Q; % P[k+1|k]
+    
+    % Corrector
+    % Guadagno
+    W = P_pred*H'/(H*P_pred*H'+R);
+    % Correzione: x(k+1|k+1)
+    x_hat(:,k+1) = x_pred(:,k+1) + W*(zn(:,k+1)-H*x_pred(:,k+1));
+    % Covarianza correzione: P(k+1|k+1) (formulazione 2)
+    P = (eye(n)-W*H)*P_pred;
+    
+    % Innovazione
+    innovation(:,k+1) = zn(:,k+1)-H*x_pred(:,k+1);
+    
+    % Varianza innovazione
+    S = H * P_pred * H' + R;
+    
+    % Errore di stima
+    error(:,k+1) = x(:,k+1)-x_hat(:,k+1);
+    
+    % Errore di misura
+    measurement_error(:,k+1) = z(:,k+1) - zn(:,k+1);  
+    
+    % Covarianza errore stima posizione
+    P1 = [P1, P_pred(1,1) P(1,1)];
+    
+    % Covarianza errore stima velocità
+    P2 = [P2, P_pred(2,2) P(2,2)];
+
+    % Controllo incidente e uscita
+    if crash
+        disp("Crash!");
+        waitbar(1, f, "Terminato prima per incidente!");
+        K = k;
+        break;
+    end
+
+    
+    % Aggiornamento waitbar
+    waitbar(k/K, f, "Simulazione in corso");
+end
+pause(1);
+close(f)
