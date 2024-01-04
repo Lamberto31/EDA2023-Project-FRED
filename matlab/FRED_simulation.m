@@ -129,7 +129,7 @@ x_hat(:,1) = x(:,1) + diag(sigma_0) * randn(n,1);
 P = P0;
 
 % Input iniziale
-u_0 = C_fast;
+u_0 = - C_fast;
 
 
 %% SIMULAZIONE (reale simulato e filtrato)
