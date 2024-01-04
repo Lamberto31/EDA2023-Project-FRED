@@ -10,6 +10,10 @@ close all;
 % velocità)
 fixedPosition = false;
 
+% True per simulare robot con posizione iniziale molto vicina all'obiettivo
+nearPosition = false;
+nearDistance = 10; %[cm]
+
 
 %% DEFINIZIONE DATI
 % PARAMETRI
@@ -109,7 +113,11 @@ end
 
 %% INIZIALIZZAZIONE MODELLO
 % Condizione iniziale reale
-x(:,1) = [202 0]'; %[cm cm/s]
+if not(nearPosition)
+    x(:,1) = [202 0]'; %[cm cm/s]
+else
+    x(:,1) = [obj+nearDistance 0]'; % %[cm cm/s]
+end
 % Covarianza stima iniziale
 sigma_0 = [66 v_max/100]; %[cm cm/s]
 P0 = diag(sigma_0.^2);
