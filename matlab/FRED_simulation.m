@@ -222,8 +222,10 @@ for k = 1:K
     if not(stopMode)
         % Calcolo x_stop e x_slow
         x_stop = abs(x_hat(2,k))*M/b + obj;
-        t_vm = M/b*log((1/epsilon)*abs(abs(x_hat(2,k)) - v_slow));
-        x_slow = (abs(x_hat(2,k)) - v_slow)*M/b*(exp(-(b/M)*t_vm)-1)+ v_slow*t_vm + x_stop;
+        if not (slowMode)
+            t_vm = M/b*log((1/epsilon)*abs(abs(x_hat(2,k)) - v_slow));
+            x_slow = (abs(x_hat(2,k)) - v_slow)*M/b*(exp(-(b/M)*t_vm)-1)+ v_slow*t_vm + x_stop;
+        end
     
         % Check posizione rispetto a x_slow e x_stop
         if not(slowMode) && x_hat(1,k) > x_slow 
