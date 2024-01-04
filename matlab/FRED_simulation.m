@@ -129,7 +129,13 @@ x_hat(:,1) = x(:,1) + diag(sigma_0) * randn(n,1);
 P = P0;
 
 % Input iniziale
-u_0 = - C_fast;
+if x_hat(1,1) > obj
+    u_sign = -1;
+else 
+    u_sign = 1;
+end
+
+u_0 = u_sign * C_fast;
 
 
 %% SIMULAZIONE (reale simulato e filtrato)
@@ -221,16 +227,18 @@ for k = 1:K
     % Input
     if not(stopMode)
         % Calcolo x_stop e x_slow
-        x_stop = abs(x_hat(2,k))*M/b + obj;
+        d_stop = abs(x_hat(2,k))*M/b;
         if not (slowMode)
             t_vm = M/b*log((1/epsilon)*abs(abs(x_hat(2,k)) - v_slow));
-            x_slow = (abs(x_hat(2,k)) - v_slow)*M/b*(exp(-(b/M)*t_vm)-1)+ v_slow*t_vm + x_stop;
+            d_maxSpeed = (abs(x_hat(2,k)) - v_slow)*M/b*(exp(-(b/M)*t_vm)-1)+ v_slow*t_vm;
+            d_slow = d_maxSpeed + d_stop;
         end
     
         % Check posizione rispetto a x_slow e x_stop
-        if not(slowMode) && x_hat(1,k) > x_slow 
-            u(:,k+1) = - C_fast;
-        elseif not(stopMode) && x_hat(1,k) > x_stop
+        diff = abs(x_hat(1,k) - obj);
+        if not(slowMode) && diff > d_slow 
+            u(:,k+1) = u_sign * C_fast;
+        elseif not(stopMode) && diff > d_stop
             if not(slowMode)
                 slowMode = true;
                 x_slowMode = x_hat(1,k);
@@ -241,7 +249,7 @@ for k = 1:K
                 disp("Velocità stimata: " + string(x_hat(2,k)));
                 disp("Velocità veloce massima: " + string(v_fast));
             end
-            u(:,k+1) = - C_slow;
+            u(:,k+1) = u_sign * C_slow;
         else
             if not(stopMode)
                 stopMode = true;
