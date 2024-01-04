@@ -210,6 +210,42 @@ for k = 1:K
         break;
     end
 
+    % Input
+    if not(stopMode)
+        % Calcolo x_stop e x_slow
+        x_stop = abs(x_hat(2,k))*M/b + obj;
+        t_vm = M/b*log((1/epsilon)*abs(abs(x_hat(2,k)) - v_slow));
+        x_slow = (abs(x_hat(2,k)) - v_slow)*M/b*(exp(-(b/M)*t_vm)-1)+ v_slow*t_vm + x_stop;
+    
+        % Check posizione rispetto a x_slow e x_stop
+        if not(slowMode) && x_hat(1,k) > x_slow 
+            u(:,k+1) = - C_fast;
+        elseif not(stopMode) && x_hat(1,k) > x_stop
+            if not(slowMode)
+                slowMode = true;
+                x_slowMode = x_hat(1,k);
+                disp("Input lento")
+                disp("Posizione reale: " + string(x(1,k)));
+                disp("Posizione stimata: " + string(x_hat(1,k)));
+                disp("Velocità reale: " + string(x(2,k)));
+                disp("Velocità stimata: " + string(x_hat(2,k)));
+                disp("Velocità veloce massima: " + string(v_fast));
+            end
+            u(:,k+1) = - C_slow;
+        else
+            if not(stopMode)
+                stopMode = true;
+                x_stopMode = x_hat(1,k);
+                disp("Input nullo")
+                disp("Posizione reale: " + string(x(1,k)));
+                disp("Posizione stimata: " + string(x_hat(1,k)));
+                disp("Velocità reale: " + string(x(2,k)));
+                disp("Velocità stimata: " + string(x_hat(2,k)));
+                disp("Velocità bassa massima: " + string(v_slow));
+            end
+            u(:,k+1) = 0;
+        end
+    end
     
     % Aggiornamento waitbar
     waitbar(k/K, f, "Simulazione in corso");
