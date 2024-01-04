@@ -93,3 +93,15 @@ Q = diag([ sigma_qp^2 sigma_qv^2]);
 sigma_p = 0.3; %[cm]
 sigma_v = 0.1; %[pulse/round]
 R = diag([ sigma_p^2 sigma_v^2]);
+
+
+%% OSSERVABILITA'
+% Rango della matrice di osservabilità
+r = rank(obsv(F,H));
+
+% Il sistema è osservabile?
+if r == n
+    disp("Sistema osservabile")
+else
+    disp("Sistema non osservabile")
+end
