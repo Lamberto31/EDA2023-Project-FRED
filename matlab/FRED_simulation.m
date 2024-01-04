@@ -242,7 +242,10 @@ for k = 1:K
             if not(slowMode)
                 slowMode = true;
                 x_slowMode = x_hat(1,k);
+                disp(" ");
                 disp("Input lento")
+                disp("Passo: " + string(k));
+                disp("Istante: " + string(k*T) + " s");
                 disp("Posizione reale: " + string(x(1,k)));
                 disp("Posizione stimata: " + string(x_hat(1,k)));
                 disp("Velocità reale: " + string(x(2,k)));
@@ -254,7 +257,10 @@ for k = 1:K
             if not(stopMode)
                 stopMode = true;
                 x_stopMode = x_hat(1,k);
+                disp(" ");
                 disp("Input nullo")
+                disp("Passo: " + string(k));
+                disp("Istante: " + string(k*T) + " s");
                 disp("Posizione reale: " + string(x(1,k)));
                 disp("Posizione stimata: " + string(x_hat(1,k)));
                 disp("Velocità reale: " + string(x(2,k)));
@@ -273,6 +279,7 @@ close(f)
 
 
 %% RISULTATI
+disp(" ");
 disp("Distanza obiettivo: " + string(obj));
 disp("Posizione finale reale: " + string(x(1,end)));
 disp("Posizione finale stimata: " + string(x_hat(1,end)));
