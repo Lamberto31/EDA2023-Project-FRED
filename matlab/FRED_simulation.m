@@ -52,7 +52,12 @@ C_slow = 100;
 v_slow = kappa*C_slow/b; %[cm/s]
 % Tolleranza velocità
 epsilon = 0.01; %[cm/s]
-
+% Valori massimi distanza stop e slow (solo per grafico)
+d_stop_slow = v_slow * M/b; %[cm] Distanza per fermarsi da velocità slow
+d_stop_fast = v_fast * M/b; %[cm] Distanza per fermarsi da velocità fast
+t_vm_max = M/b*log((1/epsilon)*abs(v_fast - v_slow)); %[s] Tempo per arrivare a velocità slow da fast
+d_maxSpeed_max = (v_fast - v_slow)*M/b*(exp(-(b/M)*t_vm_max)-1)+ v_slow*t_vm_max; %[cm] Distanza per arrivare a velocità slow da fast
+d_slow_max = d_maxSpeed_max + d_stop_fast; %[cm] Distanza per arrivare a velocità slow da fast e fermarsi in tempo
 
 % MATRICI
 % Passo di discretizzazione
@@ -154,6 +159,9 @@ error = zeros(n, K);
 measurement_error = zeros(p, K);
 P1 = zeros(1, 2*K);
 P2 = zeros(1, 2*K);
+d_stop = zeros(1,K);
+d_slow = zeros(1,K);
+diff = zeros(1,K);
 
 % Per controllare incidente
 crash = false;
@@ -227,21 +235,22 @@ for k = 1:K
     % Input
     if not(stopMode)
         % Calcolo x_stop e x_slow
-        d_stop = abs(x_hat(2,k))*M/b;
+        d_stop(k) = abs(x_hat(2,k))*M/b;
         if not (slowMode)
             t_vm = M/b*log((1/epsilon)*abs(abs(x_hat(2,k)) - v_slow));
             d_maxSpeed = (abs(x_hat(2,k)) - v_slow)*M/b*(exp(-(b/M)*t_vm)-1)+ v_slow*t_vm;
-            d_slow = d_maxSpeed + d_stop;
+            d_slow(k) = d_maxSpeed + d_stop(k);
         end
     
         % Check posizione rispetto a x_slow e x_stop
-        diff = abs(x_hat(1,k) - obj);
-        if not(slowMode) && diff > d_slow 
+        diff(k) = abs(x_hat(1,k) - obj);
+        if not(slowMode) && diff(k) > d_slow(k) 
             u(:,k+1) = u_sign * C_fast;
-        elseif not(stopMode) && diff > d_stop
+        elseif not(stopMode) && diff(k) > d_stop(k)
             if not(slowMode)
                 slowMode = true;
                 x_slowMode = x_hat(1,k);
+                k_slow = k+1;
                 disp(" ");
                 disp("Input lento")
                 disp("Passo: " + string(k));
@@ -257,6 +266,7 @@ for k = 1:K
             if not(stopMode)
                 stopMode = true;
                 x_stopMode = x_hat(1,k);
+                k_stop = k+1;
                 disp(" ");
                 disp("Input nullo")
                 disp("Passo: " + string(k));
@@ -337,6 +347,18 @@ legend('Obstacle', 'Start poisition', 'Trajectory', 'Final position', 'Objective
 xlabel('Position (cm)')
 title('Tracjectory');
 
+% Distanze per rallentare/fermarsi
+figure;
+plot(d_stop(1:k_stop)); hold on;
+plot(d_slow(1:k_stop));
+plot(d_stop_fast*ones(1,k_stop));
+plot(d_stop_slow*ones(1,k_stop));
+plot(d_slow_max*ones(1,k_stop));
+plot(k_slow-10:k_stop, diff(k_slow-10:k_stop));
+legend('d_{stop}','d_{slow}','d_{stop_{fast}}','d_{stop_{slow}}','d_{slow_{max}}','estimate - objective');
+xlabel('time step');
+ylabel('Distance [cm]');
+title('Distance tresholds');
 
 % Covarianza errore di stima posizione
 figure;
