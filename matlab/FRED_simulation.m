@@ -235,46 +235,46 @@ for k = 1:K
     % Input
     if not(stopMode)
         % Calcolo x_stop e x_slow
-        d_stop(k) = abs(x_hat(2,k))*M/b;
+        d_stop(k+1) = abs(x_hat(2,k+1))*M/b;
         if not (slowMode)
-            t_vm = M/b*log((1/epsilon)*abs(abs(x_hat(2,k)) - v_slow));
-            d_maxSpeed = (abs(x_hat(2,k)) - v_slow)*M/b*(exp(-(b/M)*t_vm)-1)+ v_slow*t_vm;
-            d_slow(k) = d_maxSpeed + d_stop(k);
+            t_vm = M/b*log((1/epsilon)*abs(abs(x_hat(2,k+1)) - v_slow));
+            d_maxSpeed = (abs(x_hat(2,k+1)) - v_slow)*M/b*(exp(-(b/M)*t_vm)-1)+ v_slow*t_vm;
+            d_slow(k+1) = d_maxSpeed + d_stop(k+1);
         end
     
         % Check posizione rispetto a x_slow e x_stop
-        diff(k) = abs(x_hat(1,k) - obj);
-        if not(slowMode) && diff(k) > d_slow(k) 
+        diff(k+1) = abs(x_hat(1,k+1) - obj);
+        if not(slowMode) && diff(k+1) > d_slow(k+1) 
             u(:,k+1) = u_sign * C_fast;
-        elseif not(stopMode) && diff(k) > d_stop(k)
+        elseif not(stopMode) && diff(k+1) > d_stop(k+1)
             if not(slowMode)
                 slowMode = true;
-                x_slowMode = x_hat(1,k);
-                k_slow = k+1;
+                x_slowMode = x_hat(1,k+1);
+                k_slow = k+2;
                 disp(" ");
                 disp("Input lento")
-                disp("Passo: " + string(k));
-                disp("Istante: " + string(k*T) + " s");
-                disp("Posizione reale: " + string(x(1,k)));
-                disp("Posizione stimata: " + string(x_hat(1,k)));
-                disp("Velocità reale: " + string(x(2,k)));
-                disp("Velocità stimata: " + string(x_hat(2,k)));
+                disp("Passo: " + string(k+1));
+                disp("Istante: " + string((k+1)*T) + " s");
+                disp("Posizione reale: " + string(x(1,k+1)));
+                disp("Posizione stimata: " + string(x_hat(1,k+1)));
+                disp("Velocità reale: " + string(x(2,k+1)));
+                disp("Velocità stimata: " + string(x_hat(2,k+1)));
                 disp("Velocità veloce massima: " + string(v_fast));
             end
             u(:,k+1) = u_sign * C_slow;
         else
             if not(stopMode)
                 stopMode = true;
-                x_stopMode = x_hat(1,k);
-                k_stop = k+1;
+                x_stopMode = x_hat(1,k+1);
+                k_stop = k+2;
                 disp(" ");
                 disp("Input nullo")
-                disp("Passo: " + string(k));
-                disp("Istante: " + string(k*T) + " s");
-                disp("Posizione reale: " + string(x(1,k)));
-                disp("Posizione stimata: " + string(x_hat(1,k)));
-                disp("Velocità reale: " + string(x(2,k)));
-                disp("Velocità stimata: " + string(x_hat(2,k)));
+                disp("Passo: " + string(k+1));
+                disp("Istante: " + string((k+1)*T) + " s");
+                disp("Posizione reale: " + string(x(1,k+1)));
+                disp("Posizione stimata: " + string(x_hat(1,k+1)));
+                disp("Velocità reale: " + string(x(2,k+1)));
+                disp("Velocità stimata: " + string(x_hat(2,k+1)));
                 disp("Velocità bassa massima: " + string(v_slow));
             end
             u(:,k+1) = 0;
