@@ -14,6 +14,17 @@ fixedPosition = false;
 nearPosition = false;
 nearDistance = 10; %[cm]
 
+% Scelta dello stato da utilizzare per la scelta dell'input
+    % 0: x stimato, come si farebbe nello scenario reale;
+    % 1: x misurato, come si farebbe senza filtraggio;
+    % 2: x reale, come si farebbe nel caso ideale.
+x_for_input = 0;
+
+% Controllo valore corretto per x_for_input
+if x_for_input ~= 0 && x_for_input ~= 1 && x_for_input ~= 2
+    error("Valore di x_for_input non valido");
+end
+
 
 %% DEFINIZIONE DATI
 % PARAMETRI
@@ -233,23 +244,32 @@ for k = 1:K
     end
 
     % Input
+    % Scelta stato per input
+    if x_for_input == 0
+        x_check = x_hat(:,k+1);
+    elseif x_for_input == 1
+        x_check = zn(:,k+1);
+    else
+        x_check = x(:,k+1);
+    end
+
     if not(stopMode)
         % Calcolo x_stop e x_slow
-        d_stop(k+1) = abs(x_hat(2,k+1))*M/b;
+        d_stop(k+1) = abs(x_check(2))*M/b;
         if not (slowMode)
-            t_vm = M/b*log((1/epsilon)*abs(abs(x_hat(2,k+1)) - v_slow));
-            d_maxSpeed = (abs(x_hat(2,k+1)) - v_slow)*M/b*(exp(-(b/M)*t_vm)-1)+ v_slow*t_vm;
+            t_vm = M/b*log((1/epsilon)*abs(abs(x_check(2)) - v_slow));
+            d_maxSpeed = (abs(x_check(2)) - v_slow)*M/b*(exp(-(b/M)*t_vm)-1)+ v_slow*t_vm;
             d_slow(k+1) = d_maxSpeed + d_stop(k+1);
         end
     
         % Check posizione rispetto a x_slow e x_stop
-        diff(k+1) = abs(x_hat(1,k+1) - obj);
+        diff(k+1) = abs(x_check(1) - obj);
         if not(slowMode) && diff(k+1) > d_slow(k+1) 
             u(:,k+1) = u_sign * C_fast;
         elseif not(stopMode) && diff(k+1) > d_stop(k+1)
             if not(slowMode)
                 slowMode = true;
-                x_slowMode = x_hat(1,k+1);
+                x_slowMode = x_check(1);
                 k_slow = k+2;
                 disp(" ");
                 disp("Input lento")
@@ -265,7 +285,7 @@ for k = 1:K
         else
             if not(stopMode)
                 stopMode = true;
-                x_stopMode = x_hat(1,k+1);
+                x_stopMode = x_check(1);
                 k_stop = k+2;
                 disp(" ");
                 disp("Input nullo")
