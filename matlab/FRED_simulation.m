@@ -304,7 +304,7 @@ timeStepString = "time step ["+ string(T) + " s]";
 % Input
 figure;
 plot(u(1,:)); hold on;
-xlabel('time step');
+xlabel(timeStepString);
 ylabel('input');
 title('Input');
 
@@ -317,7 +317,7 @@ plot(ones(1,K)*obj);
 plot(ones(1,K)*x_slowMode);
 plot(ones(1,K)*x_stopMode);
 legend('measurement','estimate','real', 'objective','slow position','stop position');
-xlabel('time step');
+xlabel(timeStepString);
 ylabel('position [cm]');
 title('Position');
 
@@ -329,7 +329,7 @@ plot(x(2,:),'g');
 plot(-ones(1,K)*v_fast);
 plot(-ones(1,K)*v_slow);
 legend('measurement','estimate','real','max fast','max slow');
-xlabel('time step');
+xlabel(timeStepString);
 ylabel('velocity [cm/s]');
 title('Velocity');
 
@@ -357,14 +357,14 @@ plot(d_slow_max*ones(1,k_stop));
 k_diff_start = max(1,k_slow-10);
 plot(k_diff_start:k_stop, diff(k_diff_start:k_stop));
 legend('d_{stop}','d_{slow}','d_{stop_{fast}}','d_{stop_{slow}}','d_{slow_{max}}','estimate - objective');
-xlabel('time step');
+xlabel(timeStepString);
 ylabel('Distance [cm]');
 title('Distance tresholds');
 
 % Covarianza errore di stima posizione
 figure;
 plot(P1); hold on;
-xlabel('time step');
+xlabel(timeStepString);
 ylabel('position estimation error covariance [cm^2]');
 legend('P(1,1)')
 title('Position estimation error covariance');
@@ -372,7 +372,7 @@ title('Position estimation error covariance');
 % Covarianza errore di stima velocità
 figure;
 plot(P2); hold on;
-xlabel('time step');
+xlabel(timeStepString);
 ylabel('velocity estimation error covariance [(cm/s)^2]');
 legend('P(2,2)')
 title('Velocity estimation error covariance');
@@ -382,6 +382,6 @@ figure;
 plot(error(1,:)); hold on;
 plot(measurement_error(1,:),'--');
 legend('estimation error','measurement error');
-xlabel('time step');
+xlabel(timeStepString);
 ylabel('position [cm]');
 title('Position error');
