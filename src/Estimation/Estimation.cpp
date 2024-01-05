@@ -70,7 +70,7 @@ void computeMatrixR(double sigmaRP, double sigmaRV, BLA::Matrix<MEASURE_DIM, MEA
 }
 
 // Matrix correction if fixed position
-void corretMatricesFGL(BLA::Matrix<STATE_DIM, STATE_DIM> *F, BLA::Matrix<STATE_DIM, INPUT_DIM> *G, BLA::Matrix<STATE_DIM, STATE_DIM> *L) {
+void correctMatricesFGL(BLA::Matrix<STATE_DIM, STATE_DIM> *F, BLA::Matrix<STATE_DIM, INPUT_DIM> *G, BLA::Matrix<STATE_DIM, STATE_DIM> *L) {
     F->operator()(0, 1) = 0;
     G->operator()(0, 0) = 0;
     L->operator()(0, 1) = 0;

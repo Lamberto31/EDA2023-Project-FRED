@@ -34,6 +34,7 @@ PARAMS = False
 
 # Parameters Definition
 PERIOD_SERVER = 15 # seconds
+# Status strings
 STATUS_DISCONNECTED = "Disconnected"
 STATUS_CONNECTED = "Connected"
 
@@ -50,6 +51,9 @@ STATUS_INPUT_0 = "Input 0"
 STATUS_STOP = "Stop"
 
 STATUS_UNKNOWN = "Unknown"
+
+# Info strings
+INFO_CUSTOM_DISTANCE = "Custom distance"
 
 # Get secret values from .env file
 API_KEY = config('API_KEY')
@@ -100,49 +104,27 @@ def getStatusString(statusNumber):
     else:
         return STATUS_UNKNOWN
 
-# Insert received data in stored measures
-def insertMeasureInDict(recvData):
-    decoded = recvData.decode('utf-8')
-    clean = decoded[0:-2]
-    data = clean.split(":")
-    if data[0] == "Distance_US":
-        measures["field1"] = data[1]
-    elif data[0] == "Distance_OPT":
-        measures["field2"] = data[1]
-    elif data[0] == "Distance_US_Filtered":
-        measures["field3"] = data[1]
-    elif data[0] == "Rev_per_second":
-        measures["field4"] = data[1]
-    elif data[0] == "Velocity_US":
-        measures["field5"] = data[1]
-    elif data[0] == "Velocity_OPT":
-        measures["field6"] = data[1]
-    elif data[0] == "Velocity_OPT_Filtered":
-        measures["field7"] = data[1]
-    elif data[0] == "Distance_Custom":
-        measures["field8"] = data[1]
-    elif data[0] == "Status":
-        measures["status"] = getStatusString(data[1])
-
-# Insert received data in stored estimation
-def insertEstimateInDict(recvData):
+# Insert received data in stored data
+def insertDataInDict(recvData):
     decoded = recvData.decode('utf-8')
     clean = decoded[0:-2]
     data = clean.split(":")
     if data[0] == "Input":
-        estimates["field1"] = data[1]
+        dataDict["field1"] = data[1]
     elif data[0] == "Measures":
         vector = data[1].split(",")
-        estimates["field2"] = vector[0]
-        estimates["field3"] = vector[1]
+        dataDict["field2"] = vector[0]
+        dataDict["field3"] = vector[1]
     elif data[0] == "State":
         vector = data[1].split(",")
-        estimates["field4"] = vector[0]
-        estimates["field5"] = vector[1]
+        dataDict["field4"] = vector[0]
+        dataDict["field5"] = vector[1]
     elif data[0] == "Covariance":
         vector = data[1].split(",")
-        estimates["field6"] = vector[0]
-        estimates["field7"] = vector[1]
+        dataDict["field6"] = vector[0]
+        dataDict["field7"] = vector[1]
+    elif data[0] == "Status":
+        dataDict["status"] = getStatusString(data[1])
 
 # Conditional print
 def debugStamp(str, level="Default"):
@@ -153,13 +135,13 @@ def debugStamp(str, level="Default"):
     elif DEBUG == level:
         print(str)
 
-# Print dataToSend in tabular format
-def stampDataToSend():
+# Print data in tabular format
+def stampData(dataToPrint):
     if ((DEBUG == "Default" or DEBUG == "Full") and VIEW_DATA):
-        print("\nDATA TO SEND")
+        print("\nDATA")
         print("N.\tcreated_at\tfield1\tfield2\tfield3\tfield4\tfield5\tfield6\tfield7\tfield8\tstatus\n")
-        for i in range(0, len(dataToSend)):
-            print(str(i + 1) + "\t" + str(dataToSend[i]["created_at"]) + "\t" + str(dataToSend[i]["field1"]) + "\t" + str(dataToSend[i]["field2"]) + "\t" + str(dataToSend[i]["field3"]) + "\t" + str(dataToSend[i]["field4"]) + "\t" + str(dataToSend[i]["field5"]) + "\t" + str(dataToSend[i]["field6"]) + "\t" + str(dataToSend[i]["field7"]) + "\t" + str(dataToSend[i]["field8"]) + "\t" + str(dataToSend[i]["status"]) + "\n")
+        for i in range(0, len(dataToPrint)):
+            print(str(i + 1) + "\t" + str(dataToPrint[i]["created_at"]) + "\t" + str(dataToPrint[i]["field1"]) + "\t" + str(dataToPrint[i]["field2"]) + "\t" + str(dataToPrint[i]["field3"]) + "\t" + str(dataToPrint[i]["field4"]) + "\t" + str(dataToPrint[i]["field5"]) + "\t" + str(dataToPrint[i]["field6"]) + "\t" + str(dataToPrint[i]["field7"]) + "\t" + str(dataToPrint[i]["field8"]) + "\t" + str(dataToPrint[i]["status"]) + "\n")
 
 # Print matrix in tabular format
 def stampMatrix(metadata, data):
@@ -179,13 +161,9 @@ def stampMatrix(metadata, data):
 # Handle CTRL+C
 def interruptHandler(sig, frame):
     ser.close()  # Close serial connection, this will cause error and so the script will stop but safely
-    if (WIFI):
-        print("\nInterrupt received, waiting for data to send and then close the script")
-        print("If you want to close the script immediately send interrupt again")
-        signal.signal(signal.SIGINT, signal.default_int_handler)
-    else:
-        print("\nInterrupt received, closing the script")
-        exit()
+    signal.signal(signal.SIGINT, signal.default_int_handler)
+    print("Interrupt received")
+    print("If you want to close the script immediately send interrupt again")
 
 # Interpret input arguments
 # DEBUG
@@ -253,8 +231,8 @@ else:
     debugStamp("Serial connection not started, try again")
     exit()
 
-# Init dictionary that contains measures (declared as field as in the remote server)
-measures = {
+# Init dictionary that contains data (declared as field as in the remote server)
+dataDict = {
     "created_at": 0,
     "field1": 0,
     "field2": 0,
@@ -267,27 +245,20 @@ measures = {
     "status": STATUS_UNKNOWN
     }
 
-# Init dictionary that contains estimates (declared as field as in the remote server)
-estimates = {
-    "created_at": 0,
-    "field1": 0,
-    "field2": 0,
-    "field3": 0,
-    "field4": 0,
-    "field5": 0,
-    "field6": 0,
-    "field7": 0,
-    "field8": 0,
-    "status": STATUS_EXPLORATION
-    }
-
-# Init list of dataToSend
+# Init list of dataToWrite and dataToSend
+dataToWrite = []
 dataToSend = []
 
 # Init json to send
 jsonDict = {}
 jsonDict["write_api_key"] = API_KEY
 jsonDict["updates"] = dataToSend
+
+# Info dictionary
+infoDict = {
+    INFO_CUSTOM_DISTANCE: 0
+}
+
 
 # CSV file
 # Init csv file
@@ -297,7 +268,7 @@ csvFileName = "FRED_log_" + timestamp + ".csv"
 
 # Create file and write header
 csvFile = open(os.path.join("./logs", csvFileName), mode='w')
-csvWriter = csv.DictWriter(csvFile, fieldnames=measures.keys())
+csvWriter = csv.DictWriter(csvFile, fieldnames=dataDict.keys())
 csvWriter.writeheader()
 csvFile.flush()
 
@@ -384,30 +355,45 @@ while True:
                 signal.signal(signal.SIGINT, interruptHandler)
             # Read data
             recv = ser.readline()
-            # If contains "START" it's a BDT messagge
-            if "START" in str(recv):
-                debugStamp("New BDT message: START")
+            # If contains "DATA" or "ESTIMATE" it's a DATA/ESTIMATE messagge
+            if "DATA" in str(recv) or "ESTIMATE" in str(recv):
+                if "DATA" in str(recv):
+                    messageNumber = 4
+                    debugStamp("New BDT message: DATA")
+                elif "ESTIMATE" in str(recv):
+                    messageNumber = 5
+                    debugStamp("New BDT message: ESTIMATE")
                 debugStamp(str(recv, 'utf-8'), "Full")
+                messageCounter = 0
                 while True:
                     recv = ser.readline()
+                    messageCounter += 1
                     debugStamp(str(recv, 'utf-8'), "Full")
-                    insertMeasureInDict(recv)
-                    if "END" in str(recv):
-                        debugStamp("New BDT message: END")
-                        measures["created_at"] = int(time.time())  # seconds
-                        # Check if the last measure has the same timestamp of the new one, if so don't add it
-                        # TODO: Per ora scarto le misure, da capire cosa farci dopo aver visto il filtraggio
-                        if (dataToSend and dataToSend[-1]["created_at"] == measures["created_at"]):
+                    insertDataInDict(recv)
+                    # If it's the last message, add timestamp and append to dataToWrite and dataToSend
+                    if messageCounter == messageNumber:
+                        debugStamp("Last message received")
+                        dataDict["created_at"] = int((time.time()*1000))  # milliseconds
+                        dataDict["field8"] = infoDict[INFO_CUSTOM_DISTANCE]
+                        # Append all data in dataToWrite
+                        dataToWrite.append(dataDict.copy())
+                        # Append only one data for each second in dataToSend (first one)
+                        if (dataToSend and dataToSend[-1]["created_at"] == int(dataDict["created_at"]/1000)):
                             break
-                        dataToSend.append(measures.copy())
-                        stampDataToSend()
+                        dataToAdjust = dataDict.copy()
+                        dataToAdjust["created_at"] = int(dataToAdjust["created_at"]/1000)
+                        dataToSend.append(dataToAdjust.copy())
+                        stampData(dataToWrite)
                         break
             # If contains "INFO" it's a INFO messagge
             elif "INFO" in str(recv):
                 debugStamp("New BDT message: INFO")
                 debugStamp(str(recv, 'utf-8'), "Full")
-                info = ser.readline().decode('utf-8')[0:-2]
-                debugStamp(str(info))
+                recv = ser.readline()
+                debugStamp(str(recv, 'utf-8'), "Full")
+                info = recv.decode('utf-8')[0:-2].split(":")
+                infoDict[str(info[0])] = str(info[1])
+                debugStamp(infoDict)
             # If contains "PARAMS" it's a PARAMS messagge
             elif "PARAMS" in str(recv):
                 debugStamp("New BDT message: PARAMS")
@@ -432,22 +418,6 @@ while True:
                         stampParams(first)
                         first = False
                         writeParamsCsv(statusString)
-            # If contains "ESTIMATE" it's a ESTIMATE messagge
-            elif "ESTIMATE" in str(recv):
-                debugStamp("New BDT message: ESTIMATE")
-                debugStamp(str(recv, 'utf-8'), "Full")
-                while True:
-                    recv = ser.readline()
-                    debugStamp(str(recv, 'utf-8'), "Full")
-                    insertEstimateInDict(recv)
-                    if "END" in str(recv):
-                        debugStamp("New BDT message: END")
-                        estimates["created_at"] = int((time.time()*1000))  # milliseconds
-                        if (dataToSend and dataToSend[-1]["created_at"] == estimates["created_at"]):
-                            break
-                        dataToSend.append(estimates.copy())
-                        stampDataToSend()
-                        break
             # If contains "MATRIX" it's a MATRIX messagge
             elif "MATRIX" in str(recv):
                 debugStamp("New BDT message: MATRIX")
@@ -465,35 +435,45 @@ while True:
                     
     except Exception as e:
         debugStamp(e, "Full")
-        # TODO: Spostare modifiche fatte in interruptHandler qui per gestire il caso senza WIFI
         # If there is an error, handle the closing of the program
+        # This is the case when the bluetooth connection is active
         if connected:
             connected = False
             disconnected = True
-            debugStamp("Bluetooth connection lost, waiting for data to send and then close the script")
+            debugStamp("Bluetooth connection lost")
+            if (WIFI and dataToSend):
+                debugStamp("Waiting for data to send and then close the script")
+            # If WIFI disabled the script can be closed immediately
+            else:
+                debugStamp("Closing the script")
+                ser.close()
+                exit()
+        # This is the case when the bluetooth connection is not active, so the script can be closed
         else:
             debugStamp("Bluetooth connection not established, run the script again")
             ser.close()
             exit()
     
-    # SEND DATA TO REMOTE SERVER
+    # WRITE AND SEND DATA TO REMOTE SERVER
     # Do it every PERIOD_SERVER seconds and if dataToSend is not empty
     if time.time() - lastSendToServer >= PERIOD_SERVER and dataToSend:
-        debugStamp("Sending " + str(len(dataToSend)) + " measures to remote server")
-        # Build json to send
-        jsonDict["updates"] = dataToSend
-        debugStamp(jsonDict, "Full")
+        # Write full data to csv with all data
+        csvWriter.writerows(dataToWrite)
+        csvFile.flush()
 
-        # Send data
+        # Prepare and send data
         if WIFI:
+            # Build json to send
+            jsonDict["updates"] = dataToSend
+            debugStamp(jsonDict, "Full")
+
+            # Send data
+            debugStamp("Sending " + str(len(dataToSend)) + " data to remote server")
             r = requests.post("https://api.thingspeak.com/channels/"+ CHANNEL_ID +"/bulk_update.json", json=jsonDict)
             debugStamp(str(r.status_code) + " " + str(r.reason))
 
-        # Write data to csv
-        csvWriter.writerows(dataToSend)
-        csvFile.flush()
-
         # Reset data
+        dataToWrite = []
         dataToSend = []
         jsonDict["updates"] = dataToSend
 

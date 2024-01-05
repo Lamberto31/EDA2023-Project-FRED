@@ -38,8 +38,8 @@ State robotState = { STATE_SETUP, false, 0, true, DIRECTION_STOP, 0};
 Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 
 // Functionalities active/disabled
-#define DEBUG_ACTIVE 1
-#define SEND_MEASURE_ACTIVE 0
+#define DEBUG_ACTIVE 0
+#define SEND_MEASURE_ACTIVE 1
 #define SEND_FILTER_RESULT_ACTIVE 1
 #define FIXED_POSITION 1
 
@@ -171,6 +171,9 @@ char customDist[CUSTOM_DIST_CHAR];
 byte customDistIdx = 0;
 int numericCustomDist = 0;
 
+// Filtering boolean (Used to avoid sending filtered data when not needed)
+bool filtering = false;
+
 // Debug macro
 #if DEBUG_ACTIVE == 1
 #define debug(x) Serial.print(x)
@@ -263,7 +266,7 @@ void setup() {
   computeMatrixR(NOISE_MEASURE_POSITION_STD, NOISE_MEASURE_VELOCITY_STD, &R);
 
   // Matrix correction if fixed position (so that the position is indipedent from the velocity)
-  if (FIXED_POSITION) corretMatricesFGL(&FF, &G, &L);
+  if (FIXED_POSITION) correctMatricesFGL(&FF, &G, &L);
 
   // Print matrices
   if (DEBUG_ACTIVE) {
@@ -399,6 +402,7 @@ void loop() {
             if (composeNumericDistance()) stateChange(&robotState, STATE_SEARCH); else stateChange(&robotState, STATE_FREE);
             debugF("numericCustomDist = ");
             debugln(numericCustomDist);
+            bluetoothSendInfo("Custom distance", numericCustomDist);
             // Feedback led
             digitalWrite(LED_BUILTIN, LOW);
             break;
@@ -436,7 +440,8 @@ void loop() {
       // Do only if new measure is available
       if (!robotMeasures.sent) {
         // Update input
-        checkDistance();
+        // TODO: Quando si modifica la checkDistance() bisogna modificare anche qui
+        if (robotState.direction != DIRECTION_STOP) checkDistance();
         // Fill input and measures vectors
         computeVectorU(robotState.input, &u);
         computeVectorZ(robotMeasures.distanceUS, robotMeasures.ppsOptical, &z);
@@ -446,18 +451,9 @@ void loop() {
         // Send results
         if (SEND_FILTER_RESULT_ACTIVE) {
           bluetoothConnection(false);
-          if (bluetoothConnected) bluetoothSendFilterResult();
+          if (bluetoothConnected) bluetoothSendData(true);
           else robotMeasures.sent = true;
         }
-        // DEBUG_TEMP
-        if (robotState.direction == DIRECTION_STOP) {
-          // Change state to free
-          speedSlowFactor = 0;
-          firstCheck = true;
-          numericCustomDist = 0;
-          stateChange(&robotState, STATE_FREE);
-        }
-        // DEBUG_TEMP
       }
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
@@ -466,6 +462,7 @@ void loop() {
             speedSlowFactor = 0;
             firstCheck = true;
             numericCustomDist = 0;
+            bluetoothSendInfo("Custom distance", 0);
             stateChange(&robotState, STATE_FREE);
             break;
           }
@@ -474,7 +471,16 @@ void loop() {
             speedSlowFactor = 0;
             firstCheck = true;
             numericCustomDist = 0;
+            bluetoothSendInfo("Custom distance", 0);
             stateChange(&robotState, STATE_MEASURE);
+            break;
+          }
+          case IR_BUTTON_AST: {
+            // TODO: Quando si modifica la checkDistance() bisogna modificare anche qui
+            runMotors(DIRECTION_FORWARD, 255);
+            robotState.just_changed = false;
+            speedSlowFactor = 0;
+            firstCheck = true;
             break;
           }
         }
@@ -483,20 +489,52 @@ void loop() {
       break;
     }
     // Measure state handling
-    // TODO: Capire che fare di questo stato, al momento non fa più nulla
     case STATE_MEASURE: {
       if (robotState.just_changed) {
+        filtering = waitFilteringChoice();
+        if (filtering) {
+          initializeVectorX(STATE_INIT_Xp, STATE_INIT_Xv, &x_hat);
+          initializeMatrixP(STATE_INIT_COV_Xp, STATE_INIT_COV_Xv, &P_hat);
+          computeVectorU(0, &u);
+          computeVectorZ(0, 0, &z);
+        }
         robotState.just_changed = false;
       }
       sendBufferIndex = 0;
       memset(sendBuffer, 0, sizeof(sendBuffer));
+      if (robotState.direction == DIRECTION_FORWARD) {
+        preventDamage(CUSTOM_DIST_MIN);
+      }
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
           case IR_BUTTON_OK: {
+            if (DEBUG_ACTIVE) printMeasures(&robotMeasures);
+            runMotors(DIRECTION_STOP, 0);
+            break;
+          }
+          case IR_BUTTON_UP: {
+            runMotors(DIRECTION_FORWARD, 255);
+            break;
+          }
+          case IR_BUTTON_DOWN: {
+            runMotors(DIRECTION_BACKWARD, 100);
+            break;
+          }
+          case IR_BUTTON_RIGHT: {
+            runMotors(DIRECTION_RIGHT, 100);
+            break;
+          }
+          case IR_BUTTON_LEFT: {
+            runMotors(DIRECTION_LEFT, 100);
+            break;
+          }
+          case IR_BUTTON_HASH: {
+            runMotors(DIRECTION_STOP, 0);
             stateChange(&robotState, STATE_FREE);
             break;
           }
           case IR_BUTTON_AST: {
+            runMotors(DIRECTION_STOP, 0);
             stateChange(&robotState, STATE_READ);
             // Feedback led
             digitalWrite(LED_BUILTIN, HIGH);
@@ -505,27 +543,53 @@ void loop() {
         }
         stateCmdExecuted(&robotState);
       }
+
+      // Filter only if filtering is true
+      if (filtering) {
+        // Do only if new measure is available
+        if (!robotMeasures.sent) {
+          // Fill input and measures vectors
+          computeVectorU(robotState.input, &u);
+          computeVectorZ(robotMeasures.distanceUS, robotMeasures.ppsOptical, &z);
+          // Predictor and corrector
+          KalmanPredictor(FF, x_hat, G, u, P_hat, Q, &x_pred, &P_pred);
+          KalmanCorrector(P_pred, H, R, z, x_pred, &W, &x_hat, &P_hat, &innovation, &S);
+          // Set measure as used
+          robotMeasures.sent = true;
+        }
+      }
+
+      // Send data with Bluetooth
+      currentMillisMeasureToSend = millis();
+      if (SEND_MEASURE_ACTIVE && currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH) {
+        // Adjust servo
+        servoH.attach(PIN_SERVO_HORIZ);
+        servoH.write(SERVO_HORIZ_CENTER);
+        delay(100);
+        servoH.detach();
+
+        // Prepare data to send if not filtering
+        if (!filtering) {
+          computeVectorU(robotState.input, &u);
+          computeVectorZ(robotMeasures.distanceUS, robotMeasures.ppsOptical, &z);
+          x_hat(0) = robotMeasures.distanceUS;
+          x_hat(1) = robotMeasures.velocityOptical;
+        }
+
+        // Send data
+        bluetoothConnection(false);
+        if (bluetoothConnected) bluetoothSendData(filtering);
+        previousMillisMeasureToSend = millis();
+  }
       break;
     }
   }
-  // Actions performed for each state (Almost)
+  // Actions performed for each state
   // Measure
   currentMillisMeasure = millis();
   if (currentMillisMeasure - previousMillisMeasure >= PERIOD_MEASURE) {
     measureAll(currentMillisMeasure - previousMillisMeasure);
     previousMillisMeasure = millis();
-  }
-
-  // Send measure with Bluetooth (don't do if STATE_SEARCH)
-  if (SEND_MEASURE_ACTIVE && currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_BLUETOOTH && robotState.current != STATE_SEARCH) {
-    servoH.attach(PIN_SERVO_HORIZ);
-    servoH.write(SERVO_HORIZ_CENTER);
-    delay(100);
-    servoH.detach();
-
-    bluetoothConnection(false);
-    if (bluetoothConnected && !robotMeasures.sent) bluetoothSendMeasure();
-    previousMillisMeasureToSend = millis();
   }
 
   // TODO_CAPIRE: CAPIRE SE SERVE
@@ -565,6 +629,96 @@ void ledFeedback(byte blinkNumber, unsigned int blinkDuration, bool reverse) {
   }
 }
 
+// MEASURE
+void measureAll(unsigned long deltaT) {
+  robotMeasures.sent = false;
+  double prevDistance = robotMeasures.distanceUS;
+  
+  int pulses = opticalPulses;
+  opticalPulses = 0;
+  int directionSign;
+  double travelledRevolution;
+  double travelledDistance;
+
+  // Distance from ultrasonic
+  robotMeasures.distanceUS = measureDistance();
+
+  // Velocity from ultrasonic
+  robotMeasures.velocityUS = (robotMeasures.distanceUS - prevDistance) / (deltaT * 0.001);
+
+  // Position from optical
+  directionSign = measureDirection();
+  travelledRevolution = (pulses / (double)WHEEL_ENCODER_HOLES);
+  travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution * directionSign;
+  robotMeasures.distanceOptical = travelledDistance + prevDistance;
+
+  // Velocity from optical
+  robotMeasures.rpsOptical = travelledRevolution / (deltaT * 0.001);
+  robotMeasures.velocityOptical = travelledDistance / (deltaT * 0.001);
+
+  // Pulses per second from optical
+  robotMeasures.ppsOptical = pulses / (deltaT * 0.001) * directionSign;
+}
+
+// DISTANCE
+double measureDistance() {
+  long tripTime;
+  double distance;
+
+  digitalWrite(PIN_ULTRASONIC_TRIG, LOW);
+  delayMicroseconds(5);
+  digitalWrite(PIN_ULTRASONIC_TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(PIN_ULTRASONIC_TRIG, LOW);
+
+  tripTime = pulseIn(PIN_ULTRASONIC_ECHO, HIGH);
+  distance = 0.0343 * tripTime / 2.0;
+
+  return distance;
+}
+
+// CUSTOM DISTANCE
+void readCustomDistance(char digit) {
+  if (customDistIdx == (CUSTOM_DIST_CHAR - 1)) {
+    resetCustomDistance();
+    stateChange(&robotState, STATE_FREE);
+    // Feedback led
+    digitalWrite(LED_BUILTIN, LOW);
+  } else {
+    customDist[customDistIdx] = digit;
+    customDistIdx++;
+  }
+}
+
+bool composeNumericDistance() {
+  // No digits
+  if (customDistIdx == 0) {
+    numericCustomDist = 0;
+    return false;
+  }
+  // Create numericCustomDist
+  char buff[customDistIdx + 1];
+  for (byte i = 0; i <= customDistIdx - 1; i++) {
+    buff[i] = customDist[i];
+  }
+  buff[customDistIdx] = '\0';
+  numericCustomDist = atoi(buff);
+  resetCustomDistance();
+
+  // Check if not in [CUSTOM_DIST_MIN, CUSTOM_DIST_MAX]
+  if (numericCustomDist < CUSTOM_DIST_MIN || numericCustomDist > CUSTOM_DIST_MAX) {
+    numericCustomDist = 0;
+    return false;
+  }
+  return true;
+}
+
+void resetCustomDistance() {
+  memset(customDist, '0', sizeof(customDist));
+  customDistIdx = 0;
+}
+
+// MOVEMENT CONTROL
 void runMotors(byte direction, byte speed) {
   switch (direction) {
     case DIRECTION_STOP: {
@@ -625,93 +779,6 @@ void runMotors(byte direction, byte speed) {
   }
 }
 
-// MEASURE
-void measureAll(unsigned long deltaT) {
-  robotMeasures.sent = false;
-  double prevDistance = robotMeasures.distanceUS;
-  
-  int pulses = opticalPulses;
-  opticalPulses = 0;
-  int directionSign;
-  double travelledRevolution;
-  double travelledDistance;
-
-  // Distance from ultrasonic
-  robotMeasures.distanceUS = measureDistance();
-
-  // Velocity from ultrasonic
-  robotMeasures.velocityUS = (robotMeasures.distanceUS - prevDistance) / (deltaT * 0.001);
-
-  // Position from optical
-  directionSign = measureDirection();
-  travelledRevolution = (pulses / (double)WHEEL_ENCODER_HOLES);
-  travelledDistance = PI * (WHEEL_DIAMETER * 0.1) * travelledRevolution * directionSign;
-  robotMeasures.distanceOptical = travelledDistance + prevDistance;
-
-  // Velocity from optical
-  robotMeasures.rpsOptical = travelledRevolution / (deltaT * 0.001);
-  robotMeasures.velocityOptical = travelledDistance / (deltaT * 0.001);
-
-  // Pulses per second from optical
-  robotMeasures.ppsOptical = pulses / (deltaT * 0.001) * directionSign;
-}
-
-// DISTANCE
-double measureDistance() {
-  long tripTime;
-  double distance;
-
-  digitalWrite(PIN_ULTRASONIC_TRIG, LOW);
-  delayMicroseconds(5);
-  digitalWrite(PIN_ULTRASONIC_TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(PIN_ULTRASONIC_TRIG, LOW);
-
-  tripTime = pulseIn(PIN_ULTRASONIC_ECHO, HIGH);
-  distance = 0.0343 * tripTime / 2.0;
-
-  return distance;
-}
-
-void readCustomDistance(char digit) {
-  if (customDistIdx == (CUSTOM_DIST_CHAR - 1)) {
-    resetCustomDistance();
-    stateChange(&robotState, STATE_FREE);
-    // Feedback led
-    digitalWrite(LED_BUILTIN, LOW);
-  } else {
-    customDist[customDistIdx] = digit;
-    customDistIdx++;
-  }
-}
-
-bool composeNumericDistance() {
-  // No digits
-  if (customDistIdx == 0) {
-    numericCustomDist = 0;
-    return false;
-  }
-  // Create numericCustomDist
-  char buff[customDistIdx + 1];
-  for (byte i = 0; i <= customDistIdx - 1; i++) {
-    buff[i] = customDist[i];
-  }
-  buff[customDistIdx] = '\0';
-  numericCustomDist = atoi(buff);
-  resetCustomDistance();
-
-  // Check if not in [CUSTOM_DIST_MIN, CUSTOM_DIST_MAX]
-  if (numericCustomDist < CUSTOM_DIST_MIN || numericCustomDist > CUSTOM_DIST_MAX) {
-    numericCustomDist = 0;
-    return false;
-  }
-  return true;
-}
-
-void resetCustomDistance() {
-  memset(customDist, '0', sizeof(customDist));
-  customDistIdx = 0;
-}
 // TODO: Capire bene come sistemare per ottenere risultati migliori
 int checkDistance() {
   //DEBUG_TEMP
@@ -852,48 +919,10 @@ bool bluetoothConnection(bool waitConnection) {
   return bluetoothConnected;
 }
 
-void bluetoothSendMeasure() {
+void bluetoothSendData(bool filtering) {
   //BDT: Bluetooth Data Transmission
-  Serial.println(F("BDT 1.0 START"));
-
-  Serial.print(F("Distance_US:"));
-  Serial.println(robotMeasures.distanceUS, DECIMALS);
-
-  Serial.print(F("Distance_OPT:"));
-  Serial.println(robotMeasures.distanceOptical, DECIMALS);
-
-  Serial.print(F("Rev_per_second:"));
-  Serial.println(robotMeasures.rpsOptical, DECIMALS);
-
-  Serial.print(F("Velocity_US:"));
-  Serial.println(robotMeasures.velocityUS, DECIMALS);
-
-  Serial.print(F("Velocity_OPT:"));
-  Serial.println(robotMeasures.velocityOptical, DECIMALS);
-
-  Serial.print(F("Distance_Custom:"));
-  Serial.println(numericCustomDist);
-
-  Serial.print(F("Status:"));
-  Serial.println(robotState.current);
-
-  Serial.println(F("BDT 1.0 END"));
-
-  robotMeasures.sent = true;
-}
-
-void bluetoothSendInfo(const char* variable, int value) {
-  //BDT: Bluetooth Data Transmission
-  Serial.println(F("BDT 1.0 INFO"));
-
-  Serial.print(variable);
-  Serial.print(F(": "));
-  Serial.println(value);
-}
-
-void bluetoothSendFilterResult() {
-  //BDT: Bluetooth Data Transmission
-  Serial.println(F("BDT 1.0 ESTIMATE"));
+  if (filtering) Serial.println(F("BDT 1.0 ESTIMATE"));
+  else Serial.println(F("BDT 1.0 DATA"));
 
   Serial.print(F("Input:"));
   Serial.println(u(0), 0);
@@ -912,25 +941,66 @@ void bluetoothSendFilterResult() {
   // Velocity
   Serial.println(x_hat(1), DECIMALS);
 
-  Serial.print(F("Covariance:"));
-  // TODO: Capire se va bene così o tutta la matrice (STATE_DIM x STATE_DIM)
-  // Position_covariance
-  Serial.print(P_hat(0, 0), DECIMALS);
-  Serial.print(F(","));
-  // Velocity_covariance
-  Serial.println(P_hat(1, 1), DECIMALS);
+  if (filtering) {
+    Serial.print(F("Covariance:"));
+    // TODO: Capire se va bene così o tutta la matrice (STATE_DIM x STATE_DIM)
+    // Position_covariance
+    Serial.print(P_hat(0, 0), DECIMALS);
+    Serial.print(F(","));
+    // Velocity_covariance
+    Serial.println(P_hat(1, 1), DECIMALS);
 
-  // TODO: Capire se serve
-  /*
-  Serial.print(F("Gain:"));
-  // TODO: Capire se va bene così o tutta la matrice (STATE_DIM x MEASURE_DIM)
-  // Position_gain
-  Serial.print(W(0, 0), DECIMALS);
-  // Velocity_gain
-  Serial.println(W(1, 0), DECIMALS);
-  */
+    // TODO: Capire se serve
+    /*
+    Serial.print(F("Gain:"));
+    // TODO: Capire se va bene così o tutta la matrice (STATE_DIM x MEASURE_DIM)
+    // Position_gain
+    Serial.print(W(0, 0), DECIMALS);
+    // Velocity_gain
+    Serial.println(W(1, 0), DECIMALS);
+    */
+  }
 
-  Serial.println(F("BDT 1.0 END"));
+  Serial.print(F("Status:"));
+  Serial.println(robotState.current);
 
   robotMeasures.sent = true;
+}
+
+void bluetoothSendInfo(const char* variable, int value) {
+  //BDT: Bluetooth Data Transmission
+  Serial.println(F("BDT 1.0 INFO"));
+
+  Serial.print(variable);
+  Serial.print(F(":"));
+  Serial.println(value);
+}
+
+// FILTERING
+bool waitFilteringChoice() {
+  unsigned long previousMillisFiltering = millis();
+  bool skip = false;
+  bool filtering = false;
+
+  digitalWrite(LED_BUILTIN, HIGH);
+  while (millis() - previousMillisFiltering < BLUETOOTH_WAIT_CONNECTION) {
+    if (skip) break;
+    if (!robotState.cmd_executed) {
+      switch (robotState.command) {
+        // If OK go ahead without wait for connection
+        case IR_BUTTON_OK: {
+          skip = true;
+          break;
+        }
+        case IR_BUTTON_AST: {
+          skip = true;
+          filtering = true;
+          break;
+        }
+      }
+      stateCmdExecuted(&robotState);
+    }
+  }
+  digitalWrite(LED_BUILTIN, LOW);
+  return filtering;
 }
