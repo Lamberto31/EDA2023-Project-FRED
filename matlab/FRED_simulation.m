@@ -178,6 +178,8 @@ error = zeros(n, K);
 measurement_error = zeros(p, K);
 P1 = zeros(1, 2*K);
 P2 = zeros(1, 2*K);
+P1(1:2) = P(1,1);
+P2(1:2) = P(2,2);
 d_stop = zeros(1,K);
 d_slow = zeros(1,K);
 diff = zeros(1,K);
@@ -233,15 +235,19 @@ for k = 1:K
     error(:,k+1) = x(:,k+1)-x_hat(:,k+1);
     
     % Errore di misura
-    measurement_error(:,k+1) = z(:,k+1) - zn(:,k+1);  
+    measurement_error(:,k+1) = z(:,k+1) - zn(:,k+1);
+
+    % Indici per covarianza
+    index_pred = k*2+1;
+    index_est = index_pred + 1;
     
     % Covarianza errore stima posizione
-    P1(1+(k-1)*2) = P_pred(1,1);
-    P1(1+k*2) = P(1,1);
+    P1(index_pred) = P_pred(1,1);
+    P1(index_est) = P(1,1);
     
     % Covarianza errore stima velocità
-    P2(1+(k-1)*2) = P_pred(2,2);
-    P2(1+k*2) = P(2,2);
+    P2(index_pred) = P_pred(2,2);
+    P2(index_est) = P(2,2);
 
     % Controllo incidente e uscita
     if crash
