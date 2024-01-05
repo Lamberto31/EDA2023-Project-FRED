@@ -20,6 +20,14 @@ nearDistance = 10; %[cm]
     % 2: x reale, come si farebbe nel caso ideale.
 x_for_input = 0;
 
+% True per far attendere il robot prima di iniziare a muoversi
+waitBeforeStart = false;
+if not(waitBeforeStart)
+    wait_time = 0; %[s]
+else
+    wait_time = 0.5; %[s]
+end
+
 % Controllo valore corretto per x_for_input
 if x_for_input ~= 0 && x_for_input ~= 1 && x_for_input ~= 2
     error("Valore di x_for_input non valido");
@@ -151,7 +159,7 @@ else
     u_sign = 1;
 end
 
-u_0 = u_sign * C_fast;
+u_0 = u_sign * C_fast * 0;
 
 
 %% SIMULAZIONE (reale simulato e filtrato)
@@ -253,7 +261,7 @@ for k = 1:K
         x_check = x(:,k+1);
     end
 
-    if not(stopMode)
+    if (k+1)*T > wait_time && not(stopMode)
         % Calcolo x_stop e x_slow
         d_stop(k+1) = abs(x_check(2))*M/b;
         if not (slowMode)
@@ -382,8 +390,9 @@ ylabel('Distance [cm]');
 title('Distance tresholds');
 
 % Covarianza errore di stima posizione
+first_index = max(2*wait_time/T,1);
 figure;
-plot(P1); hold on;
+plot(P1(first_index:end)); hold on;
 xlabel(timeStepString);
 ylabel('position estimation error covariance [cm^2]');
 legend('P(1,1)')
@@ -391,7 +400,7 @@ title('Position estimation error covariance');
 
 % Covarianza errore di stima velocità
 figure;
-plot(P2); hold on;
+plot(P2(first_index:end)); hold on;
 xlabel(timeStepString);
 ylabel('velocity estimation error covariance [(cm/s)^2]');
 legend('P(2,2)')
