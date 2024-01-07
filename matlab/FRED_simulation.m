@@ -74,8 +74,8 @@ epsilon = 0.01; %[cm/s]
 % Valori massimi distanza stop e slow (solo per grafico)
 d_stop_slow = v_slow * M/b; %[cm] Distanza per fermarsi da velocità slow
 d_stop_fast = v_fast * M/b; %[cm] Distanza per fermarsi da velocità fast
-t_vm_max = M/b*log((1/epsilon)*abs(v_fast - v_slow)); %[s] Tempo per arrivare a velocità slow da fast
-d_maxSpeed_max = (v_fast - v_slow)*M/b*(exp(-(b/M)*t_vm_max)-1)+ v_slow*t_vm_max; %[cm] Distanza per arrivare a velocità slow da fast
+t_vm_max = M/b*log((1/epsilon)*abs(v_slow - v_fast)); %[s] Tempo per arrivare a velocità slow da fast
+d_maxSpeed_max = abs(v_slow - v_fast)*M/b*(exp(-(b/M)*t_vm_max)-1)+ v_slow*t_vm_max; %[cm] Distanza per arrivare a velocità slow da fast
 d_slow_max = d_maxSpeed_max + d_stop_fast; %[cm] Distanza per arrivare a velocità slow da fast e fermarsi in tempo
 
 % MATRICI
@@ -271,8 +271,13 @@ for k = 1:K
         % Calcolo x_stop e x_slow
         d_stop(k+1) = abs(x_check(2))*M/b;
         if not (slowMode)
-            t_vm = M/b*log((1/epsilon)*abs(abs(x_check(2)) - v_slow));
-            d_maxSpeed = (abs(x_check(2)) - v_slow)*M/b*(exp(-(b/M)*t_vm)-1)+ v_slow*t_vm;
+            v_diff = abs(v_slow - x_check(2));
+            if v_diff <= epsilon
+                d_maxSpeed = 0;
+            else
+                t_vm = M/b*log((1/epsilon)*abs(v_slow - abs(x_check(2))));
+                d_maxSpeed = abs(v_slow - abs(x_check(2)))*M/b*(exp(-(b/M)*t_vm)-1)+ v_slow*t_vm;
+            end
             d_slow(k+1) = d_maxSpeed + d_stop(k+1);
         end
     
