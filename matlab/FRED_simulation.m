@@ -286,7 +286,7 @@ for k = 1:K
             else
                 %t_vm = M/b*log((v_diff/epsilon));
                 %d_maxSpeed = abs(v_slow - abs(x_check(2)))*M/b*(exp(-(b/M)*t_vm)-1)+ v_slow*t_vm;
-                d_maxSpeed = M/b*(epsilon - v_diff + v_slow*(log((1/epsilon)*v_diff)));
+                d_maxSpeed = M/b*(epsilon - v_diff + v_slow*log(v_diff/epsilon));
             end
             d_slow(k+1) = d_maxSpeed + d_stop(k+1);
         end
