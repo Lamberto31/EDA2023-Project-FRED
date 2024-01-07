@@ -74,9 +74,15 @@ epsilon = 0.01; %[cm/s]
 % Valori massimi distanza stop e slow (solo per grafico)
 d_stop_slow = v_slow * M/b; %[cm] Distanza per fermarsi da velocità slow
 d_stop_fast = v_fast * M/b; %[cm] Distanza per fermarsi da velocità fast
-t_vm_max = M/b*log((1/epsilon)*abs(v_slow - v_fast)); %[s] Tempo per arrivare a velocità slow da fast
-d_maxSpeed_max = abs(v_slow - v_fast)*M/b*(exp(-(b/M)*t_vm_max)-1)+ v_slow*t_vm_max; %[cm] Distanza per arrivare a velocità slow da fast
+
+v_diff_max = v_fast - v_slow; %[cm/s] Differenza tra velocità fast e slow (massime)
+
+t_vm_max = M/b*log((1/epsilon)*v_diff_max); %[s] Tempo per arrivare a velocità slow da fast
+d_maxSpeed_max = v_diff_max*M/b*(exp(-(b/M)*t_vm_max)-1)+ v_slow*t_vm_max; %[cm] Distanza per arrivare a velocità slow da fast
 d_slow_max = d_maxSpeed_max + d_stop_fast; %[cm] Distanza per arrivare a velocità slow da fast e fermarsi in tempo
+
+d_maxSpeed_max_direct = M/b*(epsilon - v_diff_max + (v_slow*log(v_diff_max/epsilon)));
+d_slow_max_direct = d_maxSpeed_max_direct + d_stop_fast;
 
 % MATRICI
 % Passo di discretizzazione
@@ -183,6 +189,7 @@ P2(1:2) = P(2,2);
 d_stop = zeros(1,K);
 d_slow = zeros(1,K);
 diff = zeros(1,K);
+d_slow_direct = zeros(1,K);
 
 % Per controllare incidente
 crash = false;
@@ -271,14 +278,17 @@ for k = 1:K
         % Calcolo x_stop e x_slow
         d_stop(k+1) = abs(x_check(2))*M/b;
         if not (slowMode)
-            v_diff = abs(v_slow - x_check(2));
+            v_diff = abs(abs(x_check(2)) - v_slow);
             if v_diff <= epsilon
                 d_maxSpeed = 0;
+                d_maxSpeed_direct = 0;
             else
-                t_vm = M/b*log((1/epsilon)*abs(v_slow - abs(x_check(2))));
+                t_vm = M/b*log((v_diff/epsilon));
                 d_maxSpeed = abs(v_slow - abs(x_check(2)))*M/b*(exp(-(b/M)*t_vm)-1)+ v_slow*t_vm;
+                d_maxSpeed_direct = M/b*(epsilon - v_diff + v_slow*(log((1/epsilon)*v_diff)));
             end
             d_slow(k+1) = d_maxSpeed + d_stop(k+1);
+            d_slow_direct(k+1) = d_maxSpeed_direct + d_stop(k+1);
         end
     
         % Check posizione rispetto a x_slow e x_stop
@@ -395,7 +405,8 @@ plot(d_stop_slow*ones(1,k_stop));
 plot(d_slow_max*ones(1,k_stop));
 k_diff_start = max(1,k_slow-10);
 plot(k_diff_start:k_stop, diff(k_diff_start:k_stop));
-legend('d_{stop}','d_{slow}','d_{stop_{fast}}','d_{stop_{slow}}','d_{slow_{max}}','estimate - objective');
+plot(d_slow_direct(1:k_stop));
+legend('d_{stop}','d_{slow}','d_{stop_{fast}}','d_{stop_{slow}}','d_{slow_{max}}','estimate - objective','d_{slow_{direct}}');
 xlabel(timeStepString);
 ylabel('Distance [cm]');
 title('Distance tresholds');
