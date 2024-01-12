@@ -10,6 +10,11 @@ close all;
 % velocità)
 fixedPosition = false;
 
+% Indica il fattore di scala massimo da visualizzare nei grafici rispetto
+% al valore finale
+% Serve per apprezzare meglio i grafici
+scaleFactor = 10;
+
 
 %% DEFINIZIONE DATI
 % PARAMETRI
@@ -216,29 +221,37 @@ disp(W);
 timeStepString = "time step ["+ string(T) + " s]";
 
 % Guadagno posizione
+W1_graph = W1(1:K+1);
+W1_graph = W1_graph(W1_graph <= W1_graph(end)*scaleFactor);
 figure;
-plot(W1(1:K+1)); hold on;
+plot(W1_graph); hold on;
 xlabel(timeStepString);
 ylabel('W(1,1)');
 title('Position Gain');
 
 % Guadagno velocità
+W2_graph = W2(1:K+1);
+W2_graph = W2_graph(W2_graph <= W2_graph(end)*scaleFactor);
 figure;
-plot(W2(1:K+1)); hold on;
+plot(W2_graph); hold on;
 xlabel(timeStepString);
 ylabel('W(2,2)');
 title('Velocity Gain');
 
 % Covarianza errore di stima posizione
+P1_graph = P1(1:index_est);
+P1_graph = P1_graph(P1_graph <= P1_graph(end)*scaleFactor);
 figure;
-plot(P1(1:index_est)); hold on;
+plot(P1_graph); hold on;
 xlabel(timeStepString);
 ylabel('P(1,1) [cm^2]');
 title('Position estimation error covariance');
 
 % Covarianza errore di stima velocità
+P2_graph = P2(1:index_est);
+P2_graph = P2_graph(P2_graph <= P2_graph(end)*scaleFactor);
 figure;
-plot(P2(1:index_est)); hold on;
+plot(P2_graph); hold on;
 xlabel(timeStepString);
 ylabel('P(2,2) [(cm/s)^2]');
 title('Velocity estimation error covariance');
