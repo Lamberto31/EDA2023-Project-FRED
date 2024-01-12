@@ -88,17 +88,25 @@ Q = diag([ sigma_qp^2 sigma_qv^2]);
 R = diag([ sigma_p^2 sigma_v^2]);
 
 
-%% OSSERVABILITA'
+%% OSSERVABILITA' e CONTROLLABILITA'
 % Rango della matrice di osservabilità
-r = rank(obsv(F,H));
+r_obsv = rank(obsv(F,H));
+% Rango della matrice di controllabilità
+r_ctrb = rank(ctrb(F,G));
 
 % Il sistema è osservabile?
-if r == n
+if r_obsv == n
     disp("Sistema osservabile")
 else
     disp("Sistema non osservabile")
 end
 
+% Il sistema è controllabile?
+if r_ctrb == n
+    disp("Sistema controllabile")
+else
+    disp("Sistema non controllabile")
+end
 
 %% INIZIALIZZAZIONE MODELLO
 % Covarianza stima iniziale
