@@ -106,6 +106,8 @@ P = P0;
 sec = 10;
 K = round(sec/T);
 % Pre-allocazioni varie (performance)
+W1 = zeros(1,K);
+W2 = zeros(1,K);
 P1 = zeros(1, 2*K);
 P2 = zeros(1, 2*K);
 P1(1:2) = P(1,1);
@@ -132,6 +134,11 @@ for k = 1:K
     
     % Varianza innovazione
     S = H * P_pred * H' + R;
+
+    % SALVATAGGI PER GRAFICI
+    % Guadagno
+    W1(k+1) = W(1,1);
+    W2(k+1) = W(2,2);
 
     % Indici per covarianza
     index_pred = k*2+1;
@@ -202,9 +209,26 @@ disp("Covarianza predizione finale:");
 disp(P_pred);
 disp("Covarianza stima finale:");
 disp(P);
+disp("Guadagno finale:");
+disp(W);
 
 %% GRAFICI
 timeStepString = "time step ["+ string(T) + " s]";
+
+% Guadagno posizione
+figure;
+plot(W1(1:K+1)); hold on;
+xlabel(timeStepString);
+ylabel('W(1,1)');
+title('Position Gain');
+
+% Guadagno velocità
+figure;
+plot(W2(1:K+1)); hold on;
+xlabel(timeStepString);
+ylabel('W(2,2)');
+title('Velocity Gain');
+
 % Covarianza errore di stima posizione
 figure;
 plot(P1(1:index_est)); hold on;
