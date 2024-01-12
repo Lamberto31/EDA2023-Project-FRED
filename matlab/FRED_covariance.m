@@ -15,6 +15,14 @@ fixedPosition = false;
 % Serve per apprezzare meglio i grafici
 scaleFactor = 10;
 
+% Valori di incertezza
+% Processo
+sigma_qp = 0.03;
+sigma_qv = 0.01;
+% Misura
+sigma_p = 0.3; %[cm]
+sigma_v = 0.1; %[pulse/round]
+
 
 %% DEFINIZIONE DATI
 % PARAMETRI
@@ -75,13 +83,8 @@ p = size(H,1);
 
 % INCERTEZZA
 % Processo
-sigma_qp = 0.03;
-% sigma_qp = 0;
-sigma_qv = 0.01;
 Q = diag([ sigma_qp^2 sigma_qv^2]);
 % Misura
-sigma_p = 0.3; %[cm]
-sigma_v = 0.1; %[pulse/round]
 R = diag([ sigma_p^2 sigma_v^2]);
 
 
