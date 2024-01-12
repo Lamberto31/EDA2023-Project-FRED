@@ -98,7 +98,8 @@ sigma_0 = [66 v_max/100]; %[cm cm/s]
 P0 = diag(sigma_0.^2);
 P = P0;
 
-
+% Controllo se simmetrica e semidefinita positiva
+[P0_symm, P0_semidefpos] = checkCovariance(P);
 
 %% SIMULAZIONE (reale simulato e filtrato)
 % Secondi da considerare
@@ -109,10 +110,17 @@ P1 = zeros(1, 2*K);
 P2 = zeros(1, 2*K);
 P1(1:2) = P(1,1);
 P2(1:2) = P(2,2);
+P_symm = zeros(1, 2*K);
+P_semdefpos = zeros(1, 2*K);
+P_symm(1:2) = P0_symm;
+P_semdefpos(1:2) = P0_semidefpos;
+% Variabile per capire se finito prima
+interrupted = false;
 
 f = waitbar(0, "Inizio simulazione");
 % Loop principale
 for k = 1:K
+    % CALCOLI
     % Covarianza predizione: P(k+1|k)
     P_pred = F * P * F' + Q; % P[k+1|k]
     
@@ -137,6 +145,45 @@ for k = 1:K
     P2(index_pred) = P_pred(2,2);
     P2(index_est) = P(2,2);
 
+    % Check covarianza
+    [P_symm(index_pred), P_semdefpos(index_pred)] = checkCovariance(P_pred);
+    [P_symm(index_est), P_semdefpos(index_est)] = checkCovariance(P);
+    
+    % Interruzione simulazione se covarianza errata
+    P_pred_condition = [P_symm(index_pred), P_semdefpos(index_pred)];
+    P_est_condition = [P_symm(index_est), P_semdefpos(index_est)];
+    if any(~P_pred_condition)
+        interrupted = true;
+        P_wrong = "pred";
+        P_condition = P_pred_condition;
+    elseif any(~P_est_condition)
+        interrupted = true;
+        P_wrong = "est";
+        P_condition = P_est_condition;
+    end
+
+    if interrupted
+        % Indicazione matrice errata
+        if P_wrong == "pred"
+            disp("Covarianza predizione (P_pred) errata!")
+            disp(P_pred)
+        elseif P_wrong == "est"
+            disp("Covarianza stima (P_est) errata!")
+            disp(P)
+        end
+        % Indicazione motivo
+        if all(~P_condition)
+            disp("Problema per entrambe le condizioni")
+        elseif ~P_condition(1)
+            disp("Matrice non simmetrica")
+        elseif ~P_condition(2)
+            disp("Matrice non semidefinita positiva")
+        end
+        waitbar(1, f, "Terminato prima per matrice di covarianza errata!")
+        K = k;
+        break;
+    end
+
 
     
     % Aggiornamento waitbar
@@ -147,7 +194,27 @@ close(f)
 
 
 %% RISULTATI
-
+disp(" ");
+if interrupted
+    disp("Ultimo passo: " + string(K));
+end
+disp("Covarianza predizione finale:");
+disp(P_pred);
+disp("Covarianza stima finale:");
+disp(P);
 
 %% GRAFICI
 timeStepString = "time step ["+ string(T) + " s]";
+% Covarianza errore di stima posizione
+figure;
+plot(P1(1:index_est)); hold on;
+xlabel(timeStepString);
+ylabel('P(1,1) [cm^2]');
+title('Position estimation error covariance');
+
+% Covarianza errore di stima velocità
+figure;
+plot(P2(1:index_est)); hold on;
+xlabel(timeStepString);
+ylabel('P(2,2) [(cm/s)^2]');
+title('Velocity estimation error covariance');
