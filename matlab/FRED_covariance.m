@@ -124,6 +124,7 @@ P_symm = zeros(1, 2*K);
 P_semdefpos = zeros(1, 2*K);
 P_symm(1:2) = P0_symm;
 P_semdefpos(1:2) = P0_semidefpos;
+
 % Variabile per capire se finito prima
 interrupted = false;
 
@@ -198,8 +199,6 @@ for k = 1:K
         K = k;
         break;
     end
-
-
     
     % Aggiornamento waitbar
     waitbar(k/K, f, "Simulazione in corso");
