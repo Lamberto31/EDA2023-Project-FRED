@@ -3,7 +3,7 @@
 logsPath = '../raspberry/logs/';
 
 % Name of csv file with extension
-csvName = 'FRED_params_2023-12-10T12_57_54_bulk_fixed_wood_attempts_10.csv';
+csvName = 'FRED_params_2024-01-16T20_04_27_bulk_fixed_wood_attempts_10.csv';
 
 % Number of attempts to consider (if you want to use all use intmax)
 numAttempts = 10;
