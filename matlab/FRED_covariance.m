@@ -30,12 +30,12 @@ sigma_v = 0.1; %[pulse/round]
 % Massa robot (sperimentale)
 M = 0.731; %[kg]
 % Tensione di alimentazione (picco) (sperimentale)
-Vp = 6; %[V]
+Vp = 5.85; %[V]
 % Velocità di regime (ingresso costante massimo) (sperimentale)
-v_max = 70; %[cm/s]
+v_max = 71.3456; %[cm/s]
 % Tempo di arresto da velocità massima (ingresso costante nullo)
 % (sperimentale)
-t_0 = 0.362; %[s]
+t_0 = 0.3924; %[s]
 % Diametro ruota (datasheet)
 D = 6.5; %[cm]
 % Impulsi per giro (buchi encoder) (visibile)
