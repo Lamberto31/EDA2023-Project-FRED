@@ -943,22 +943,11 @@ void bluetoothSendData(bool filtering) {
 
   if (filtering) {
     Serial.print(F("Covariance:"));
-    // TODO: Capire se va bene così o tutta la matrice (STATE_DIM x STATE_DIM)
     // Position_covariance
     Serial.print(P_hat(0, 0), DECIMALS);
     Serial.print(F(","));
     // Velocity_covariance
     Serial.println(P_hat(1, 1), DECIMALS);
-
-    // TODO: Capire se serve
-    /*
-    Serial.print(F("Gain:"));
-    // TODO: Capire se va bene così o tutta la matrice (STATE_DIM x MEASURE_DIM)
-    // Position_gain
-    Serial.print(W(0, 0), DECIMALS);
-    // Velocity_gain
-    Serial.println(W(1, 0), DECIMALS);
-    */
   }
 
   Serial.print(F("Status:"));
