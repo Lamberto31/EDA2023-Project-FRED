@@ -248,20 +248,20 @@ xlabel(timeStepString);
 ylabel('W(2,2)');
 title('Velocity Gain');
 
-% Covarianza errore di stima posizione
+% Covarianza stima posizione
 lastIndex = index_est;
 firstIndex = find(P1(1:lastIndex) <= P1(lastIndex)*scaleFactor);
 figure;
 plot(firstIndex:lastIndex, P1(firstIndex:lastIndex)); hold on;
 xlabel(timeStepString);
 ylabel('P(1,1) [cm^2]');
-title('Position estimation error covariance');
+title('Position estimation covariance');
 
-% Covarianza errore di stima velocità
+% Covarianza stima velocità
 lastIndex = index_est;
 firstIndex = find(P2(1:lastIndex) <= P2(lastIndex)*scaleFactor);
 figure;
 plot(firstIndex:lastIndex, P2(firstIndex:lastIndex)); hold on;
 xlabel(timeStepString);
 ylabel('P(2,2) [(cm/s)^2]');
-title('Velocity estimation error covariance');
+title('Velocity estimation covariance');

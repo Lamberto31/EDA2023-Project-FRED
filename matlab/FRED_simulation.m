@@ -408,24 +408,24 @@ plot(k_diff_start:k_stop, diff(k_diff_start:k_stop));
 legend('d_{stop}','d_{slow}','d_{stop_{fast}}','d_{stop_{slow}}','d_{slow_{max}}','estimate - objective');
 xlabel(timeStepString);
 ylabel('Distance [cm]');
-title('Distance tresholds');
+title('Distance thresholds');
 
-% Covarianza errore di stima posizione
+% Covarianza stima posizione
 first_index = max(2*wait_time/T,1);
 figure;
 plot(P1(first_index:end)); hold on;
 xlabel(timeStepString);
-ylabel('position estimation error covariance [cm^2]');
+ylabel('position estimation covariance [cm^2]');
 legend('P(1,1)')
-title('Position estimation error covariance');
+title('Position estimation covariance');
 
-% Covarianza errore di stima velocità
+% Covarianza stima velocità
 figure;
 plot(P2(first_index:end)); hold on;
 xlabel(timeStepString);
-ylabel('velocity estimation error covariance [(cm/s)^2]');
+ylabel('velocity estimation covariance [(cm/s)^2]');
 legend('P(2,2)')
-title('Velocity estimation error covariance');
+title('Velocity estimation covariance');
 
 % Errore stima posizione
 figure;
