@@ -435,3 +435,12 @@ legend('estimation error','measurement error');
 xlabel(timeStepString);
 ylabel('position [cm]');
 title('Position error');
+
+% Errore stima velocità
+figure;
+plot(error(2,:)); hold on;
+plot(measurement_error(2,:),'--');
+legend('estimation error','measurement error');
+xlabel(timeStepString);
+ylabel('velocity [cm/s]');
+title('Velocity error');
