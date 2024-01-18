@@ -99,7 +99,8 @@ void computeVectorZ(double d0, double pulses, BLA::Matrix<MEASURE_DIM> *Z) {
 
 // KALMAN FILTER
 // Predictor
-void KalmanPredictor(BLA::Matrix<STATE_DIM, STATE_DIM> F, BLA::Matrix<STATE_DIM> x_hat, BLA::Matrix<STATE_DIM, INPUT_DIM> G, BLA::Matrix<INPUT_DIM> U, BLA::Matrix<STATE_DIM, STATE_DIM> P_hat, BLA::Matrix<STATE_DIM, STATE_DIM> Q, BLA::Matrix<STATE_DIM> *x_pred, BLA::Matrix<STATE_DIM, STATE_DIM> *P_pred) {
+void KalmanPredictor(BLA::Matrix<STATE_DIM, STATE_DIM> F, BLA::Matrix<STATE_DIM> x_hat, BLA::Matrix<STATE_DIM, INPUT_DIM> G, BLA::Matrix<INPUT_DIM> U, BLA::Matrix<STATE_DIM, STATE_DIM> P_hat, BLA::Matrix<STATE_DIM, STATE_DIM> Q,\
+                    BLA::Matrix<STATE_DIM> *x_pred, BLA::Matrix<STATE_DIM, STATE_DIM> *P_pred) {
     *x_pred = F * x_hat + G * U;
     *P_pred = F*P_hat*~F + Q;
 }

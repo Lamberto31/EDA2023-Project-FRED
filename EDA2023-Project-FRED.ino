@@ -44,7 +44,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 #define FIXED_POSITION 1
 
 // PARAMETERS
-// Physical TODO: misurare bene e inserire qui
+// Physical
 #define MASS 0.731  // [kg] Mass of robot
 #define VOLTAGE_PEAK 5.85 // [V] Power supply voltage (Peak)
 #define SPEED_MAX 71.3456  // [cm/s] Max speed of robot (measured)

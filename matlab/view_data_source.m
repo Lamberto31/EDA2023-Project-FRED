@@ -3,7 +3,7 @@
     % Constants.SOURCE_LOCAL: get data from local csv
     % Constants.SOURCE_EXPORTED: get data from csv exported from ThingSpeak
     % Constants.SOURCE_REMOTE: get data from ThingSpeak
-source = Constants.SOURCE_REMOTE;
+source = Constants.SOURCE_LOCAL;
 
 % Number of values to show (from the end)
 % If more than available it will show all the available values

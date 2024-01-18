@@ -203,13 +203,13 @@ stopMode = false;
 f = waitbar(0, "Inizio simulazione");
 % Loop principale
 for k = 1:K
-    % MODELLO REALE
-    % Evoluzione
-    % Stato reale
+    % REAL MODEL
+    % Evolution
+    % Real state
     x(:,k+1) = F * x(:,k) + G * u(:,k) + L * sqrt(Q) * randn(n,1);
-    % Output reale
+    % Real output
     z(:,k+1) = H * x(:,k+1);
-    % Output misurato (rumoroso)
+    % Measured output (noisy)
     zn(:,k+1) = H * x(:,k+1) + sqrt(R) * randn(p,1);
 
     % Controllo scontro con ostacolo
@@ -219,19 +219,19 @@ for k = 1:K
     end
     
     
-    % STIMA CON FILTRO DI KALMAN
+    % KALMAN FILTER ESTIMATION
     % Predictor
-    % Predizione: x(k+1|k)
+    % Prediction: x(k+1|k)
     x_pred(:,k+1) = F * x_hat(:,k) + G * u(:, k);
-    % Covarianza predizione: P(k+1|k)
+    % Prediction covariance: P(k+1|k)
     P_pred = F * P * F' + Q; % P[k+1|k]
     
     % Corrector
-    % Guadagno
+    % Gain
     W = P_pred*H'/(H*P_pred*H'+R);
-    % Correzione: x(k+1|k+1)
+    % Correction: x(k+1|k+1)
     x_hat(:,k+1) = x_pred(:,k+1) + W*(zn(:,k+1)-H*x_pred(:,k+1));
-    % Covarianza correzione: P(k+1|k+1) (formulazione 2)
+    % Correction covariance: P(k+1|k+1) (formulation 2)
     P = (eye(n)-W*H)*P_pred;
     
     % Innovazione
