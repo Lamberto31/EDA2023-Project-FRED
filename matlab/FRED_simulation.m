@@ -88,7 +88,7 @@ d_slow_max = d_maxSpeed_max + d_stop_fast;
 
 % MATRICI
 % Passo di discretizzazione
-T= 0.01; %[s]
+T= 0.1; %[s]
 % Termini che appaiono spesso (per comodità)
 bmT = T*(1 - ((b/M) * (T/2)));
 % F
@@ -340,6 +340,8 @@ close(f)
 %% RISULTATI
 disp(" ");
 disp("Distanza obiettivo: " + string(obj));
+disp("Posizione di partenza reale: " + string(x(1,1)));
+disp("Velocità di partenza reale: " + string(x(2,1)));
 disp("Posizione finale reale: " + string(x(1,end)));
 disp("Posizione finale stimata: " + string(x_hat(1,end)));
 disp("Errore posizione reale: " + string(abs(obj - x(1,end))));
