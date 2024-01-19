@@ -440,14 +440,14 @@ void loop() {
       // Estimate
       // Do only if new measure is available
       if (!robotMeasures.sent) {
-        // Update input
-        checkDistance();
         // Fill input and measures vectors
         computeVectorU(robotState.input, &u);
         computeVectorZ(robotMeasures.distanceUS, robotMeasures.ppsOptical, &z);
         // Predictor and corrector
         KalmanPredictor(FF, x_hat, G, u, P_hat, Q, &x_pred, &P_pred);
         KalmanCorrector(P_pred, H, R, z, x_pred, &W, &x_hat, &P_hat, &innovation, &S);
+        // Update input
+        checkDistance();
         // Send results
         if (SEND_FILTER_RESULT_ACTIVE) {
           bluetoothConnection(false);
