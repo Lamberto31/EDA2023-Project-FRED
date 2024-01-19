@@ -8,12 +8,6 @@ using namespace BLA;
 // Custom library for states handling
 #include "src/States/States.h"
 
-// Custom library for EEPROM memory handling
-#include "src/EepromUtils/EepromUtils.h"
-
-// Custom library for build data to send to remote server
-#include "src/DataHelper/DataHelper.h"
-
 // Custom library for estimation and filtering
 #include "src/Estimation/Estimation.h"
 
@@ -88,10 +82,6 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 // Bluetooth
 #define BLUETOOTH_WAIT_CONNECTION 10000  // [ms] Wait time to receive Bluetooth connection
 #define PERIOD_BLUETOOTH 500  // [ms] between each message to Bluetooth. Min value 1000, may cause error response if lower
-// TODO_CAPIRE: SERVE O COME MODIFICARE (in particolare il SEND_BUFFER_SIZE che potrebbe diventare PERIOD_BLUETOOTH / PERIOD_MEASURE )
-#define PERIOD_SERVER 15000  // [ms] between each message to server. Min value 15000, may cause error response if lower (server allow one message each 15s)
-#define PERIOD_MEASURETOSEND 3000  // [ms] between each insertion of data into the structure. Suggested value 3000, it's ok if greater but a lower value may cause high memory consumption
-#define SEND_BUFFER_SIZE PERIOD_SERVER / PERIOD_MEASURETOSEND  // [byte] Can be changed to arbitrary value, it's better to don't go over 5 (tested and working) due to memory consumption (see where it's used)
 // Servo
 #define SERVO_HORIZ_CENTER 100 // [angle] [0-180] Angle considered as center for servo, it depends on the construction
 // Feedback Led
@@ -158,10 +148,6 @@ byte speedSlowFactor = 0;
 bool bluetoothConnected = false;
 unsigned long previousMillisMeasureToSend;
 unsigned long currentMillisMeasureToSend;
-// TODO_CAPIRE: USARE PER MANDARE PIU' MISURE VIA BLUETOOTH?
-// DataToSend sendBuffer[5];
-DataToSend sendBuffer[SEND_BUFFER_SIZE];
-unsigned int sendBufferIndex = 0;
 
 // Servomotor
 Servo servoH;
@@ -500,8 +486,6 @@ void loop() {
         }
         robotState.just_changed = false;
       }
-      sendBufferIndex = 0;
-      memset(sendBuffer, 0, sizeof(sendBuffer));
       if (robotState.direction == DIRECTION_FORWARD) {
         preventDamage(CUSTOM_DIST_MIN);
       }
@@ -591,21 +575,6 @@ void loop() {
     measureAll(currentMillisMeasure - previousMillisMeasure);
     previousMillisMeasure = millis();
   }
-
-  // TODO_CAPIRE: CAPIRE SE SERVE
-  // Insert new data in sendBuffer
-  /*
-  currentMillisMeasureToSend = millis();
-  if (currentMillisMeasureToSend - previousMillisMeasureToSend >= PERIOD_MEASURETOSEND) {
-    // insertNewData(&sendBuffer[sendBufferIndex], (PERIOD_MEASURETOSEND/1000)*sendBufferIndex, robotMeasures.distanceUS, robotMeasures.distanceUSFiltered);
-    insertNewCircularData(&sendBuffer[min(sendBufferIndex, SEND_BUFFER_SIZE - 1)], (PERIOD_MEASURETOSEND / 1000) * sendBufferIndex, robotMeasures, sendBufferIndex, SEND_BUFFER_SIZE);
-    sendBufferIndex++;
-
-    if (DEBUG_ACTIVE) readAndPrintData(&sendBuffer[0], SEND_BUFFER_SIZE);
-
-    previousMillisMeasureToSend = millis();
-  }
-  */
 }
 
 // This is the function, which is called if a complete ir command was received
