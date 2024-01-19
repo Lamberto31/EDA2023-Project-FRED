@@ -76,8 +76,8 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 #define SLOW_FACTOR_STEP 5  // [adim] Step for slowFactor
 #define SLOW_FACTOR_MAX 10  // [adim] Max value for slowFactor to prevent too slow speed, must be greater than (CHECK_SPEED_MAX / SLOW_FACTOR_STEP) or it will cause error due to negative speed
 #define SLOW_FACTOR_STOP 7  // [adim] Min value for slowFactor to allow stop from checkDistance, must be lower than SLOW_FACTOR_MAX or checkDistance will never exit from STATE_SEARCH
-#define HIGH_INPUT 255 // [analog] [0-255] Value for high input
-#define LOW_INPUT 100 // [analog] [0-255] Value for low input
+#define HIGH_INPUT 150 // [analog] [0-255] Value for high input
+#define LOW_INPUT 75 // [analog] [0-255] Value for low input
 #define SPEED_EPSILON 0.01 // [cm/s] Epsilon used to consider speed as zero
 #define PERIOD_WAIT_CHECK 1000  // [ms] Wait time to check distance
 #define SPEED_SLOW_MAX KAPPA * LOW_INPUT / FRICTION_COEFFICIENT // [cm/s] Max speed for slow speed
