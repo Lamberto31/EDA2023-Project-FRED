@@ -52,7 +52,7 @@ kappa = eta_V*Vp/255; %[N *10^-2] (perchè cm invece di metri)
 
 % MATRICI
 % Passo di discretizzazione
-T= 0.01; %[s]
+T= 0.1; %[s]
 % Termini che appaiono spesso (per comodità)
 bmT = T*(1 - ((b/M) * (T/2)));
 % F
@@ -126,6 +126,8 @@ W1 = zeros(1,K);
 W2 = zeros(1,K);
 P1 = zeros(1, 2*K);
 P2 = zeros(1, 2*K);
+%P1 = zeros(1,K);
+%P2 = zeros(1,K);
 P1(1:2) = P(1,1);
 P2(1:2) = P(2,2);
 P_symm = zeros(1, 2*K);
@@ -164,10 +166,12 @@ for k = 1:K
     % Covarianza errore stima posizione
     P1(index_pred) = P_pred(1,1);
     P1(index_est) = P(1,1);
+    %P1(k+1) = P(1,1);
     
     % Covarianza errore stima velocità
     P2(index_pred) = P_pred(2,2);
     P2(index_est) = P(2,2);
+    %P2(k+1) = P(1,1);
 
     % Check covarianza
     [P_symm(index_pred), P_semdefpos(index_pred)] = checkCovariance(P_pred);
@@ -250,6 +254,7 @@ title('Velocity Gain');
 
 % Covarianza stima posizione
 lastIndex = index_est;
+%lastIndex = K+1;
 firstIndex = find(P1(1:lastIndex) <= P1(lastIndex)*scaleFactor);
 figure;
 plot(firstIndex:lastIndex, P1(firstIndex:lastIndex)); hold on;
@@ -259,6 +264,7 @@ title('Position estimation covariance');
 
 % Covarianza stima velocità
 lastIndex = index_est;
+%lastIndex = K+1;
 firstIndex = find(P2(1:lastIndex) <= P2(lastIndex)*scaleFactor);
 figure;
 plot(firstIndex:lastIndex, P2(firstIndex:lastIndex)); hold on;
