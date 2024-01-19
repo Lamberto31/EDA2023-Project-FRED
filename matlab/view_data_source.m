@@ -1,3 +1,10 @@
+% View data FRED
+
+%% RESET INIZIALE
+clear;
+close all;
+
+
 %% PARAMS %%
 % Source (Use Constants to assign value)
     % Constants.SOURCE_LOCAL: get data from local csv
@@ -156,6 +163,19 @@ disp("Time difference between first and last timestamp: " + seconds(T.created_at
 disp("First timestamp: " + string(T.created_at(1)));
 disp("Last timestamp: " + string(T.created_at(end)));
 
+% Print results
+disp(" ");
+% TODO: take objective position from field8
+% Nel farlo considera che ci possono essere risultati di più
+% sperimentazioni
+obj = 25;
+disp("Objective position: " + string(obj));
+disp("Estimated starting position: " + string(T.field4(1)));
+disp("Estimated starting velocity: " + string(T.field5(1)));
+disp("Estimated final position: " + string(T.field4(end)));
+disp("Estimated position error (wrt obj): " + string(abs(obj - T.field4(end))));
+disp("Estimated final velocity: " + string(T.field5(end)));
+
 % Input
 figure();
 hold on;
@@ -189,6 +209,19 @@ title('Velocity');
 legend([hplot3, hplot4]);
 grid(ax2,'on')
 hold off
+
+% Trajectory
+figure();
+plot(0, 0, 'o'); hold on;
+plot(T.field4(1), 0, '+');
+plot(T.field4(1:end), zeros(dataLength,1), 'g');
+plot(T.field4(end), 0, 'x');
+plot(obj, 0, '*');
+axis equal;
+grid on;
+legend('Obstacle', 'Start poisition', 'Trajectory', 'Final position', 'Objective');
+xlabel('Position (cm)')
+title('Trajectory');
 
 % State Covariance
 figure();
