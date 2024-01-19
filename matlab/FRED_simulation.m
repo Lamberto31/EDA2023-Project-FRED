@@ -392,7 +392,7 @@ axis equal;
 grid on;
 legend('Obstacle', 'Start poisition', 'Trajectory', 'Final position', 'Objective');
 xlabel('Position (cm)')
-title('Tracjectory');
+title('Trajectory');
 
 % Distanze per rallentare/fermarsi
 figure;
