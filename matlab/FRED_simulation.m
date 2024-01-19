@@ -339,15 +339,15 @@ close(f)
 
 %% RISULTATI
 disp(" ");
-disp("Distanza obiettivo: " + string(obj));
-disp("Posizione di partenza reale: " + string(x(1,1)));
-disp("Velocità di partenza reale: " + string(x(2,1)));
-disp("Posizione finale reale: " + string(x(1,end)));
-disp("Posizione finale stimata: " + string(x_hat(1,end)));
-disp("Errore posizione reale: " + string(abs(obj - x(1,end))));
-disp("Errore posizione stimato: " + string(abs(obj - x_hat(1,end))));
-disp("Velocità finale reale: " + string(x(2,end)));
-disp("Velocità finale stimata: " + string(x_hat(2,end)));
+disp("Objective position: " + string(obj));
+disp("Real starting position: " + string(x(1,1)));
+disp("Real starting velocity: " + string(x(2,1)));
+disp("Real final position: " + string(x(1,end)));
+disp("Estimated final position: " + string(x_hat(1,end)));
+disp("Real position error (wrt obj): " + string(abs(obj - x(1,end))));
+disp("Estimated position error (wrt obj): " + string(abs(obj - x_hat(1,end))));
+disp("Real final velocity: " + string(x(2,end)));
+disp("Estimated final velocity: " + string(x_hat(2,end)));
 
 
 %% GRAFICI
