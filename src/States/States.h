@@ -16,29 +16,38 @@
 #define DIRECTION_LEFT 4
 
 struct State {
+  // State
   byte current;
+  bool just_changed;
+  // Command
   byte command;
   bool cmd_executed;
+  // Input
   byte direction;
+  int input;
 };
 
 struct Measures {
+  // Ultrasonic sensor
   double distanceUS;
-  double distanceUSFiltered;
   double velocityUS;
 
+  // Optical sensor
   double distanceOptical;
   double rpsOptical;
   double velocityOptical;
-  double velocityOpticalFiltered;
+  double ppsOptical;
 
+  // Used to know if already used
   bool sent;
 };
 
 void stateChange(State *st, byte dest);
+
 void stateNewCmd(State *st, byte command);
 void stateCmdExecuted(State *st);
-void stateNewDirection(State *st, byte direction);
+
+void stateNewInput(State *st, byte direction, int input);
 
 void printMeasures(Measures *ms);
 

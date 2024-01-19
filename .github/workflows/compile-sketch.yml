@@ -37,6 +37,7 @@ jobs:
             - name: IRremote
             - name: WiFiEsp
             - name: Servo
+            - name: BasicLinearAlgebra
           enable-deltas-report: true
           sketches-report-path: ${{ env.SKETCHES_REPORTS_PATH }}
 
