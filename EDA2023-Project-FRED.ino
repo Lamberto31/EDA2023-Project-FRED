@@ -819,14 +819,14 @@ int checkDistance() {
     }
     else if (!stopMode && deltaDistance > stopDistance) {
       if (!slowMode) {
-        // TODO: Send info?
+        bluetoothSendInfo("Slow Position", x_position);
         slowMode = true;
       }
       runMotors(inputSign, LOW_INPUT);
     }
     else {
       if (!stopMode) {
-        // TODO: Send info?
+        bluetoothSendInfo("Stop Position", x_position);
         stopMode = true;
     }
     runMotors(DIRECTION_STOP, 0);
