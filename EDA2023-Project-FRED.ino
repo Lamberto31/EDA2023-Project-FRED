@@ -809,7 +809,7 @@ int checkDistance() {
       else {
         deltaMaxSpeed = MASS/FRICTION_COEFFICIENT * (SPEED_EPSILON - deltaSpeed + (SPEED_SLOW_MAX * log(SPEED_SLOW_MAX/SPEED_EPSILON)));
       }
-      slowDistance = deltaMaxSpeed + stopDistance;
+      slowDistance = 5*deltaMaxSpeed + stopDistance;
     }
     // Then check if stop or slow
     deltaDistance = abs(x_position - numericCustomDist);
