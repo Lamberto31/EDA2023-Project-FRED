@@ -15,14 +15,6 @@ fixedPosition = false;
 % Serve per apprezzare meglio i grafici
 scaleFactor = 10;
 
-% Valori di incertezza
-% Processo
-sigma_qp = 0.03;
-sigma_qv = 0.01;
-% Misura
-sigma_p = 0.3; %[cm]
-sigma_v = 0.1; %[pulse/round]
-
 
 %% DEFINIZIONE DATI
 % PARAMETRI
@@ -41,6 +33,17 @@ D = 6.5; %[cm]
 % Impulsi per giro (buchi encoder) (visibile)
 IPR = 20; %[pulse/round] %IPR = pi*D;
 
+% Passo di discretizzazione
+T= 0.1; %[s]
+
+% Deviazioni standard
+% Processo
+sigma_qp = 0.03;
+sigma_qv = 0.01;
+% Misura
+sigma_p = 0.3; %[cm]
+sigma_v = 0.1; %[pulse/round]
+
 % Parametri derivati
 % Coefficiente attrito motore
 b = 5*(M/t_0); %[kg/s]
@@ -51,8 +54,6 @@ kappa = eta_V*Vp/255; %[N *10^-2] (perchè cm invece di metri)
 
 
 % MATRICI
-% Passo di discretizzazione
-T= 0.1; %[s]
 % Termini che appaiono spesso (per comodità)
 bmT = T*(1 - ((b/M) * (T/2)));
 % F

@@ -51,6 +51,28 @@ D = 6.5; %[cm]
 % Impulsi per giro (buchi encoder) (visibile)
 IPR = 20; %[pulse/round] %IPR = pi*D;
 
+% Passo di discretizzazione
+T= 0.1; %[s]
+
+% Deviazioni standard
+% Processo
+sigma_qp = 0.03;
+sigma_qv = 0.01;
+% Misura
+sigma_p = 0.3; %[cm]
+sigma_v = 0.1; %[pulse/round]
+
+% INPUT
+% Distanza desiderata
+obj = 10; %[cm]
+% Input veloce
+C_fast = 255; 
+% Input lento
+C_slow = 100;
+% Tolleranza velocità
+epsilon = 0.01; %[cm/s]
+
+%% CALCOLI PRELIMINARI
 % Parametri derivati
 % Coefficiente attrito motore
 b = 5*(M/t_0); %[kg/s]
@@ -59,18 +81,10 @@ eta_V = v_max*(b/Vp); %[N/V *10^-2] (perchè cm invece di metri)
 % Costante comoda per calcoli
 kappa = eta_V*Vp/255; %[N *10^-2] (perchè cm invece di metri)
 
-
-% INPUT
-% Distanza desiderata
-obj = 10; %[cm]
 % Input veloce
-C_fast = 255; 
 v_fast = kappa*C_fast/b; %[cm/s]
 % Input lento
-C_slow = 100;
 v_slow = kappa*C_slow/b; %[cm/s]
-% Tolleranza velocità
-epsilon = 0.01; %[cm/s]
 
 % Valori massimi distanza stop e slow (solo per grafico)
 d_stop_slow = v_slow * M/b; %[cm] Distanza per fermarsi da velocità slow
@@ -87,8 +101,6 @@ d_maxSpeed_max = M/b*(epsilon - v_diff_max + (v_slow*log(v_diff_max/epsilon)));
 d_slow_max = d_maxSpeed_max + d_stop_fast;
 
 % MATRICI
-% Passo di discretizzazione
-T= 0.1; %[s]
 % Termini che appaiono spesso (per comodità)
 bmT = T*(1 - ((b/M) * (T/2)));
 % F
@@ -121,13 +133,8 @@ p = size(H,1);
 
 % INCERTEZZA
 % Processo
-sigma_qp = 0.03;
-% sigma_qp = 0;
-sigma_qv = 0.01;
 Q = diag([ sigma_qp^2 sigma_qv^2]);
 % Misura
-sigma_p = 0.3; %[cm]
-sigma_v = 0.1; %[pulse/round]
 R = diag([ sigma_p^2 sigma_v^2]);
 
 
