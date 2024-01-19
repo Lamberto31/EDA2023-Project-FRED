@@ -302,6 +302,7 @@ void loop() {
         switch (robotState.command) {
           case IR_BUTTON_OK: {
             if (DEBUG_ACTIVE) printMeasures(&robotMeasures);
+            bluetoothSendInfo("Position", robotMeasures.distanceUS);
             runMotors(DIRECTION_STOP, 0);
             break;
           }
