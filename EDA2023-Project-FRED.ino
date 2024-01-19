@@ -35,7 +35,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 #define DEBUG_ACTIVE 0
 #define SEND_MEASURE_ACTIVE 1
 #define SEND_FILTER_RESULT_ACTIVE 1
-#define FIXED_POSITION 1
+#define FIXED_POSITION 0
 
 // PARAMETERS
 // Physical
@@ -285,7 +285,7 @@ void loop() {
         robotState.just_changed = false;
       }
       if (robotState.direction == DIRECTION_FORWARD) {
-        preventDamage(CUSTOM_DIST_MIN);
+        if (!FIXED_POSITION) preventDamage(CUSTOM_DIST_MIN);
       }
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
@@ -487,7 +487,7 @@ void loop() {
         robotState.just_changed = false;
       }
       if (robotState.direction == DIRECTION_FORWARD) {
-        preventDamage(CUSTOM_DIST_MIN);
+        if (!FIXED_POSITION) preventDamage(CUSTOM_DIST_MIN);
       }
       if (!robotState.cmd_executed) {
         switch (robotState.command) {
