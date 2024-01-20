@@ -318,7 +318,7 @@ void loop() {
           }
           case IR_BUTTON_HASH: {
             runMotors(DIRECTION_STOP, 0);
-            stateChange(&robotState, STATE_MEASURE);
+            stateChange(&robotState, STATE_DATA_TRANSMISSION);
             break;
           }
           case IR_BUTTON_AST: {
@@ -391,7 +391,7 @@ void loop() {
             break;
           }
           case IR_BUTTON_AST: {
-            if (composeNumericDistance()) stateChange(&robotState, STATE_SEARCH); else stateChange(&robotState, STATE_FREE);
+            if (composeNumericDistance()) stateChange(&robotState, STATE_EXPLORE); else stateChange(&robotState, STATE_FREE);
             debugF("numericCustomDist = ");
             debugln(numericCustomDist);
             bluetoothSendInfo("Custom distance", numericCustomDist);
@@ -408,7 +408,7 @@ void loop() {
           }
           case IR_BUTTON_HASH: {
             resetCustomDistance();
-            stateChange(&robotState, STATE_MEASURE);
+            stateChange(&robotState, STATE_DATA_TRANSMISSION);
             // Feedback led
             digitalWrite(LED_BUILTIN, LOW);
             break;
@@ -419,7 +419,7 @@ void loop() {
       break;
     }
     // Search state handling
-    case STATE_SEARCH: {
+    case STATE_EXPLORE: {
       if (robotState.just_changed) {
         initializeVectorX(STATE_INIT_Xp, STATE_INIT_Xv, &x_hat);
         initializeMatrixP(STATE_INIT_COV_Xp, STATE_INIT_COV_Xv, &P_hat);
@@ -462,7 +462,7 @@ void loop() {
             runMotors(DIRECTION_STOP, 0);
             numericCustomDist = 0;
             bluetoothSendInfo("Custom distance", 0);
-            stateChange(&robotState, STATE_MEASURE);
+            stateChange(&robotState, STATE_DATA_TRANSMISSION);
             break;
           }
           case IR_BUTTON_AST: {
@@ -475,7 +475,7 @@ void loop() {
       break;
     }
     // Measure state handling
-    case STATE_MEASURE: {
+    case STATE_DATA_TRANSMISSION: {
       if (robotState.just_changed) {
         filtering = waitFilteringChoice();
         if (filtering) {
