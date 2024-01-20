@@ -40,9 +40,9 @@ STATUS_CONNECTED = "Connected"
 
 STATUS_SETUP = "Setup"
 
-STATUS_FREE = "Free walking"
-STATUS_READING = "Reading"
-STATUS_EXPLORATION = "Exploration"
+STATUS_FREE = "Free walk"
+STATUS_READ = "Read"
+STATUS_EXPLORE = "Explore"
 STATUS_DATA_TRANSMISSION = "Data transmission"
 
 STATUS_IDLE = "Idle"
@@ -96,11 +96,11 @@ def getStatusString(statusNumber):
     elif statusNumber == "1":
         return STATUS_FREE
     elif statusNumber == "2":
-        return STATUS_EXPLORATION
+        return STATUS_READ
     elif statusNumber == "3":
-        return STATUS_DATA_TRANSMISSION
+        return STATUS_EXPLORE
     elif statusNumber == "4":
-        return STATUS_READING
+        return STATUS_DATA_TRANSMISSION
     else:
         return STATUS_UNKNOWN
 
