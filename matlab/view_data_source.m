@@ -152,7 +152,7 @@ if statusToView ~= Constants.STATUS_ALL
 end
 
 
-%% VISUALIZE DATA %%
+%% RESULTS %%
 % Update dataLength
 dataLength = height(T);
 
@@ -175,39 +175,35 @@ disp("Estimated final position: " + string(T.field4(end)));
 disp("Estimated position error (wrt obj): " + string(abs(obj - T.field4(end))));
 disp("Estimated final velocity: " + string(T.field5(end)));
 
+
+%% GRAPHS
 % Input
-figure();
-hold on;
-plot(T.created_at, T.field1, '-', 'Color', [0.9290 0.6940 0.1250]);
+figure;
+plot(T.created_at, T.field1, '-', 'Color', [0.9290 0.6940 0.1250]); hold on;
 title('Input');
 xlabel('Time');
 ylabel('Input');
-grid on
-
-% State (measured and estimated)
-figure();
-% Layout definition
-tiledlayout(2,1);
 
 % Position
-ax1 = nexttile;
-hold on
-hplot1 = plot(T.created_at, T.field2, '-o', 'DisplayName', 'Ultrasonic distance', 'Color', [0.4940 0.1840 0.5560]);
+figure;
+hplot1 = plot(T.created_at, T.field2, '-o', 'DisplayName', 'Ultrasonic distance', 'Color', [0.4940 0.1840 0.5560]); hold on
 hplot2 = plot(T.created_at, T.field4, '-*', 'DisplayName', 'Position estimate', 'Color', [0.4660 0.6740 0.1880]);
+hplot3 = plot(T.created_at, T.field8, 'DisplayName', 'Objective');
 title('Position');
-legend([hplot1, hplot2]);
-grid(ax1,'on')
-hold off
+xlabel('Time');
+ylabel('Position [cm]');
+legend([hplot1, hplot2, hplot3]);
+grid on
 
 % Velocity
-ax2 = nexttile;
-hold on
-hplot3 = plot(T.created_at, T.field3, '-o', 'DisplayName', 'Optical pulses', 'Color', [0.4940 0.1840 0.5560]);
-hplot4 = plot(T.created_at, T.field5, '-*', 'DisplayName', 'Velocity estimate', 'Color', [0.4660 0.6740 0.1880]);
+figure;
+hplot4 = plot(T.created_at, T.field3, '-o', 'DisplayName', 'Optical pulses', 'Color', [0.4940 0.1840 0.5560]); hold on;
+hplot5 = plot(T.created_at, T.field5, '-*', 'DisplayName', 'Velocity estimate', 'Color', [0.4660 0.6740 0.1880]);
 title('Velocity');
-legend([hplot3, hplot4]);
-grid(ax2,'on')
-hold off
+xlabel('Time');
+ylabel('Velocity [cm/s]');
+legend([hplot4, hplot5]);
+grid on
 
 % Trajectory
 figure();
