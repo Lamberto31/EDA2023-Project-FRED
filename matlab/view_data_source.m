@@ -199,7 +199,7 @@ disp("Estimated final velocity: " + string(T.field5(end)));
 %% GRAPHS
 % Input
 figure;
-plot(T.created_at, T.field1, '-', 'Color', [0.9290 0.6940 0.1250]); hold on;
+plot(T.created_at, T.field1, '-', 'Color', 'm'); hold on;
 title('Input');
 xlabel('Time');
 ylabel('Input');
@@ -251,6 +251,8 @@ tiledlayout(2,1);
 ax3 = nexttile;
 hplot10 = plot(T.created_at, T.field6, '-', 'DisplayName', 'Position covariance'); hold on;
 title('Position Covariance');
+xlabel('Time');
+ylabel('[cm^2]')
 grid(ax3,'on')
 hold off
 
@@ -258,6 +260,8 @@ hold off
 ax4 = nexttile;
 hplot11 = plot(T.created_at, T.field7, '-', 'DisplayName', 'Velocity covariance'); hold on;
 title('Velocity Covariance');
+xlabel('Time');
+ylabel('[(cm/s)^2]');
 grid(ax4,'on')
 hold off
 
