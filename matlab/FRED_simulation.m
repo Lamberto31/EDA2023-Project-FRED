@@ -51,7 +51,7 @@ D = 6.5; %[cm]
 % Impulsi per giro (buchi encoder) (visibile)
 PPR = 20; %[pulse/round] %PPR = pi*D;
 % Deviazione standard per risoluzione wheel encoder
-sigma_disk_res = 1/(12*PPR^2);
+sigma_disk_res = 1/(2*sqrt(3)*PPR);
 
 % Passo di discretizzazione
 T= 0.1; %[s]

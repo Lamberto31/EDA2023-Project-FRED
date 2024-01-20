@@ -62,7 +62,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 // Sensor noises
 # define NOISE_ULTRASONIC 0.3  // [cm] Noise of ultrasonic sensor
 # define PULSE_OFFSET ((1/2) * (1/PPR)) // [imp] Offset of optical sensor
-# define NOISE_OPTICAL ((1/12) * (1/(PPR*PPR)))  // [cm] Noise of optical sensor
+# define NOISE_OPTICAL ((1/(2*1.7321)) * (1/PPR))  // [cm] Noise of optical sensor (standard deviation) TODO: sistemare radice di 3
 // Noise
 #define NOISE_PROCESS_POSITION_STD 0.03  // [cm] Standard deviation of process noise for position
 #define NOISE_PROCESS_VELOCITY_STD 0.01  // [cm/s] Standard deviation of process noise for velocity
