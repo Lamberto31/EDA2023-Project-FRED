@@ -33,6 +33,26 @@ maxTimeDiff = Constants.TIME_MINUTE;
 csvName = 'FRED_log_2023-12-30T18_55_28_debug_disabled.csv';
 %csvName = 'feeds_new_bdt.csv';
 
+%% PHYSICAL CONSTANST AND COMPUTATIONS
+% Used for graphs
+% INPUT
+M = 0.731;
+Vp = 5.85;
+v_max = 71.3456;
+t_0 = 0.3924;
+
+% Input veloce
+C_fast = 255; 
+% Input lento
+C_slow = 100;
+
+% Computed
+b = 5*(M/t_0);
+eta_V = v_max*(b/Vp);
+kappa = eta_V*Vp/255;
+
+v_fast = kappa*C_fast/b;
+v_slow = kappa*C_slow/b;
 %% BASIC CONFIGURATION FOR EACH SOURCE
 switch source
     case Constants.SOURCE_LOCAL
@@ -152,7 +172,7 @@ if statusToView ~= Constants.STATUS_ALL
 end
 
 
-%% VISUALIZE DATA %%
+%% RESULTS %%
 % Update dataLength
 dataLength = height(T);
 
@@ -165,10 +185,9 @@ disp("Last timestamp: " + string(T.created_at(end)));
 
 % Print results
 disp(" ");
-% TODO: take objective position from field8
 % Nel farlo considera che ci possono essere risultati di più
 % sperimentazioni
-obj = 25;
+obj = T.field8(end);
 disp("Objective position: " + string(obj));
 disp("Estimated starting position: " + string(T.field4(1)));
 disp("Estimated starting velocity: " + string(T.field5(1)));
@@ -176,39 +195,39 @@ disp("Estimated final position: " + string(T.field4(end)));
 disp("Estimated position error (wrt obj): " + string(abs(obj - T.field4(end))));
 disp("Estimated final velocity: " + string(T.field5(end)));
 
+
+%% GRAPHS
 % Input
-figure();
-hold on;
-plot(T.created_at, T.field1, '-', 'Color', [0.9290 0.6940 0.1250]);
+figure;
+plot(T.created_at, T.field1, '-', 'Color', 'm'); hold on;
 title('Input');
 xlabel('Time');
 ylabel('Input');
-grid on
-
-% State (measured and estimated)
-figure();
-% Layout definition
-tiledlayout(2,1);
 
 % Position
-ax1 = nexttile;
-hold on
-hplot1 = plot(T.created_at, T.field2, '-o', 'DisplayName', 'Ultrasonic distance', 'Color', [0.4940 0.1840 0.5560]);
-hplot2 = plot(T.created_at, T.field4, '-*', 'DisplayName', 'Position estimate', 'Color', [0.4660 0.6740 0.1880]);
+figure;
+hplot1 = plot(T.created_at, T.field2, 'DisplayName', 'Ultrasonic distance', 'Color', 'r'); hold on
+hplot2 = plot(T.created_at, T.field4, 'DisplayName', 'Position estimate', 'Color', 'b');
+hplot3 = plot(T.created_at, T.field8, 'DisplayName', 'Objective');
 title('Position');
-legend([hplot1, hplot2]);
-grid(ax1,'on')
-hold off
+xlabel('Time');
+ylabel('Position [cm]');
+legend([hplot1, hplot2, hplot3]);
+grid on
 
 % Velocity
-ax2 = nexttile;
-hold on
-hplot3 = plot(T.created_at, T.field3, '-o', 'DisplayName', 'Optical pulses', 'Color', [0.4940 0.1840 0.5560]);
-hplot4 = plot(T.created_at, T.field5, '-*', 'DisplayName', 'Velocity estimate', 'Color', [0.4660 0.6740 0.1880]);
+figure;
+hplot4 = plot(T.created_at, T.field3, 'DisplayName', 'Optical pulses', 'Color', 'r'); hold on;
+hplot5 = plot(T.created_at, T.field5, 'DisplayName', 'Velocity estimate', 'Color', 'b');
+hplot6 = plot(T.created_at, ones(1,dataLength)*-v_fast, 'DisplayName', '(-)Max fast speed');
+hplot7 = plot(T.created_at, ones(1,dataLength)*-v_slow, 'DisplayName', '(-)Max slow speed');
+hplot8 = plot(T.created_at, ones(1,dataLength)*v_fast, 'DisplayName', 'Max fast speed');
+hplot9 = plot(T.created_at, ones(1,dataLength)*v_slow, 'DisplayName', 'Max slow speed');
 title('Velocity');
-legend([hplot3, hplot4]);
-grid(ax2,'on')
-hold off
+xlabel('Time');
+ylabel('Velocity [cm/s]');
+legend([hplot4, hplot5, hplot6, hplot7, hplot8, hplot9]);
+grid on
 
 % Trajectory
 figure();
@@ -220,7 +239,7 @@ plot(obj, 0, '*');
 axis equal;
 grid on;
 legend('Obstacle', 'Start poisition', 'Trajectory', 'Final position', 'Objective');
-xlabel('Position (cm)')
+xlabel('Position [cm]')
 title('Trajectory');
 
 % State Covariance
@@ -230,17 +249,19 @@ tiledlayout(2,1);
 
 % Position
 ax3 = nexttile;
-hold on
-hplot5 = plot(T.created_at, T.field6, '-', 'DisplayName', 'Position covariance');
+hplot10 = plot(T.created_at, T.field6, '-', 'DisplayName', 'Position covariance'); hold on;
 title('Position Covariance');
+xlabel('Time');
+ylabel('[cm^2]')
 grid(ax3,'on')
 hold off
 
 % Velocity
 ax4 = nexttile;
-hold on
-hplot6 = plot(T.created_at, T.field7, '-', 'DisplayName', 'Velocity covariance');
+hplot11 = plot(T.created_at, T.field7, '-', 'DisplayName', 'Velocity covariance'); hold on;
 title('Velocity Covariance');
+xlabel('Time');
+ylabel('[(cm/s)^2]');
 grid(ax4,'on')
 hold off
 
