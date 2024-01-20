@@ -391,7 +391,7 @@ plot(obj, 0, '*');
 axis equal;
 grid on;
 legend('Obstacle', 'Start poisition', 'Trajectory', 'Final position', 'Objective');
-xlabel('Position (cm)')
+xlabel('Position [cm]')
 title('Trajectory');
 
 % Distanze per rallentare/fermarsi

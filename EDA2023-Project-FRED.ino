@@ -47,8 +47,9 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 #define WHEEL_ENCODER_HOLES 20  // [imp/rev] Impulses per revolution of wheel (when counted indicates one round)
 #define DISCRETE_STEP 0.1  // [s] Discrete time step of system. Min value 0.06, may cause error on ultrasonic measure if lower
 // Derived
-#define FRICTION_COEFFICIENT 5 * (MASS / TIME_TO_STOP) // [kg/s] Friction coefficient
-#define ETA_V SPEED_MAX * (FRICTION_COEFFICIENT / VOLTAGE_PEAK) // [N/V] (Newton in centimeter) Constant used to convert voltage to speed
+#define FRICTION_COEFFICIENT (5 * (MASS / TIME_TO_STOP)) // [kg/s] Friction coefficient
+#define ETA_V (SPEED_MAX * (FRICTION_COEFFICIENT / VOLTAGE_PEAK)) // [N/V] (Newton in centimeter) Constant used to convert voltage to speed
+#define KAPPA (ETA_V * VOLTAGE_PEAK / 255) // [N] Constant used for easy computation
 // Model
 #define STATE_DIM 2  // [adim] Dimension of state vector
 #define INPUT_DIM 1  // [adim] Dimension of input vector
@@ -71,10 +72,11 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 #define SLOW_TRESHOLD 50  // [cm] Treshold used to go at max speed until reached
 #define SLOW_SPEED_MIN 50  // [analog] [0-255] Min value for slow speed
 #define SLOW_SPEED_MAX 150  // [analog] [0-255] Max value for slow speed
-#define CHECK_SPEED_MAX 100 // [analog] [0-255] Max value for check speed
-#define SLOW_FACTOR_STEP 5  // [adim] Step for slowFactor
-#define SLOW_FACTOR_MAX 10  // [adim] Max value for slowFactor to prevent too slow speed, must be greater than (CHECK_SPEED_MAX / SLOW_FACTOR_STEP) or it will cause error due to negative speed
-#define SLOW_FACTOR_STOP 7  // [adim] Min value for slowFactor to allow stop from checkDistance, must be lower than SLOW_FACTOR_MAX or checkDistance will never exit from STATE_SEARCH
+#define HIGH_INPUT 150 // [analog] [0-255] Value for high input
+#define LOW_INPUT 75 // [analog] [0-255] Value for low input
+#define SPEED_EPSILON 0.01 // [cm/s] Epsilon used to consider speed as zero
+#define PERIOD_WAIT_CHECK 1000  // [ms] Wait time to check distance
+#define SPEED_SLOW_MAX (KAPPA * LOW_INPUT / FRICTION_COEFFICIENT) // [cm/s] Max speed for slow speed
 // Custom distance [cm]
 #define CUSTOM_DIST_MIN 10  // [cm]
 #define CUSTOM_DIST_MAX 500  // [cm]
@@ -141,8 +143,11 @@ volatile int opticalPulses = 0;
 
 // Movement control
 double diffDist;
-bool firstCheck = true;
-byte speedSlowFactor = 0;
+bool stopMode = false;
+bool slowMode = false;
+byte inputSign = DIRECTION_STOP;
+unsigned long previousMillisCheckDistance;
+unsigned long currentMillisCheckDistance;
 
 // Bluetooth
 bool bluetoothConnected = false;
@@ -291,6 +296,7 @@ void loop() {
         switch (robotState.command) {
           case IR_BUTTON_OK: {
             if (DEBUG_ACTIVE) printMeasures(&robotMeasures);
+            bluetoothSendInfo("Position", robotMeasures.distanceUS);
             runMotors(DIRECTION_STOP, 0);
             break;
           }
@@ -419,21 +425,23 @@ void loop() {
         initializeMatrixP(STATE_INIT_COV_Xp, STATE_INIT_COV_Xv, &P_hat);
         computeVectorU(0, &u);
         computeVectorZ(0, 0, &z);
-        runMotors(DIRECTION_FORWARD, 255);
+        inputSign = DIRECTION_STOP;
+        stopMode = false;
+        slowMode = false;
+        previousMillisCheckDistance = millis();
         robotState.just_changed = false;
       }
       // Estimate
       // Do only if new measure is available
       if (!robotMeasures.sent) {
-        // Update input
-        // TODO: Quando si modifica la checkDistance() bisogna modificare anche qui
-        if (robotState.direction != DIRECTION_STOP) checkDistance();
         // Fill input and measures vectors
         computeVectorU(robotState.input, &u);
         computeVectorZ(robotMeasures.distanceUS, robotMeasures.ppsOptical, &z);
         // Predictor and corrector
         KalmanPredictor(FF, x_hat, G, u, P_hat, Q, &x_pred, &P_pred);
         KalmanCorrector(P_pred, H, R, z, x_pred, &W, &x_hat, &P_hat, &innovation, &S);
+        // Update input
+        checkDistance();
         // Send results
         if (SEND_FILTER_RESULT_ACTIVE) {
           bluetoothConnection(false);
@@ -445,8 +453,6 @@ void loop() {
         switch (robotState.command) {
           case IR_BUTTON_OK: {
             runMotors(DIRECTION_STOP, 0);
-            speedSlowFactor = 0;
-            firstCheck = true;
             numericCustomDist = 0;
             bluetoothSendInfo("Custom distance", 0);
             stateChange(&robotState, STATE_FREE);
@@ -454,19 +460,13 @@ void loop() {
           }
           case IR_BUTTON_HASH: {
             runMotors(DIRECTION_STOP, 0);
-            speedSlowFactor = 0;
-            firstCheck = true;
             numericCustomDist = 0;
             bluetoothSendInfo("Custom distance", 0);
             stateChange(&robotState, STATE_MEASURE);
             break;
           }
           case IR_BUTTON_AST: {
-            // TODO: Quando si modifica la checkDistance() bisogna modificare anche qui
-            runMotors(DIRECTION_FORWARD, 255);
             robotState.just_changed = false;
-            speedSlowFactor = 0;
-            firstCheck = true;
             break;
           }
         }
@@ -748,75 +748,69 @@ void runMotors(byte direction, byte speed) {
   }
 }
 
-// TODO: Capire bene come sistemare per ottenere risultati migliori
 int checkDistance() {
-  //DEBUG_TEMP
-  int speed = (robotState.input*-1) - 5;
-  if (speed == 0) {
-    runMotors(DIRECTION_STOP, 0);
-    return 0;
-  }
-  runMotors(DIRECTION_FORWARD, speed);
-  return speed*-1;
-  //DEBUG_TEMP
-  /*
-  int speed;
-  // Measure diffrence between current and custom distance
-  diffDist = robotMeasures.distanceUS - numericCustomDist;
+  double x_position;
+  double x_velocity;
+  double stopDistance;
+  double slowDistance;
+  double deltaSpeed;
+  double deltaMaxSpeed;
+  double deltaDistance;
 
-  // Move to the custom distance if first check
-  if (firstCheck) {
-    if (diffDist <= STOP_TRESHOLD + SLOW_TRESHOLD) {
-      if (diffDist > STOP_TRESHOLD) {
-        // Just slow down
-        speed = map(diffDist, STOP_TRESHOLD, SLOW_TRESHOLD, SLOW_SPEED_MIN, SLOW_SPEED_MAX);
-        runMotors(DIRECTION_FORWARD, speed);
-        return speed * -1;
-      } else {
-        // Stop
-        speed = 0;
-        runMotors(DIRECTION_STOP, speed);
-        firstCheck = false;
-      }
-    } else {
-      speed = 255;
-      runMotors(DIRECTION_FORWARD, speed);
-      return speed * -1;
-    }
-  }
 
-  // Adjust if not first check
-  if (!firstCheck) {
-    // If difference less than treshold stop and reduce speed, if too low stop checking and go to free state
-    if (abs(diffDist) <= STOP_TRESHOLD) {
-      // Stop
-      runMotors(DIRECTION_STOP, 0);
-      // Check and adjust slow factor
-      if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
-      // Stop if slow factor enough high
-      if (speedSlowFactor >= SLOW_FACTOR_STOP) {
-        stateChange(&robotState, STATE_FREE);
-        speedSlowFactor = 0;
-        firstCheck = true;
-        numericCustomDist = 0;
-      }
+  if (!stopMode) {
+    // Go on only if time to check
+    currentMillisCheckDistance = millis();
+    if (currentMillisCheckDistance - previousMillisCheckDistance < PERIOD_WAIT_CHECK) {
       return 0;
     }
-    // If difference greater than treshold and not moving forward go ahead and increase slowFactor
-    if (diffDist > STOP_TRESHOLD && robotState.direction != DIRECTION_FORWARD) {
-      speed = CHECK_SPEED_MAX - (speedSlowFactor * SLOW_FACTOR_STEP);
-      runMotors(DIRECTION_FORWARD, speed);
-      if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
-      return speed * -1;
-    // If difference less than treshold and not moving backward go backward and increase slowFactor
-    } else if (diffDist < -STOP_TRESHOLD && robotState.direction != DIRECTION_BACKWARD) {
-      speed = CHECK_SPEED_MAX - (speedSlowFactor * SLOW_FACTOR_STEP);
-      runMotors(DIRECTION_BACKWARD, speed);
-      if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
-      return speed;
+
+    // Set state to use
+    x_position = x_hat(0);
+    x_velocity = x_hat(1);
+    //x_position = robotMeasures.distanceUS;
+    //x_velocity = robotMeasures.velocityUS;
+
+    // Compute input sign
+    if (x_position > numericCustomDist) {
+      inputSign = DIRECTION_FORWARD;
+    } 
+    else if (x_position < numericCustomDist) {
+      inputSign = DIRECTION_BACKWARD;
+    }
+
+    // First compute all the distances
+    stopDistance = abs(x_velocity*MASS/FRICTION_COEFFICIENT);
+    if (!slowMode) {
+      deltaSpeed = abs(abs(x_velocity) - SPEED_SLOW_MAX);
+      if (deltaSpeed < SPEED_EPSILON) {
+        deltaMaxSpeed = 0;
+      }
+      else {
+        deltaMaxSpeed = MASS/FRICTION_COEFFICIENT * (SPEED_EPSILON - deltaSpeed + (SPEED_SLOW_MAX * log(SPEED_SLOW_MAX/SPEED_EPSILON)));
+      }
+      slowDistance = 5*deltaMaxSpeed + stopDistance;
+    }
+    // Then check if stop or slow
+    deltaDistance = abs(x_position - numericCustomDist);
+    if (!slowMode && deltaDistance > slowDistance) {
+      runMotors(inputSign, HIGH_INPUT);
+    }
+    else if (!stopMode && deltaDistance > stopDistance) {
+      if (!slowMode) {
+        bluetoothSendInfo("Slow Position", x_position);
+        slowMode = true;
+      }
+      runMotors(inputSign, LOW_INPUT);
+    }
+    else {
+      if (!stopMode) {
+        bluetoothSendInfo("Stop Position", x_position);
+        stopMode = true;
+    }
+    runMotors(DIRECTION_STOP, 0);
     }
   }
-  */
 }
 
 void preventDamage(int minDistance) {
