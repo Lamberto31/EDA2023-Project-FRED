@@ -206,8 +206,8 @@ ylabel('Input');
 
 % Position
 figure;
-hplot1 = plot(T.created_at, T.field2, '-o', 'DisplayName', 'Ultrasonic distance', 'Color', [0.4940 0.1840 0.5560]); hold on
-hplot2 = plot(T.created_at, T.field4, '-*', 'DisplayName', 'Position estimate', 'Color', [0.4660 0.6740 0.1880]);
+hplot1 = plot(T.created_at, T.field2, 'DisplayName', 'Ultrasonic distance', 'Color', 'r'); hold on
+hplot2 = plot(T.created_at, T.field4, 'DisplayName', 'Position estimate', 'Color', 'b');
 hplot3 = plot(T.created_at, T.field8, 'DisplayName', 'Objective');
 title('Position');
 xlabel('Time');
@@ -217,8 +217,8 @@ grid on
 
 % Velocity
 figure;
-hplot4 = plot(T.created_at, T.field3, '-o', 'DisplayName', 'Optical pulses', 'Color', [0.4940 0.1840 0.5560]); hold on;
-hplot5 = plot(T.created_at, T.field5, '-*', 'DisplayName', 'Velocity estimate', 'Color', [0.4660 0.6740 0.1880]);
+hplot4 = plot(T.created_at, T.field3, 'DisplayName', 'Optical pulses', 'Color', 'r'); hold on;
+hplot5 = plot(T.created_at, T.field5, 'DisplayName', 'Velocity estimate', 'Color', 'b');
 hplot6 = plot(T.created_at, ones(1,dataLength)*-v_fast, 'DisplayName', '(-)Max fast speed');
 hplot7 = plot(T.created_at, ones(1,dataLength)*-v_slow, 'DisplayName', '(-)Max slow speed');
 hplot8 = plot(T.created_at, ones(1,dataLength)*v_fast, 'DisplayName', 'Max fast speed');
