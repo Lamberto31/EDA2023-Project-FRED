@@ -249,16 +249,14 @@ tiledlayout(2,1);
 
 % Position
 ax3 = nexttile;
-hold on
-hplot10 = plot(T.created_at, T.field6, '-', 'DisplayName', 'Position covariance');
+hplot10 = plot(T.created_at, T.field6, '-', 'DisplayName', 'Position covariance'); hold on;
 title('Position Covariance');
 grid(ax3,'on')
 hold off
 
 % Velocity
 ax4 = nexttile;
-hold on
-hplot11 = plot(T.created_at, T.field7, '-', 'DisplayName', 'Velocity covariance');
+hplot11 = plot(T.created_at, T.field7, '-', 'DisplayName', 'Velocity covariance'); hold on;
 title('Velocity Covariance');
 grid(ax4,'on')
 hold off
