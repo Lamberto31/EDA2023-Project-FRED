@@ -165,10 +165,9 @@ disp("Last timestamp: " + string(T.created_at(end)));
 
 % Print results
 disp(" ");
-% TODO: take objective position from field8
 % Nel farlo considera che ci possono essere risultati di più
 % sperimentazioni
-obj = 25;
+obj = T.field8(end);
 disp("Objective position: " + string(obj));
 disp("Estimated starting position: " + string(T.field4(1)));
 disp("Estimated starting velocity: " + string(T.field5(1)));
