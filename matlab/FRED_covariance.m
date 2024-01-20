@@ -32,6 +32,8 @@ t_0 = 0.3924; %[s]
 D = 6.5; %[cm]
 % Impulsi per giro (buchi encoder) (visibile)
 PPR = 20; %[pulse/round] %PPR = pi*D;
+% Deviazione standard per risoluzione wheel encoder
+sigma_disk_res = 1/(12*PPR^2);
 
 % Passo di discretizzazione
 T= 0.1; %[s]
@@ -42,7 +44,7 @@ sigma_qp = 0.03;
 sigma_qv = 0.01;
 % Misura
 sigma_p = 0.3; %[cm]
-sigma_v = 0.1; %[pulse/round]
+sigma_v = sigma_disk_res; %[pulse/round]
 
 % Parametri derivati
 % Coefficiente attrito motore
