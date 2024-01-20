@@ -72,10 +72,6 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 #define SLOW_TRESHOLD 50  // [cm] Treshold used to go at max speed until reached
 #define SLOW_SPEED_MIN 50  // [analog] [0-255] Min value for slow speed
 #define SLOW_SPEED_MAX 150  // [analog] [0-255] Max value for slow speed
-#define CHECK_SPEED_MAX 100 // [analog] [0-255] Max value for check speed
-#define SLOW_FACTOR_STEP 5  // [adim] Step for slowFactor
-#define SLOW_FACTOR_MAX 10  // [adim] Max value for slowFactor to prevent too slow speed, must be greater than (CHECK_SPEED_MAX / SLOW_FACTOR_STEP) or it will cause error due to negative speed
-#define SLOW_FACTOR_STOP 7  // [adim] Min value for slowFactor to allow stop from checkDistance, must be lower than SLOW_FACTOR_MAX or checkDistance will never exit from STATE_SEARCH
 #define HIGH_INPUT 150 // [analog] [0-255] Value for high input
 #define LOW_INPUT 75 // [analog] [0-255] Value for low input
 #define SPEED_EPSILON 0.01 // [cm/s] Epsilon used to consider speed as zero
@@ -761,15 +757,6 @@ void runMotors(byte direction, byte speed) {
 }
 
 int checkDistance() {
-  //DEBUG_TEMP
-/*   int speed = (robotState.input*-1) - 5;
-  if (speed == 0) {
-    runMotors(DIRECTION_STOP, 0);
-    return 0;
-  }
-  runMotors(DIRECTION_FORWARD, speed);
-  return speed*-1; */
-  //DEBUG_TEMP
   double x_position;
   double x_velocity;
   double stopDistance;
@@ -832,64 +819,6 @@ int checkDistance() {
     runMotors(DIRECTION_STOP, 0);
     }
   }
-  /*
-  int speed;
-  // Measure diffrence between current and custom distance
-  diffDist = robotMeasures.distanceUS - numericCustomDist;
-
-  // Move to the custom distance if first check
-  if (firstCheck) {
-    if (diffDist <= STOP_TRESHOLD + SLOW_TRESHOLD) {
-      if (diffDist > STOP_TRESHOLD) {
-        // Just slow down
-        speed = map(diffDist, STOP_TRESHOLD, SLOW_TRESHOLD, SLOW_SPEED_MIN, SLOW_SPEED_MAX);
-        runMotors(DIRECTION_FORWARD, speed);
-        return speed * -1;
-      } else {
-        // Stop
-        speed = 0;
-        runMotors(DIRECTION_STOP, speed);
-        firstCheck = false;
-      }
-    } else {
-      speed = 255;
-      runMotors(DIRECTION_FORWARD, speed);
-      return speed * -1;
-    }
-  }
-
-  // Adjust if not first check
-  if (!firstCheck) {
-    // If difference less than treshold stop and reduce speed, if too low stop checking and go to free state
-    if (abs(diffDist) <= STOP_TRESHOLD) {
-      // Stop
-      runMotors(DIRECTION_STOP, 0);
-      // Check and adjust slow factor
-      if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
-      // Stop if slow factor enough high
-      if (speedSlowFactor >= SLOW_FACTOR_STOP) {
-        stateChange(&robotState, STATE_FREE);
-        speedSlowFactor = 0;
-        firstCheck = true;
-        numericCustomDist = 0;
-      }
-      return 0;
-    }
-    // If difference greater than treshold and not moving forward go ahead and increase slowFactor
-    if (diffDist > STOP_TRESHOLD && robotState.direction != DIRECTION_FORWARD) {
-      speed = CHECK_SPEED_MAX - (speedSlowFactor * SLOW_FACTOR_STEP);
-      runMotors(DIRECTION_FORWARD, speed);
-      if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
-      return speed * -1;
-    // If difference less than treshold and not moving backward go backward and increase slowFactor
-    } else if (diffDist < -STOP_TRESHOLD && robotState.direction != DIRECTION_BACKWARD) {
-      speed = CHECK_SPEED_MAX - (speedSlowFactor * SLOW_FACTOR_STEP);
-      runMotors(DIRECTION_BACKWARD, speed);
-      if (speedSlowFactor < SLOW_FACTOR_MAX) speedSlowFactor++;
-      return speed;
-    }
-  }
-  */
 }
 
 void preventDamage(int minDistance) {
