@@ -33,6 +33,26 @@ maxTimeDiff = Constants.TIME_MINUTE;
 csvName = 'FRED_log_2023-12-30T18_55_28_debug_disabled.csv';
 %csvName = 'feeds_new_bdt.csv';
 
+%% PHYSICAL CONSTANST AND COMPUTATIONS
+% Used for graphs
+% INPUT
+M = 0.731;
+Vp = 5.85;
+v_max = 71.3456;
+t_0 = 0.3924;
+
+% Input veloce
+C_fast = 255; 
+% Input lento
+C_slow = 100;
+
+% Computed
+b = 5*(M/t_0);
+eta_V = v_max*(b/Vp);
+kappa = eta_V*Vp/255;
+
+v_fast = kappa*C_fast/b;
+v_slow = kappa*C_slow/b;
 %% BASIC CONFIGURATION FOR EACH SOURCE
 switch source
     case Constants.SOURCE_LOCAL
@@ -199,10 +219,14 @@ grid on
 figure;
 hplot4 = plot(T.created_at, T.field3, '-o', 'DisplayName', 'Optical pulses', 'Color', [0.4940 0.1840 0.5560]); hold on;
 hplot5 = plot(T.created_at, T.field5, '-*', 'DisplayName', 'Velocity estimate', 'Color', [0.4660 0.6740 0.1880]);
+hplot6 = plot(T.created_at, ones(1,dataLength)*-v_fast, 'DisplayName', '(-)Max fast speed');
+hplot7 = plot(T.created_at, ones(1,dataLength)*-v_slow, 'DisplayName', '(-)Max slow speed');
+hplot8 = plot(T.created_at, ones(1,dataLength)*v_fast, 'DisplayName', 'Max fast speed');
+hplot9 = plot(T.created_at, ones(1,dataLength)*v_slow, 'DisplayName', 'Max slow speed');
 title('Velocity');
 xlabel('Time');
 ylabel('Velocity [cm/s]');
-legend([hplot4, hplot5]);
+legend([hplot4, hplot5, hplot6, hplot7, hplot8, hplot9]);
 grid on
 
 % Trajectory
@@ -215,7 +239,7 @@ plot(obj, 0, '*');
 axis equal;
 grid on;
 legend('Obstacle', 'Start poisition', 'Trajectory', 'Final position', 'Objective');
-xlabel('Position (cm)')
+xlabel('Position [cm]')
 title('Trajectory');
 
 % State Covariance
@@ -226,7 +250,7 @@ tiledlayout(2,1);
 % Position
 ax3 = nexttile;
 hold on
-hplot5 = plot(T.created_at, T.field6, '-', 'DisplayName', 'Position covariance');
+hplot10 = plot(T.created_at, T.field6, '-', 'DisplayName', 'Position covariance');
 title('Position Covariance');
 grid(ax3,'on')
 hold off
@@ -234,7 +258,7 @@ hold off
 % Velocity
 ax4 = nexttile;
 hold on
-hplot6 = plot(T.created_at, T.field7, '-', 'DisplayName', 'Velocity covariance');
+hplot11 = plot(T.created_at, T.field7, '-', 'DisplayName', 'Velocity covariance');
 title('Velocity Covariance');
 grid(ax4,'on')
 hold off
