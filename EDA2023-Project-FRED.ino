@@ -76,7 +76,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 #define LOW_INPUT 75 // [analog] [0-255] Value for low input
 #define SPEED_EPSILON 0.01 // [cm/s] Epsilon used to consider speed as zero
 #define PERIOD_WAIT_CHECK 1000  // [ms] Wait time to check distance
-#define SPEED_SLOW_MAX KAPPA * LOW_INPUT / FRICTION_COEFFICIENT // [cm/s] Max speed for slow speed
+#define SPEED_SLOW_MAX (KAPPA * LOW_INPUT / FRICTION_COEFFICIENT) // [cm/s] Max speed for slow speed
 // Custom distance [cm]
 #define CUSTOM_DIST_MIN 10  // [cm]
 #define CUSTOM_DIST_MAX 500  // [cm]
@@ -143,8 +143,6 @@ volatile int opticalPulses = 0;
 
 // Movement control
 double diffDist;
-bool firstCheck = true;
-byte speedSlowFactor = 0;
 bool stopMode = false;
 bool slowMode = false;
 byte inputSign = DIRECTION_STOP;
@@ -455,8 +453,6 @@ void loop() {
         switch (robotState.command) {
           case IR_BUTTON_OK: {
             runMotors(DIRECTION_STOP, 0);
-            speedSlowFactor = 0;
-            firstCheck = true;
             numericCustomDist = 0;
             bluetoothSendInfo("Custom distance", 0);
             stateChange(&robotState, STATE_FREE);
@@ -464,8 +460,6 @@ void loop() {
           }
           case IR_BUTTON_HASH: {
             runMotors(DIRECTION_STOP, 0);
-            speedSlowFactor = 0;
-            firstCheck = true;
             numericCustomDist = 0;
             bluetoothSendInfo("Custom distance", 0);
             stateChange(&robotState, STATE_MEASURE);
@@ -473,8 +467,6 @@ void loop() {
           }
           case IR_BUTTON_AST: {
             robotState.just_changed = false;
-            speedSlowFactor = 0;
-            firstCheck = true;
             break;
           }
         }
