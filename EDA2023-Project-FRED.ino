@@ -61,8 +61,8 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 #define STATE_INIT_COV_Xv SPEED_MAX/100  // [adim] Initial velocity covariance
 // Sensor noises
 # define NOISE_ULTRASONIC 0.3  // [cm] Noise of ultrasonic sensor
-# define PULSE_OFFSET ((1/2) * (1/PPR)) // [imp] Offset of optical sensor
-# define NOISE_OPTICAL ((1/(2*1.7321)) * (1/PPR))  // [cm] Noise of optical sensor (standard deviation) TODO: sistemare radice di 3
+# define PULSE_OFFSET ((1/2) * (1/WHEEL_ENCODER_HOLES)) // [imp] Offset of optical sensor
+# define NOISE_OPTICAL ((1/(2*1.7321)) * (1/WHEEL_ENCODER_HOLES))  // [cm] Noise of optical sensor (standard deviation) TODO: sistemare radice di 3
 // Noise
 #define NOISE_PROCESS_POSITION_STD 0.03  // [cm] Standard deviation of process noise for position
 #define NOISE_PROCESS_VELOCITY_STD 0.01  // [cm/s] Standard deviation of process noise for velocity
