@@ -14,7 +14,7 @@ source = Constants.SOURCE_LOCAL;
 
 % Number of values to show (from the end)
 % If more than available it will show all the available values
-numPoints = 100;
+numPoints = 500;
 
 % Filter by state option
     % Constants.STATUS_ALL: show all the values
@@ -30,7 +30,7 @@ statusToView = Constants.STATUS_ALL;
 maxTimeDiff = Constants.TIME_MINUTE;
 
 % Name of csv file with extension
-csvName = 'FRED_log_2023-12-30T18_55_28_debug_disabled.csv';
+csvName = 'FRED_log_2024-01-21T17_18_02_first_filter.csv';
 %csvName = 'feeds_new_bdt.csv';
 
 %% PHYSICAL CONSTANST AND COMPUTATIONS

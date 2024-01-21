@@ -40,9 +40,9 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 // PARAMETERS
 // Physical
 #define MASS 0.731  // [kg] Mass of robot
-#define VOLTAGE_PEAK 5.85 // [V] Power supply voltage (Peak)
-#define SPEED_MAX 71.3456  // [cm/s] Max speed of robot (measured)
-#define TIME_TO_STOP 0.3924  // [s] Time to stop with null input starting from max speed (measured)
+#define VOLTAGE_PEAK 5.76 // [V] Power supply voltage (Peak)
+#define SPEED_MAX 77.8397  // [cm/s] Max speed of robot (measured)
+#define TIME_TO_STOP 0.3809  // [s] Time to stop with null input starting from max speed (measured)
 #define WHEEL_DIAMETER 6.5 // [cm] Diameter of wheel
 #define WHEEL_ENCODER_HOLES 20  // [imp/rev] Impulses per revolution of wheel (when counted indicates one round)
 #define DISCRETE_STEP 0.1  // [s] Discrete time step of system. Min value 0.06, may cause error on ultrasonic measure if lower
