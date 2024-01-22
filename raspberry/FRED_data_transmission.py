@@ -327,6 +327,7 @@ if PARAMS:
         else:
             paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "status": paramsData["status"]})
         paramsCsvFile.flush()
+        paramsData["stopTime"] = 0
     # Print params in tabular format
     def stampParams(first):
         if ((DEBUG == "Default" or DEBUG == "Full") and VIEW_DATA):
