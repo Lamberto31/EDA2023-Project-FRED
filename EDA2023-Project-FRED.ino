@@ -424,7 +424,7 @@ void loop() {
     // Search state handling
     case STATE_EXPLORE: {
       if (robotState.just_changed) {
-        if resetFiltering {
+        if (resetFiltering) {
           initializeVectorX(STATE_INIT_Xp, STATE_INIT_Xv, &x_hat);
           initializeMatrixP(STATE_INIT_COV_Xp, STATE_INIT_COV_Xv, &P_hat);
           computeVectorU(0, &u);
