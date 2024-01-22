@@ -164,6 +164,7 @@ int numericCustomDist = 0;
 
 // Filtering boolean (Used to avoid sending filtered data when not needed)
 bool filtering = false;
+bool resetFiltering = true;
 
 // Debug macro
 #if DEBUG_ACTIVE == 1
@@ -401,6 +402,7 @@ void loop() {
           }
           case IR_BUTTON_OK: {
             resetCustomDistance();
+            resetFiltering = true;
             stateChange(&robotState, STATE_FREE);
             // Feedback led
             digitalWrite(LED_BUILTIN, LOW);
@@ -408,6 +410,7 @@ void loop() {
           }
           case IR_BUTTON_HASH: {
             resetCustomDistance();
+            resetFiltering = true;
             stateChange(&robotState, STATE_DATA_TRANSMISSION);
             // Feedback led
             digitalWrite(LED_BUILTIN, LOW);
@@ -421,14 +424,17 @@ void loop() {
     // Search state handling
     case STATE_EXPLORE: {
       if (robotState.just_changed) {
-        initializeVectorX(STATE_INIT_Xp, STATE_INIT_Xv, &x_hat);
-        initializeMatrixP(STATE_INIT_COV_Xp, STATE_INIT_COV_Xv, &P_hat);
-        computeVectorU(0, &u);
-        computeVectorZ(0, 0, &z);
+        if resetFiltering {
+          initializeVectorX(STATE_INIT_Xp, STATE_INIT_Xv, &x_hat);
+          initializeMatrixP(STATE_INIT_COV_Xp, STATE_INIT_COV_Xv, &P_hat);
+          computeVectorU(0, &u);
+          computeVectorZ(0, 0, &z);
+          previousMillisCheckDistance = millis();
+        }
+        resetFiltering = true;
         inputSign = DIRECTION_STOP;
         stopMode = false;
         slowMode = false;
-        previousMillisCheckDistance = millis();
         robotState.just_changed = false;
       }
       // Estimate
@@ -466,8 +472,8 @@ void loop() {
             break;
           }
           case IR_BUTTON_AST: {
-            stopMode = false;
-            slowMode = false;
+            resetFiltering = false;
+            stateChange(&robotState, STATE_READ);
             break;
           }
         }
@@ -651,6 +657,7 @@ double measureDistance() {
 void readCustomDistance(char digit) {
   if (customDistIdx == (CUSTOM_DIST_CHAR - 1)) {
     resetCustomDistance();
+    resetFiltering = true;
     stateChange(&robotState, STATE_FREE);
     // Feedback led
     digitalWrite(LED_BUILTIN, LOW);
@@ -663,7 +670,9 @@ void readCustomDistance(char digit) {
 bool composeNumericDistance() {
   // No digits
   if (customDistIdx == 0) {
+    if (!resetFiltering) return true;
     numericCustomDist = 0;
+    resetFiltering = true;
     return false;
   }
   // Create numericCustomDist
@@ -678,6 +687,7 @@ bool composeNumericDistance() {
   // Check if not in [CUSTOM_DIST_MIN, CUSTOM_DIST_MAX]
   if (numericCustomDist < CUSTOM_DIST_MIN || numericCustomDist > CUSTOM_DIST_MAX) {
     numericCustomDist = 0;
+    resetFiltering = true;
     return false;
   }
   return true;
