@@ -216,7 +216,7 @@ void loop() {
 
   // Check if accelerating and stop if PERIOD_SPEED elapsed and measure just taken
   if (robotState.current == STATE_INPUT_MAX) {
-    if (millis() - previousMillisSpeed >= PERIOD_SPEED && robotParams.recorded) {
+    if (millis() - previousMillisSpeed >= PERIOD_SPEED && !robotParams.recorded) {
       runMotors(DIRECTION_STOP, 0);
       // Begin stop speed timer
       previousMillisStopSpeed = millis();
