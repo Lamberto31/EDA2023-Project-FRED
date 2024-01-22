@@ -225,7 +225,7 @@ void loop() {
   }
 
   // Check if just stopped and measure time until it's effectively stopped
-  if (robotState.current == STATE_INPUT_0) {
+  if (robotState.current == STATE_INPUT_0 && !robotParams.recorded) {
     if (abs(robotParams.velocityOptical) < 0.1) {
       stopTime = robotParams.currentTime + previousMillisSpeed - previousMillisStopSpeed;
       stateChange(&robotState, STATE_STOP);
@@ -240,13 +240,13 @@ void loop() {
     bluetoothBufferIndex++;
     }
 
-  // Send Bluetooth buffer
+  // Send Bluetooth buffer if STATE_STOP
   // Check if connected
-  bluetoothConnection(false);
-  if (DEBUG_ACTIVE) bluetoothConnected = true;
   // If connected and stopped send buffer
-  if (bluetoothConnected && robotState.current == STATE_STOP) {
-    bluetoothSendBuffer();
+  if (robotState.current == STATE_STOP) {
+    bluetoothConnection(false);
+    if (DEBUG_ACTIVE) bluetoothConnected = true;
+    if (bluetoothConnected) bluetoothSendBuffer();
   } 
 }
 
