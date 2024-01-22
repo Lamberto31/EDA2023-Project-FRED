@@ -466,7 +466,8 @@ void loop() {
             break;
           }
           case IR_BUTTON_AST: {
-            robotState.just_changed = false;
+            stopMode = false;
+            slowMode = false;
             break;
           }
         }
