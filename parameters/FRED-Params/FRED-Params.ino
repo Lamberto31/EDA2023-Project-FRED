@@ -118,9 +118,6 @@ void setup() {
   // Feedback led
   pinMode(LED_BUILTIN, OUTPUT);
 
-  //Start time counters
-  previousMillisMeasure = millis();
-
   // IR Receiver
   if (!initPCIInterruptForTinyReceiver()) {
     debugF("No interrupt available");
@@ -187,6 +184,7 @@ void loop() {
       case IR_BUTTON_UP: {
         if (robotState.current == STATE_IDLE) {
           runMotors(DIRECTION_FORWARD, 255);
+          previousMillisMeasure = millis();
           previousMillisSpeed = millis();
           stateChange(&robotState, STATE_INPUT_MAX);
         }
@@ -195,6 +193,7 @@ void loop() {
       case IR_BUTTON_DOWN: {
         if (robotState.current == STATE_IDLE) {
           runMotors(DIRECTION_BACKWARD, 255);
+          previousMillisMeasure = millis();
           previousMillisSpeed = millis();
           stateChange(&robotState, STATE_INPUT_MAX);
         }
