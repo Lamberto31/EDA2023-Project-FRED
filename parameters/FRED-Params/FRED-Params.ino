@@ -101,6 +101,7 @@ Servo servoH;
 #define PERIOD_MAX_STOP 1000 // [ms] Time that, if elapsed, ensure robot stop state
 #define TESTS_NUMBER 10 // Number of tests to perform in automatic test
 #define PERIOD_TEST 2500 // [ms] Time that, if elapsed, ensure a new test
+#define SPEED_INPUT 255 // [0-255] Input provided to motors when measuring speed, min value 100 to ensure a minimum speed
 // Max speed timer
 unsigned long previousMillisSpeed;
 // Stop speed timer
@@ -201,7 +202,7 @@ void loop() {
       }
       case IR_BUTTON_UP: {
         if (robotState.current == STATE_IDLE) {
-          runMotors(DIRECTION_FORWARD, 255);
+          runMotors(DIRECTION_FORWARD, SPEED_INPUT);
           previousMillisMeasure = millis();
           previousMillisSpeed = millis();
           stateChange(&robotState, STATE_INPUT_MAX);
@@ -210,7 +211,7 @@ void loop() {
       }
       case IR_BUTTON_DOWN: {
         if (robotState.current == STATE_IDLE) {
-          runMotors(DIRECTION_BACKWARD, 255);
+          runMotors(DIRECTION_BACKWARD, SPEED_INPUT);
           previousMillisMeasure = millis();
           previousMillisSpeed = millis();
           stateChange(&robotState, STATE_INPUT_MAX);
