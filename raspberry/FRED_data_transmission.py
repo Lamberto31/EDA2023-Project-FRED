@@ -282,15 +282,16 @@ infoDict = {
 # Init csv file
 # Create file name
 # Do only if WRITECSV
-if WRITE_CSV and not PARAMS:
+if WRITE_CSV:
     timestamp = datetime.datetime.now().replace(microsecond=0).isoformat()
-    csvFileName = "FRED_log_" + timestamp + ".csv"
+    if not PARAMS:
+        csvFileName = "FRED_log_" + timestamp + ".csv"
 
-    # Create file and write header
-    csvFile = open(os.path.join("./logs", csvFileName), mode='w')
-    csvWriter = csv.DictWriter(csvFile, fieldnames=dataDict.keys())
-    csvWriter.writeheader()
-    csvFile.flush()
+        # Create file and write header
+        csvFile = open(os.path.join("./logs", csvFileName), mode='w')
+        csvWriter = csv.DictWriter(csvFile, fieldnames=dataDict.keys())
+        csvWriter.writeheader()
+        csvFile.flush()
 
 # Init last execution time
 lastSendToServer = time.time()
