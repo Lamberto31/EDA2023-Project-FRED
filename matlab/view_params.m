@@ -1,3 +1,10 @@
+% View params FRED
+
+%% RESET INIZIALE
+clear;
+close all;
+
+
 %% PARAMS %%
 % Log files directory
 logsPath = '../raspberry/logs/';
