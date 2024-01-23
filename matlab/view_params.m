@@ -180,16 +180,18 @@ ylabel('Speed [cm/s]');
 grid on
 
 % Speed based on distances (statistics)
-figure();
-hold on;
-hplot5 = zeros(1, numAttempts);
-for i = 1:numAttempts
-    hplot5(i) = plot(T_speed_distance{i}.currentTime, T_speed_distance{i}.speed, '-*', 'DisplayName', int2str(i));
+if useDistance
+    figure();
+    hold on;
+    hplot5 = zeros(1, numAttempts);
+    for i = 1:numAttempts
+        hplot5(i) = plot(T_speed_distance{i}.currentTime, T_speed_distance{i}.speed, '-*', 'DisplayName', int2str(i));
+    end
+    hplot5(end+1) = plot(T_speed_distance{i}.currentTime, ones(length(T_speed_distance{i}.currentTime),1)*speed_mean_all_distance, 'DisplayName', 'Average mean');
+    hplot5(end+1) = plot(T_speed_distance{i}.currentTime, ones(length(T_speed_distance{i}.currentTime),1)*speed_max_all_distance, 'DisplayName', 'Average max');
+    title('Speed based on distances (statistics)');
+    legend(hplot5);
+    xlabel('Time [ms]');
+    ylabel('Speed [cm/s]');
+    grid on
 end
-hplot5(end+1) = plot(T_speed_distance{i}.currentTime, ones(length(T_speed_distance{i}.currentTime),1)*speed_mean_all_distance, 'DisplayName', 'Average mean');
-hplot5(end+1) = plot(T_speed_distance{i}.currentTime, ones(length(T_speed_distance{i}.currentTime),1)*speed_max_all_distance, 'DisplayName', 'Average max');
-title('Speed based on distances (statistics)');
-legend(hplot5);
-xlabel('Time [ms]');
-ylabel('Speed [cm/s]');
-grid on
