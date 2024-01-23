@@ -32,6 +32,11 @@ WIFI = True
 # True: enable params processing
 PARAMS = False
 
+# WRITE_CSV can be 2 value: False, True. Can be passed as argument (int from 0 to 1)
+# False: disable csv writing
+# True: enable csv writing
+WRITE_CSV = True
+
 # Parameters Definition
 PERIOD_SERVER = 15 # seconds
 # Status strings
@@ -79,6 +84,10 @@ parser.add_argument("--params", "-p", help="Enable/disable params processing:\
                     0 is disable\
                     1 is enable\
                     ", type=int, choices=[0, 1], default=0)
+parser.add_argument("--writecsv", "-c", help="Enable/disable csv writing:\
+                    0 is disable\
+                    1 is enable\
+                    ", type=int, choices=[0, 1], default=1)
 args = parser.parse_args()
 
 # Connection status
@@ -196,6 +205,13 @@ def interpretParamsArguments():
     elif args.params == 1:
         PARAMS = True
     return PARAMS
+# WRITECSV
+def interpretWriteCsvArguments():
+    if args.writecsv == 0:
+        WRITE_CSV = False
+    elif args.writecsv == 1:
+        WRITE_CSV = True
+    return WRITE_CSV
 
 # INITIAL CONFIGURATION
 
@@ -207,6 +223,7 @@ DEBUG = interpretDebugArguments()
 WIFI = interpretWifiArguments()
 VIEW_DATA = interpretViewDataArguments()
 PARAMS = interpretParamsArguments()
+WRITE_CSV = interpretWriteCsvArguments()
 
 # Print initial configuration
 print("Functionalities configuration")
@@ -214,6 +231,7 @@ print("DEBUG: " + DEBUG + " (" + str(args.debug) + ")")
 print("VIEW_DATA: " + str(VIEW_DATA) + " (" + str(args.viewdata) + ")")
 print("WIFI: " + str(WIFI) + " (" + str(args.wifi) + ")")
 print("PARAMS: " + str(PARAMS) + " (" + str(args.params) + ")")
+print("WRITE_CSV: " + str(WRITE_CSV) + " (" + str(args.writecsv) + ")")
 
 # Serial connection configuration
 ser = serial.Serial(
@@ -263,14 +281,16 @@ infoDict = {
 # CSV file
 # Init csv file
 # Create file name
-timestamp = datetime.datetime.now().replace(microsecond=0).isoformat()
-csvFileName = "FRED_log_" + timestamp + ".csv"
+# Do only if WRITECSV
+if WRITE_CSV and not PARAMS:
+    timestamp = datetime.datetime.now().replace(microsecond=0).isoformat()
+    csvFileName = "FRED_log_" + timestamp + ".csv"
 
-# Create file and write header
-csvFile = open(os.path.join("./logs", csvFileName), mode='w')
-csvWriter = csv.DictWriter(csvFile, fieldnames=dataDict.keys())
-csvWriter.writeheader()
-csvFile.flush()
+    # Create file and write header
+    csvFile = open(os.path.join("./logs", csvFileName), mode='w')
+    csvWriter = csv.DictWriter(csvFile, fieldnames=dataDict.keys())
+    csvWriter.writeheader()
+    csvFile.flush()
 
 # Init last execution time
 lastSendToServer = time.time()
@@ -313,11 +333,12 @@ if PARAMS:
         elif "stop" in data[0].lower():
             paramsData["stopTime"] = data[1]
     # Create csv params file and write header
-    paramsCsvFileName = "FRED_params_" + timestamp + ".csv"
-    paramsCsvFile = open(os.path.join("./logs", paramsCsvFileName), mode='w')
-    paramsCsvWriter = csv.DictWriter(paramsCsvFile, fieldnames=paramsData.keys())
-    paramsCsvWriter.writeheader()
-    paramsCsvFile.flush()
+    if WRITE_CSV:
+        paramsCsvFileName = "FRED_params_" + timestamp + ".csv"
+        paramsCsvFile = open(os.path.join("./logs", paramsCsvFileName), mode='w')
+        paramsCsvWriter = csv.DictWriter(paramsCsvFile, fieldnames=paramsData.keys())
+        paramsCsvWriter.writeheader()
+        paramsCsvFile.flush()
     # Define function that write a row in csv if enough data are present
     def writeParamsCsv(statusString):
         if statusString == STATUS_STOP:
@@ -418,7 +439,8 @@ while True:
                             debugStamp(str(params.decode('utf-8')[0:-2]), "Full")
                         stampParams(first)
                         first = False
-                        writeParamsCsv(statusString)
+                        if WRITE_CSV:
+                            writeParamsCsv(statusString)
             # If contains "MATRIX" it's a MATRIX messagge
             elif "MATRIX" in str(recv):
                 debugStamp("New BDT message: MATRIX")
@@ -459,8 +481,9 @@ while True:
     # Do it every PERIOD_SERVER seconds and if dataToSend is not empty
     if time.time() - lastSendToServer >= PERIOD_SERVER and dataToSend:
         # Write full data to csv with all data
-        csvWriter.writerows(dataToWrite)
-        csvFile.flush()
+        if WRITE_CSV and not PARAMS:
+            csvWriter.writerows(dataToWrite)
+            csvFile.flush()
 
         # Prepare and send data
         if WIFI:
