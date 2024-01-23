@@ -29,6 +29,7 @@ Params robotParams = {0, 0, 0, 0, true, 0};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 0
+#define AUTOMATIC_TEST_ACTIVE 0
 
 // PARAMETERS
 // Measure
@@ -98,11 +99,17 @@ Servo servoH;
 // PARAMETERS FRED CONFIGURATION
 #define PERIOD_SPEED 2000 // [ms] Time that, if elapsed, ensure a maximum speed
 #define PERIOD_MAX_STOP 1000 // [ms] Time that, if elapsed, ensure robot stop state
+#define TESTS_NUMBER 10 // Number of tests to perform in automatic test
+#define PERIOD_TEST 2500 // [ms] Time that, if elapsed, ensure a new test
 // Max speed timer
 unsigned long previousMillisSpeed;
 // Stop speed timer
 unsigned long previousMillisStopSpeed;
 unsigned long stopTime = 0;
+// Automatic test
+byte testCounter = 0;
+unsigned long previousMillisAutomaticTest;
+byte automaticDirection[] = {IR_BUTTON_UP, IR_BUTTON_DOWN};
 // Bluetooth message buffer size (in terms of robotParams)
 #define BLUETOOTH_BUFFER_SIZE (PERIOD_SPEED + PERIOD_MAX_STOP) / PERIOD_MEASURE
 // Bluetooth message buffer
@@ -131,6 +138,9 @@ void setup() {
   pinMode(PIN_BLUETOOTH_STATE, INPUT);
   delay(500);
   bluetoothConnected = bluetoothConnection(true);
+
+  // Start counters
+  previousMillisAutomaticTest = millis();
 
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
@@ -169,11 +179,19 @@ void setup() {
 }
 
 void loop() {
+  // Automatic command if IDLE, automatic test active, test not finished and test timer elapsed
+  if (AUTOMATIC_TEST_ACTIVE && testCounter < TESTS_NUMBER && robotState.current == STATE_IDLE && millis() - previousMillisAutomaticTest >= PERIOD_TEST) {
+    stateNewCmd(&robotState, automaticDirection[testCounter % 2]);
+    testCounter++;
+    
+  }
   // Handle IR commands
   if (!robotState.cmd_executed) {
     switch (robotState.command) {
       case IR_BUTTON_OK: {
         runMotors(DIRECTION_STOP, 0);
+        // Stop automatic test
+        testCounter = TESTS_NUMBER;
         // Reset buffer
         bluetoothBufferIndex = 0;
         bluetoothBuffer[bluetoothBufferIndex] = {0, 0, 0, 0, true, 0};
@@ -421,6 +439,7 @@ void bluetoothSendBuffer() {
   stopTime = 0;
 
   stateChange(&robotState, STATE_IDLE);
+  previousMillisAutomaticTest = millis();
   digitalWrite(LED_BUILTIN, LOW);
 }
 
