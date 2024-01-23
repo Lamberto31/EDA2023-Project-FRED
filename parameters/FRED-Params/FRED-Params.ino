@@ -33,7 +33,7 @@ Params robotParams = {0, 0, 0, 0, true, 0};
 
 // PARAMETERS
 // Measure
-#define PERIOD_MEASURE 60  // [ms] between each measurement. Min value 60, may cause error on ultrasonic measure if lower
+#define PERIOD_MEASURE 100  // [ms] between each measurement. Min value 60, may cause error on ultrasonic measure if lower
 #define DECIMALS 4  // [digits] Max value 4, it may cause buffer overflow if greater
 // Optical
 #define WHEEL_ENCODER_HOLES 20  // Holes in wheel encoder (when counted indicates one round)
