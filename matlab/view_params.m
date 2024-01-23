@@ -68,9 +68,9 @@ for i = 1:numAttempts
         % Vectorial
         % T_speed_distance{i}.speed(2:end) = diff(T_speed_distance{i}.distance) ./ diff(T_speed_distance{i}.currentTime);
         for j = 1: height(T_speed{i})-1
-            deltaT = T_speed{i}.currentTime(j+1) - T_speed{i}.currentTime(j);
+            deltaT = (T_speed{i}.currentTime(j+1) - T_speed{i}.currentTime(j)) / 1000;
             deltaD = T_speed{i}.distance(j+1) - T_speed{i}.distance(j);
-            T_speed_distance{i}.speed(j+1) = deltaD / deltaT;
+            T_speed_distance{i}.speed(j+1) = abs(deltaD / deltaT);
         end
         % Exclude first value since is not computable
         T_speed_distance{i} = T_speed_distance{i}(2:end,:);
