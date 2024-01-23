@@ -37,6 +37,10 @@ for i = 1:numAttempts
     % Take only speed when increasing and not 0
     idx_speed_notNull = T_attempts{i}.speed ~= 0 & T_attempts{i}.status == "Input max";
     T_speed{i} = T_attempts{i}(idx_speed_notNull, :);
+    % Exclude too low value based on a first mean
+    first_mean = mean(T_speed{i}.speed);
+    idx_speed_high = T_speed{i}.speed > first_mean*50/100;
+    T_speed{i} = T_speed{i}(idx_speed_high, :);
     % Statistics
     speed_mean(i) = mean(T_speed{i}.speed);
     speed_max(i) = max(T_speed{i}.speed);
