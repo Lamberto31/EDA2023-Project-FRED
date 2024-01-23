@@ -258,9 +258,9 @@ void loop() {
     }
 
   // Send Bluetooth buffer if STATE_STOP
-  // Check if connected
-  // If connected and stopped send buffer
+  // Note that if bluetoothConnected is false and DEBUG_ACTIVE is false, the vehicle will stay in STATE_STOP
   if (robotState.current == STATE_STOP) {
+    // Check if connected
     bluetoothConnection(false);
     if (DEBUG_ACTIVE) bluetoothConnected = true;
     if (bluetoothConnected) bluetoothSendBuffer();
