@@ -73,7 +73,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 #define SLOW_SPEED_MIN 50  // [analog] [0-255] Min value for slow speed
 #define SLOW_SPEED_MAX 150  // [analog] [0-255] Max value for slow speed
 #define HIGH_INPUT 150 // [analog] [0-255] Value for high input
-#define LOW_INPUT 75 // [analog] [0-255] Value for low input
+#define LOW_INPUT 100 // [analog] [0-255] Value for low input
 #define SPEED_EPSILON 0.01 // [cm/s] Epsilon used to consider speed as zero
 #define PERIOD_WAIT_CHECK 1000  // [ms] Wait time to check distance
 #define SPEED_SLOW_MAX (KAPPA * LOW_INPUT / FRICTION_COEFFICIENT) // [cm/s] Max speed for slow speed
