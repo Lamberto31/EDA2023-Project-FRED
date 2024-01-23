@@ -89,31 +89,30 @@ T_stop = T(idx_timeToStop,:);
 % Statistics
 tts_mean = sum(T_stop.stopTime) / numAttempts;
 
-% Show results
+%% SHOW RESULTS
+% Prepare results
+if not(useDistance)
+    speed_mean_disp = speed_mean;
+    speed_max_disp = speed_max;
+    speed_mean_all_disp = speed_mean_all;
+    speed_max_all_disp = speed_max_all;
+else
+    speed_mean_disp = table(speed_mean, speed_mean_distance, 'VariableNames', ["Speed", "Distance"]);
+    speed_max_disp = table(speed_max, speed_max_distance, 'VariableNames', ["Speed", "Distance"]);
+    speed_mean_all_disp = table(speed_mean_all, speed_mean_all_distance, 'VariableNames', ["Speed", "Distance"]);
+    speed_max_all_disp = table(speed_max_all, speed_max_all_distance, 'VariableNames', ["Speed", "Distance"]);
+end
+
 % Speed
 disp("RESULTS OBTAINED USING SPEED")
 disp("Mean speed for each experiment [cm/s]");
-disp(speed_mean);
+disp(speed_mean_disp);
 disp("Max speed for each experiment [cm/s]");
-disp(speed_max);
+disp(speed_max_disp);
 disp("Mean speed [cm/s]");
-disp(speed_mean_all);
+disp(speed_mean_all_disp);
 disp("Mean max speed [cm/s]");
-disp(speed_max_all)
-
-% Speed using distance
-if useDistance
-    disp("RESULTS OBTAINED USING DISTANCE");
-    disp("Mean speed for each experiment [cm/s]");
-    disp(speed_mean_distance);
-    disp("Max speed for each experiment [cm/s]");
-    disp(speed_max_distance);
-    disp("Mean speed [cm/s]");
-    disp(speed_mean_all_distance);
-    disp("Mean max speed [cm/s]");
-    disp(speed_max_all_distance)
-end
-%TODO: Capire come accorpare risultati ottenuti nei due modi
+disp(speed_max_all_disp)
 
 % Time to Stop
 disp("Mean time to stop [ms]");
