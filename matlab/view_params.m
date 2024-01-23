@@ -8,6 +8,10 @@ csvName = 'FRED_params_2024-01-21T17_03_34_bulk_fixed_wood_attempts_10.csv';
 % Number of attempts to consider (if you want to use all use intmax)
 numAttempts = 10;
 
+% Consider distance (enable the usage of distance to do statistics)
+% Useful since the experiment is done in fixed position sometimes
+useDistance = true;
+
 %% GET DATA FROM CSV %%
 path = strcat(logsPath,csvName);
 opts = detectImportOptions(path);
@@ -33,6 +37,9 @@ end
 T_speed = cell(numAttempts,1);
 speed_max = zeros(numAttempts,1);
 speed_mean = zeros(numAttempts,1);
+T_speed_distance = cell(numAttempts,1);
+speed_max_distance = zeros(numAttempts,1);
+speed_mean_distance = zeros(numAttempts,1);
 for i = 1:numAttempts
     % Take only speed when increasing and not 0
     idx_speed_notNull = T_attempts{i}.speed ~= 0 & T_attempts{i}.status == "Input max";
@@ -46,6 +53,27 @@ for i = 1:numAttempts
     speed_max(i) = max(T_speed{i}.speed);
     speed_mean_all = mean(speed_mean);
     speed_max_all = mean(speed_max);
+    
+    % Using distance
+    if useDistance
+        T_speed_distance{i} = T_speed{i};
+        % Compute all speed using distance and current time differences
+        % Vectorial
+        % T_speed_distance{i}.speed(2:end) = diff(T_speed_distance{i}.distance) ./ diff(T_speed_distance{i}.currentTime);
+        for j = 1: height(T_speed{i})-1
+            deltaT = T_speed{i}.currentTime(j+1) - T_speed{i}.currentTime(j);
+            deltaD = T_speed{i}.distance(j+1) - T_speed{i}.distance(j);
+            T_speed_distance{i}.speed(j+1) = deltaD / deltaT;
+        end
+        % Exclude first value since is not computable
+        T_speed_distance{i} = T_speed_distance{1}(2:end,:);
+        % Statistics
+        speed_mean_distance(i) = mean(T_speed_distance{i}.speed);
+        speed_max_distance(i) = max(T_speed_distance{i}.speed);
+        speed_mean_all_distance = mean(speed_mean_distance);
+        speed_max_all_distance = mean(speed_max_distance);
+    end
+
 end
 % Time to Stop
 % Take rows that contains a value for tts
@@ -56,6 +84,7 @@ tts_mean = sum(T_stop.stopTime) / numAttempts;
 
 % Show results
 % Speed
+disp("RESULTS OBTAINED USING SPEED")
 disp("Mean speed for each experiment [cm/s]");
 disp(speed_mean);
 disp("Max speed for each experiment [cm/s]");
@@ -64,6 +93,21 @@ disp("Mean speed [cm/s]");
 disp(speed_mean_all);
 disp("Mean max speed [cm/s]");
 disp(speed_max_all)
+
+% Speed using distance
+if useDistance
+    disp("RESULTS OBTAINED USING DISTANCE");
+    disp("Mean speed for each experiment [cm/s]");
+    disp(speed_mean_distance);
+    disp("Max speed for each experiment [cm/s]");
+    disp(speed_max_distance);
+    disp("Mean speed [cm/s]");
+    disp(speed_mean_all_distance);
+    disp("Mean max speed [cm/s]");
+    disp(speed_max_all_distance)
+end
+%TODO: Capire come accorpare risultati ottenuti nei due modi
+
 % Time to Stop
 disp("Mean time to stop [ms]");
 disp(tts_mean);
@@ -115,6 +159,8 @@ if numAttempts > 1
 end
 
 % Speed (statistics)
+%TODO: Aggiungere grafico delle velocità e medie ottenute dalla distanza.
+% Magari facendo il tiledLayout?
 figure();
 hold on;
 hplot4 = zeros(1, numAttempts);
