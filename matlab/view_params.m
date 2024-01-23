@@ -66,7 +66,7 @@ for i = 1:numAttempts
             T_speed_distance{i}.speed(j+1) = deltaD / deltaT;
         end
         % Exclude first value since is not computable
-        T_speed_distance{i} = T_speed_distance{1}(2:end,:);
+        T_speed_distance{i} = T_speed_distance{i}(2:end,:);
         % Statistics
         speed_mean_distance(i) = mean(T_speed_distance{i}.speed);
         speed_max_distance(i) = max(T_speed_distance{i}.speed);
