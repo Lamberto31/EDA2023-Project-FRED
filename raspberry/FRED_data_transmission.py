@@ -349,7 +349,6 @@ if PARAMS:
         else:
             paramsCsvWriter.writerow({"attempt": paramsData["attempt"], "currentTime": paramsData["currentTime"], "distance": paramsData["distance"], "speed": paramsData["speed"], "status": paramsData["status"]})
         paramsCsvFile.flush()
-        paramsData["stopTime"] = 0
     # Print params in tabular format
     def stampParams(first):
         if ((DEBUG == "Default" or DEBUG == "Full") and VIEW_DATA):
@@ -442,6 +441,7 @@ while True:
                         first = False
                         if WRITE_CSV:
                             writeParamsCsv(statusString)
+                        paramsData["stopTime"] = 0
             # If contains "MATRIX" it's a MATRIX messagge
             elif "MATRIX" in str(recv):
                 debugStamp("New BDT message: MATRIX")
