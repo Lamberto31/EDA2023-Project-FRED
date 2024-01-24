@@ -37,6 +37,7 @@ jobs:
             - name: IRremote
               version: 4.2.1
             - name: Servo
+              version: 1.2.1
             - name: BasicLinearAlgebra
           enable-deltas-report: true
           sketches-report-path: ${{ env.SKETCHES_REPORTS_PATH }}
