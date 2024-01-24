@@ -101,12 +101,12 @@ if not(useDistance)
     speed_mean_disp = speed_mean;
     speed_median_disp = speed_median;
     speed_max_disp = speed_max;
-    speed_statistics_all_disp = table([speed_mean_all, speed_median_all, speed_max_all]', 'VariableNames', "Speed", 'RowNames', ["Mean", "Median", "Max"]);
+    speed_statistics_all_disp = table([speed_mean_all, speed_median_all, speed_max_all]', 'VariableNames', "Speed", 'RowNames', ["Average mean", "Average median", "Average max"]);
 else
     speed_mean_disp = table(speed_mean, speed_mean_distance, 'VariableNames', ["Speed", "Distance"]);
     speed_median_disp = table(speed_median, speed_median_distance, 'VariableNames', ["Speed", "Distance"]);
     speed_max_disp = table(speed_max, speed_max_distance, 'VariableNames', ["Speed", "Distance"]);
-    speed_statistics_all_disp = table([speed_mean_all, speed_median_all, speed_max_all]', [speed_mean_all_distance, speed_median_all_distance, speed_max_all_distance]', 'VariableNames', ["Speed", "Distance"], 'RowNames', ["Mean", "Median", "Max"]);
+    speed_statistics_all_disp = table([speed_mean_all, speed_median_all, speed_max_all]', [speed_mean_all_distance, speed_median_all_distance, speed_max_all_distance]', 'VariableNames', ["Speed", "Distance"], 'RowNames', ["Average mean", "Average median", "Average ,max"]);
 end
 speed_statistics_disp = table(speed_mean_disp, speed_median_disp, speed_max_disp, 'VariableNames', ["Mean", "Median", "Max"]);
 
