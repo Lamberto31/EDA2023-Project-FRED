@@ -39,6 +39,7 @@ jobs:
             - name: Servo
               version: 1.2.1
             - name: BasicLinearAlgebra
+              version: 4.1.0
           enable-deltas-report: true
           sketches-report-path: ${{ env.SKETCHES_REPORTS_PATH }}
 
