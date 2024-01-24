@@ -1,6 +1,6 @@
 #define IR_RECEIVE_PIN 10     // Defined here because the library requires it
 #define NO_LED_FEEDBACK_CODE  // Defined here because the library requires it
-#define USE_CALLBACK_FOR_TINY_RECEIVER
+#define USE_CALLBACK_FOR_TINY_RECEIVER  // Defined here because the library requires it
 #include "TinyIRReceiver.hpp"
 #include <Servo.h>
 #include <BasicLinearAlgebra.h>
