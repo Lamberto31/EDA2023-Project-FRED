@@ -35,6 +35,7 @@ jobs:
           # Install library dependencies.
           libraries: |
             - name: IRremote
+              version: 4.2.0
             - name: WiFiEsp
             - name: Servo
             - name: BasicLinearAlgebra

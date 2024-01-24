@@ -197,6 +197,7 @@ void loop() {
         bluetoothBufferIndex = 0;
         bluetoothBuffer[bluetoothBufferIndex] = {0, 0, 0, 0, true, 0};
         stopTime = 0;
+        opticalPulses = 0;
         stateChange(&robotState, STATE_IDLE);
         break;
       }
