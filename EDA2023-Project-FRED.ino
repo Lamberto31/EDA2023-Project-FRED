@@ -1,5 +1,6 @@
 #define IR_RECEIVE_PIN 10     // Defined here because the library requires it
 #define NO_LED_FEEDBACK_CODE  // Defined here because the library requires it
+#define USE_CALLBACK_FOR_TINY_RECEIVER
 #include "TinyIRReceiver.hpp"
 #include <Servo.h>
 #include <BasicLinearAlgebra.h>
@@ -586,11 +587,11 @@ void loop() {
 
 // This is the function, which is called if a complete ir command was received
 // It runs in an ISR context with interrupts enabled
-void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
-  if (DEBUG_ACTIVE) printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
+void handleReceivedTinyIRData() {
+  if (DEBUG_ACTIVE) printTinyReceiverResultMinimal(&Serial);
   // Ignore repeat commands
-  if (aFlags != IRDATA_FLAGS_IS_REPEAT) {
-    stateNewCmd(&robotState, aCommand);
+  if (TinyIRReceiverData.Flags != IRDATA_FLAGS_IS_REPEAT) {
+    stateNewCmd(&robotState, TinyIRReceiverData.Command);
   }
 }
 
