@@ -44,9 +44,11 @@ end
 T_speed = cell(numAttempts,1);
 speed_max = zeros(numAttempts,1);
 speed_mean = zeros(numAttempts,1);
+speed_median = zeros(numAttempts,1);
 T_speed_distance = cell(numAttempts,1);
 speed_max_distance = zeros(numAttempts,1);
 speed_mean_distance = zeros(numAttempts,1);
+speed_median_distance = zeros(numAttempts,1);
 for i = 1:numAttempts
     % Take only speed when increasing and not 0
     idx_speed_notNull = T_attempts{i}.speed ~= 0 & T_attempts{i}.status == "Input max";
@@ -57,8 +59,10 @@ for i = 1:numAttempts
     T_speed{i} = T_speed{i}(idx_speed_high, :);
     % Statistics
     speed_mean(i) = mean(T_speed{i}.speed);
+    speed_median(i) = median(T_speed{1}.speed);
     speed_max(i) = max(T_speed{i}.speed);
     speed_mean_all = mean(speed_mean);
+    speed_median_all = median(speed_median);
     speed_max_all = mean(speed_max);
     
     % Using distance
@@ -76,8 +80,10 @@ for i = 1:numAttempts
         T_speed_distance{i} = T_speed_distance{i}(2:end,:);
         % Statistics
         speed_mean_distance(i) = mean(T_speed_distance{i}.speed);
+        speed_median_distance(i) = median(T_speed_distance{i}.speed);
         speed_max_distance(i) = max(T_speed_distance{i}.speed);
         speed_mean_all_distance = mean(speed_mean_distance);
+        speed_median_all_distance = mean(speed_median_distance);
         speed_max_all_distance = mean(speed_max_distance);
     end
 
@@ -93,13 +99,17 @@ tts_mean = sum(T_stop.stopTime) / numAttempts;
 % Prepare results
 if not(useDistance)
     speed_mean_disp = speed_mean;
+    speed_median_disp = speed_median;
     speed_max_disp = speed_max;
     speed_mean_all_disp = speed_mean_all;
+    speed_median_all_disp = speed_median_all;
     speed_max_all_disp = speed_max_all;
 else
     speed_mean_disp = table(speed_mean, speed_mean_distance, 'VariableNames', ["Speed", "Distance"]);
+    speed_median_disp = table(speed_median, speed_median_distance, 'VariableNames', ["Speed", "Distance"]);
     speed_max_disp = table(speed_max, speed_max_distance, 'VariableNames', ["Speed", "Distance"]);
     speed_mean_all_disp = table(speed_mean_all, speed_mean_all_distance, 'VariableNames', ["Speed", "Distance"]);
+    speed_median_all_disp = table(speed_median_all, speed_median_all_distance, 'VariableNames', ["Speed", "Distance"]);
     speed_max_all_disp = table(speed_max_all, speed_max_all_distance, 'VariableNames', ["Speed", "Distance"]);
 end
 
@@ -107,10 +117,14 @@ end
 disp("RESULTS OBTAINED USING SPEED")
 disp("Mean speed for each experiment [cm/s]");
 disp(speed_mean_disp);
+disp("Median speed for each experiment [cm/s]");
+disp(speed_median_disp);
 disp("Max speed for each experiment [cm/s]");
 disp(speed_max_disp);
 disp("Mean speed [cm/s]");
 disp(speed_mean_all_disp);
+disp("Mean median speed [cm/s]");
+disp(speed_median_all_disp)
 disp("Mean max speed [cm/s]");
 disp(speed_max_all_disp)
 
@@ -172,6 +186,7 @@ for i = 1:numAttempts
     hplot4(i) = plot(T_speed{i}.currentTime, T_speed{i}.speed, '-*', 'DisplayName', int2str(i));
 end
 hplot4(end+1) = plot(T_speed{i}.currentTime, ones(length(T_speed{i}.currentTime),1)*speed_mean_all, 'DisplayName', 'Average mean');
+hplot4(end+1) = plot(T_speed{i}.currentTime, ones(length(T_speed{i}.currentTime),1)*speed_median_all, 'DisplayName', 'Average median');
 hplot4(end+1) = plot(T_speed{i}.currentTime, ones(length(T_speed{i}.currentTime),1)*speed_max_all, 'DisplayName', 'Average max');
 title('Speed (statistics)');
 legend(hplot4);
@@ -188,6 +203,7 @@ if useDistance
         hplot5(i) = plot(T_speed_distance{i}.currentTime, T_speed_distance{i}.speed, '-*', 'DisplayName', int2str(i));
     end
     hplot5(end+1) = plot(T_speed_distance{i}.currentTime, ones(length(T_speed_distance{i}.currentTime),1)*speed_mean_all_distance, 'DisplayName', 'Average mean');
+    hplot5(end+1) = plot(T_speed_distance{i}.currentTime, ones(length(T_speed_distance{i}.currentTime),1)*speed_median_all_distance, 'DisplayName', 'Average median');
     hplot5(end+1) = plot(T_speed_distance{i}.currentTime, ones(length(T_speed_distance{i}.currentTime),1)*speed_max_all_distance, 'DisplayName', 'Average max');
     title('Speed based on distances (statistics)');
     legend(hplot5);
@@ -205,11 +221,13 @@ tiledlayout(useDistance+1,1);
 ax1 = nexttile;
 hold on
 hplot6 = plot(1:numAttempts, speed_mean, '-+', 'DisplayName', 'Mean');
+hplot14 = plot(1:numAttempts, speed_median, '-+', 'DisplayName', 'Median');
 hplot7 = plot(1:numAttempts, speed_max, '-+', 'DisplayName', 'Max');
 hplot8 = plot(1:numAttempts, ones(numAttempts,1)*speed_mean_all, 'DisplayName', 'Average mean');
+hplot15 = plot(1:numAttempts, ones(numAttempts,1)*speed_median_all, 'DisplayName', 'Average median');
 hplot9 = plot(1:numAttempts, ones(numAttempts,1)*speed_max_all, 'DisplayName', 'Average max');
 title('Speed mean and max (based on speed)');
-legend([hplot6, hplot7, hplot8, hplot9]);
+legend([hplot6, hplot14, hplot7, hplot8, hplot15, hplot9]);
 xlabel('Attempt');
 ylabel('Speed [cm/s]');
 grid(ax1,'on')
@@ -220,11 +238,13 @@ if useDistance
     ax2 = nexttile;
     hold on
     hplot10 = plot(1:numAttempts, speed_mean_distance, '-+', 'DisplayName', 'Mean');
+    hplot16 = plot(1:numAttempts, speed_median_distance, '-+', 'DisplayName', 'Median');
     hplot11 = plot(1:numAttempts, speed_max_distance, '-+', 'DisplayName', 'Max');
     hplot12 = plot(1:numAttempts, ones(numAttempts,1)*speed_mean_all_distance, 'DisplayName', 'Average mean');
+    hplot17 = plot(1:numAttempts, ones(numAttempts,1)*speed_median_all_distance, 'DisplayName', 'Average median');
     hplot13 = plot(1:numAttempts, ones(numAttempts,1)*speed_max_all_distance, 'DisplayName', 'Average max');
     title('Speed mean and max (based on distance)');
-    legend([hplot10, hplot11, hplot12, hplot13]);
+    legend([hplot10, hplot16, hplot11, hplot12, hplot17, hplot13]);
     xlabel('Attempt');
     ylabel('Speed [cm/s]');
     grid(ax2,'on')
