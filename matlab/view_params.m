@@ -213,13 +213,13 @@ tiledlayout(useDistance+1,1);
 ax1 = nexttile;
 hold on
 hplot6 = plot(1:numAttempts, speed_mean, '-+', 'DisplayName', 'Mean');
-hplot14 = plot(1:numAttempts, speed_median, '-+', 'DisplayName', 'Median');
-hplot7 = plot(1:numAttempts, speed_max, '-+', 'DisplayName', 'Max');
-hplot8 = plot(1:numAttempts, ones(numAttempts,1)*speed_mean_all, 'DisplayName', 'Average mean');
-hplot15 = plot(1:numAttempts, ones(numAttempts,1)*speed_median_all, 'DisplayName', 'Average median');
-hplot9 = plot(1:numAttempts, ones(numAttempts,1)*speed_max_all, 'DisplayName', 'Average max');
+hplot7 = plot(1:numAttempts, speed_median, '-+', 'DisplayName', 'Median');
+hplot8 = plot(1:numAttempts, speed_max, '-+', 'DisplayName', 'Max');
+hplot9 = plot(1:numAttempts, ones(numAttempts,1)*speed_mean_all, 'DisplayName', 'Average mean');
+hplot10 = plot(1:numAttempts, ones(numAttempts,1)*speed_median_all, 'DisplayName', 'Average median');
+hplot11 = plot(1:numAttempts, ones(numAttempts,1)*speed_max_all, 'DisplayName', 'Average max');
 title('Speed mean and max (based on speed)');
-legend([hplot6, hplot14, hplot7, hplot8, hplot15, hplot9]);
+legend([hplot6, hplot7, hplot8, hplot9, hplot10, hplot11]);
 xlabel('Attempt');
 ylabel('Speed [cm/s]');
 grid(ax1,'on')
@@ -229,14 +229,14 @@ hold off
 if useDistance
     ax2 = nexttile;
     hold on
-    hplot10 = plot(1:numAttempts, speed_mean_distance, '-+', 'DisplayName', 'Mean');
-    hplot16 = plot(1:numAttempts, speed_median_distance, '-+', 'DisplayName', 'Median');
-    hplot11 = plot(1:numAttempts, speed_max_distance, '-+', 'DisplayName', 'Max');
-    hplot12 = plot(1:numAttempts, ones(numAttempts,1)*speed_mean_all_distance, 'DisplayName', 'Average mean');
-    hplot17 = plot(1:numAttempts, ones(numAttempts,1)*speed_median_all_distance, 'DisplayName', 'Average median');
-    hplot13 = plot(1:numAttempts, ones(numAttempts,1)*speed_max_all_distance, 'DisplayName', 'Average max');
+    hplot12 = plot(1:numAttempts, speed_mean_distance, '-+', 'DisplayName', 'Mean');
+    hplot13 = plot(1:numAttempts, speed_median_distance, '-+', 'DisplayName', 'Median');
+    hplot14 = plot(1:numAttempts, speed_max_distance, '-+', 'DisplayName', 'Max');
+    hplot15 = plot(1:numAttempts, ones(numAttempts,1)*speed_mean_all_distance, 'DisplayName', 'Average mean');
+    hplot16 = plot(1:numAttempts, ones(numAttempts,1)*speed_median_all_distance, 'DisplayName', 'Average median');
+    hplot17 = plot(1:numAttempts, ones(numAttempts,1)*speed_max_all_distance, 'DisplayName', 'Average max');
     title('Speed mean and max (based on distance)');
-    legend([hplot10, hplot16, hplot11, hplot12, hplot17, hplot13]);
+    legend([hplot12, hplot13, hplot14, hplot15, hplot16, hplot17]);
     xlabel('Attempt');
     ylabel('Speed [cm/s]');
     grid(ax2,'on')
