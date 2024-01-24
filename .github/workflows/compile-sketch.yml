@@ -36,9 +36,10 @@ jobs:
           libraries: |
             - name: IRremote
               version: 4.2.1
-            - name: WiFiEsp
             - name: Servo
+              version 1.2.1
             - name: BasicLinearAlgebra
+              version: 4.1
           enable-deltas-report: true
           sketches-report-path: ${{ env.SKETCHES_REPORTS_PATH }}
 
