@@ -12,6 +12,7 @@ logsPath = '../raspberry/logs/';
 % Name of csv file with extension
 csvName = 'FRED_params_2024-01-23T16_11_50_bulk_moving_attempts_10.csv';
 
+
 % Number of attempts to consider (if you want to use all use intmax)
 numAttempts = 10;
 
