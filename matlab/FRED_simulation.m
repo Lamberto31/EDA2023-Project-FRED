@@ -56,8 +56,8 @@ T= 0.1; %[s]
 
 % Deviazioni standard
 % Processo
-sigma_qp = 0.03;
-sigma_qv = 0.01;
+sigma_qp = 0.1;
+sigma_qv = 0.1;
 % Misura
 sigma_p = 0.3; %[cm]
 sigma_v = 1/6; %[pulse/round]
