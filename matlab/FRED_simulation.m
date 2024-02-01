@@ -49,7 +49,7 @@ t_0 = 0.3924; %[s]
 % Diametro ruota (datasheet)
 D = 6.5; %[cm]
 % Impulsi per giro (buchi encoder) (visibile)
-IPR = 20; %[pulse/round] %IPR = pi*D;
+PPR = 20; %[pulse/round] %PPR = pi*D;
 
 % Passo di discretizzazione
 T= 0.1; %[s]
@@ -60,7 +60,7 @@ sigma_qp = 0.03;
 sigma_qv = 0.01;
 % Misura
 sigma_p = 0.3; %[cm]
-sigma_v = 0.1; %[pulse/round]
+sigma_v = 1/6; %[pulse/round]
 
 % INPUT
 % Distanza desiderata
@@ -112,7 +112,7 @@ G = ((1/M) * eta_V * (Vp/255)) * [T^2/2;
     bmT];
 % H
 H = [1 0;
-    0 IPR/(pi*D)];
+    0 PPR/(pi*D)];
 % LAMBDA
 L = [T (1/2)*T^2;
     0 bmT];

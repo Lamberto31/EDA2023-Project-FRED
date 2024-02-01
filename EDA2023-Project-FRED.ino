@@ -60,11 +60,15 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 #define STATE_INIT_Xv 0  // [adim] Initial velocity
 #define STATE_INIT_COV_Xp 66  // [adim] Initial position covariance
 #define STATE_INIT_COV_Xv SPEED_MAX/100  // [adim] Initial velocity covariance
+// Sensor noises
+# define NOISE_ULTRASONIC 0.3  // [cm] Noise of ultrasonic sensor
+# define PULSE_OFFSET 0.5 // [imp] Offset of optical sensor
+# define NOISE_OPTICAL (1.0/6.0)  // [cm] Noise of optical sensor (standard deviation)
 // Noise
 #define NOISE_PROCESS_POSITION_STD 0.03  // [cm] Standard deviation of process noise for position
 #define NOISE_PROCESS_VELOCITY_STD 0.01  // [cm/s] Standard deviation of process noise for velocity
-#define NOISE_MEASURE_POSITION_STD 0.3  // [cm] Standard deviation of measure noise for position
-#define NOISE_MEASURE_VELOCITY_STD 0.1  // [cm/s] Standard deviation of measure noise for velocity
+#define NOISE_MEASURE_POSITION_STD NOISE_ULTRASONIC  // [cm] Standard deviation of measure noise for position
+#define NOISE_MEASURE_VELOCITY_STD NOISE_OPTICAL  // [cm/s] Standard deviation of measure noise for velocity
 // Measure
 #define PERIOD_MEASURE DISCRETE_STEP * 1000  // [ms] between each measurement. Min value 60, may cause error on ultrasonic measure if lower
 #define DECIMALS 4  // [digits] Max value 4, it may cause buffer overflow if greater
@@ -611,7 +615,7 @@ void measureAll(unsigned long deltaT) {
   robotMeasures.sent = false;
   double prevDistance = robotMeasures.distanceUS;
   
-  int pulses = opticalPulses;
+  int pulses = opticalPulses + PULSE_OFFSET;
   opticalPulses = 0;
   int directionSign;
   double travelledRevolution;
