@@ -10,7 +10,7 @@ close all;
 logsPath = '../raspberry/logs/';
 
 % Name of csv file with extension
-csvName = 'FRED_params_2024-01-23T16_11_50_bulk_moving_attempts_10.csv';
+csvName = 'FRED_params_2024-02-01T17_24_30_bulk_moving_attempts_10.csv';
 
 % Number of attempts to consider (if you want to use all use intmax)
 numAttempts = 10;
@@ -106,7 +106,7 @@ else
     speed_mean_disp = table(speed_mean, speed_mean_distance, 'VariableNames', ["Speed", "Distance"]);
     speed_median_disp = table(speed_median, speed_median_distance, 'VariableNames', ["Speed", "Distance"]);
     speed_max_disp = table(speed_max, speed_max_distance, 'VariableNames', ["Speed", "Distance"]);
-    speed_statistics_all_disp = table([speed_mean_all, speed_median_all, speed_max_all]', [speed_mean_all_distance, speed_median_all_distance, speed_max_all_distance]', 'VariableNames', ["Speed", "Distance"], 'RowNames', ["Average mean", "Average median", "Average ,max"]);
+    speed_statistics_all_disp = table([speed_mean_all, speed_median_all, speed_max_all]', [speed_mean_all_distance, speed_median_all_distance, speed_max_all_distance]', 'VariableNames', ["Speed", "Distance"], 'RowNames', ["Average mean", "Average median", "Average max"]);
 end
 speed_statistics_disp = table(speed_mean_disp, speed_median_disp, speed_max_disp, 'VariableNames', ["Mean", "Median", "Max"]);
 
