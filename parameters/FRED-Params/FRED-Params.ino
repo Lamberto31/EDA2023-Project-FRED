@@ -43,6 +43,8 @@ Params robotParams = {0, 0, 0, 0, true, 0};
 #define BLUETOOTH_WAIT_CONNECTION 10000  // [ms] Wait time to receive Bluetooth connection
 // Servo
 #define SERVO_HORIZ_CENTER 100 // [angle] [0-180] Angle considered as center for servo, it depends on the construction
+// Sensor offset
+# define PULSE_OFFSET 0.5 // [imp] Offset of optical sensor
 
 // IR
 // Button-Command
@@ -355,7 +357,7 @@ void runMotors(byte direction, byte speed) {
 void measureAll(unsigned long deltaT) {
   robotParams.recorded = false;
   
-  int pulses = opticalPulses;
+  int pulses = opticalPulses + PULSE_OFFSET;
   opticalPulses = 0;
   double travelledRevolution;
   double travelledDistance;
