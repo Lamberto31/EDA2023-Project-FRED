@@ -30,7 +30,7 @@ statusToView = Constants.STATUS_ALL;
 maxTimeDiff = Constants.TIME_MINUTE;
 
 % Name of csv file with extension
-csvName = 'FRED_log_2024-01-21T17_18_02_first_filter.csv';
+csvName = 'FRED_log_2024-02-01T17_56_52_final_filter.csv';
 %csvName = 'feeds_new_bdt.csv';
 
 %% PHYSICAL CONSTANST AND COMPUTATIONS
