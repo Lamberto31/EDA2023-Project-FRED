@@ -1,5 +1,6 @@
 #define IR_RECEIVE_PIN 10     // Defined here because the library requires it
 #define NO_LED_FEEDBACK_CODE  // Defined here because the library requires it
+#define USE_CALLBACK_FOR_TINY_RECEIVER  // Defined here because the library requires it
 #include "TinyIRReceiver.hpp"
 #include <Servo.h>
 #include <BasicLinearAlgebra.h>
@@ -77,7 +78,7 @@ Measures robotMeasures = {0, 0, 0, 0, 0, 0, true};
 #define SLOW_SPEED_MIN 50  // [analog] [0-255] Min value for slow speed
 #define SLOW_SPEED_MAX 150  // [analog] [0-255] Max value for slow speed
 #define HIGH_INPUT 150 // [analog] [0-255] Value for high input
-#define LOW_INPUT 75 // [analog] [0-255] Value for low input
+#define LOW_INPUT 100 // [analog] [0-255] Value for low input
 #define SPEED_EPSILON 0.01 // [cm/s] Epsilon used to consider speed as zero
 #define PERIOD_WAIT_CHECK 1000  // [ms] Wait time to check distance
 #define SPEED_SLOW_MAX (KAPPA * LOW_INPUT / FRICTION_COEFFICIENT) // [cm/s] Max speed for slow speed
@@ -168,6 +169,7 @@ int numericCustomDist = 0;
 
 // Filtering boolean (Used to avoid sending filtered data when not needed)
 bool filtering = false;
+bool resetFiltering = true;
 
 // Debug macro
 #if DEBUG_ACTIVE == 1
@@ -405,6 +407,7 @@ void loop() {
           }
           case IR_BUTTON_OK: {
             resetCustomDistance();
+            resetFiltering = true;
             stateChange(&robotState, STATE_FREE);
             // Feedback led
             digitalWrite(LED_BUILTIN, LOW);
@@ -412,6 +415,7 @@ void loop() {
           }
           case IR_BUTTON_HASH: {
             resetCustomDistance();
+            resetFiltering = true;
             stateChange(&robotState, STATE_DATA_TRANSMISSION);
             // Feedback led
             digitalWrite(LED_BUILTIN, LOW);
@@ -425,14 +429,17 @@ void loop() {
     // Search state handling
     case STATE_EXPLORE: {
       if (robotState.just_changed) {
-        initializeVectorX(STATE_INIT_Xp, STATE_INIT_Xv, &x_hat);
-        initializeMatrixP(STATE_INIT_COV_Xp, STATE_INIT_COV_Xv, &P_hat);
-        computeVectorU(0, &u);
-        computeVectorZ(0, 0, &z);
+        if (resetFiltering) {
+          initializeVectorX(STATE_INIT_Xp, STATE_INIT_Xv, &x_hat);
+          initializeMatrixP(STATE_INIT_COV_Xp, STATE_INIT_COV_Xv, &P_hat);
+          computeVectorU(0, &u);
+          computeVectorZ(0, 0, &z);
+          previousMillisCheckDistance = millis();
+        }
+        resetFiltering = true;
         inputSign = DIRECTION_STOP;
         stopMode = false;
         slowMode = false;
-        previousMillisCheckDistance = millis();
         robotState.just_changed = false;
       }
       // Estimate
@@ -470,7 +477,8 @@ void loop() {
             break;
           }
           case IR_BUTTON_AST: {
-            robotState.just_changed = false;
+            resetFiltering = false;
+            stateChange(&robotState, STATE_READ);
             break;
           }
         }
@@ -583,11 +591,11 @@ void loop() {
 
 // This is the function, which is called if a complete ir command was received
 // It runs in an ISR context with interrupts enabled
-void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
-  if (DEBUG_ACTIVE) printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
+void handleReceivedTinyIRData() {
+  if (DEBUG_ACTIVE) printTinyReceiverResultMinimal(&Serial);
   // Ignore repeat commands
-  if (aFlags != IRDATA_FLAGS_IS_REPEAT) {
-    stateNewCmd(&robotState, aCommand);
+  if (TinyIRReceiverData.Flags != IRDATA_FLAGS_IS_REPEAT) {
+    stateNewCmd(&robotState, TinyIRReceiverData.Command);
   }
 }
 
@@ -654,6 +662,7 @@ double measureDistance() {
 void readCustomDistance(char digit) {
   if (customDistIdx == (CUSTOM_DIST_CHAR - 1)) {
     resetCustomDistance();
+    resetFiltering = true;
     stateChange(&robotState, STATE_FREE);
     // Feedback led
     digitalWrite(LED_BUILTIN, LOW);
@@ -666,7 +675,9 @@ void readCustomDistance(char digit) {
 bool composeNumericDistance() {
   // No digits
   if (customDistIdx == 0) {
+    if (!resetFiltering) return true;
     numericCustomDist = 0;
+    resetFiltering = true;
     return false;
   }
   // Create numericCustomDist
@@ -681,6 +692,7 @@ bool composeNumericDistance() {
   // Check if not in [CUSTOM_DIST_MIN, CUSTOM_DIST_MAX]
   if (numericCustomDist < CUSTOM_DIST_MIN || numericCustomDist > CUSTOM_DIST_MAX) {
     numericCustomDist = 0;
+    resetFiltering = true;
     return false;
   }
   return true;

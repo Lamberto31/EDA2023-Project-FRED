@@ -1,6 +1,7 @@
 // BASIC FRED CONFIGURATION
 #define IR_RECEIVE_PIN 10     // Defined here because the library requires it
 #define NO_LED_FEEDBACK_CODE  // Defined here because the library requires it
+#define USE_CALLBACK_FOR_TINY_RECEIVER  // Defined here because the library requires it
 #include "TinyIRReceiver.hpp"
 #include <Servo.h>
 
@@ -29,10 +30,11 @@ Params robotParams = {0, 0, 0, 0, true, 0};
 
 // Functionalities active/disabled
 #define DEBUG_ACTIVE 0
+#define AUTOMATIC_TEST_ACTIVE 0
 
 // PARAMETERS
 // Measure
-#define PERIOD_MEASURE 60  // [ms] between each measurement. Min value 60, may cause error on ultrasonic measure if lower
+#define PERIOD_MEASURE 100  // [ms] between each measurement. Min value 60, may cause error on ultrasonic measure if lower
 #define DECIMALS 4  // [digits] Max value 4, it may cause buffer overflow if greater
 // Optical
 #define WHEEL_ENCODER_HOLES 20  // Holes in wheel encoder (when counted indicates one round)
@@ -98,11 +100,18 @@ Servo servoH;
 // PARAMETERS FRED CONFIGURATION
 #define PERIOD_SPEED 2000 // [ms] Time that, if elapsed, ensure a maximum speed
 #define PERIOD_MAX_STOP 1000 // [ms] Time that, if elapsed, ensure robot stop state
+#define TESTS_NUMBER 10 // Number of tests to perform in automatic test
+#define PERIOD_TEST 2500 // [ms] Time that, if elapsed, ensure a new test
+#define SPEED_INPUT 255 // [0-255] Input provided to motors when measuring speed, min value 100 to ensure a minimum speed
 // Max speed timer
 unsigned long previousMillisSpeed;
 // Stop speed timer
 unsigned long previousMillisStopSpeed;
 unsigned long stopTime = 0;
+// Automatic test
+byte testCounter = 0;
+unsigned long previousMillisAutomaticTest;
+byte automaticDirection[] = {IR_BUTTON_UP, IR_BUTTON_DOWN};
 // Bluetooth message buffer size (in terms of robotParams)
 #define BLUETOOTH_BUFFER_SIZE (PERIOD_SPEED + PERIOD_MAX_STOP) / PERIOD_MEASURE
 // Bluetooth message buffer
@@ -118,9 +127,6 @@ void setup() {
   // Feedback led
   pinMode(LED_BUILTIN, OUTPUT);
 
-  //Start time counters
-  previousMillisMeasure = millis();
-
   // IR Receiver
   if (!initPCIInterruptForTinyReceiver()) {
     debugF("No interrupt available");
@@ -134,6 +140,9 @@ void setup() {
   pinMode(PIN_BLUETOOTH_STATE, INPUT);
   delay(500);
   bluetoothConnected = bluetoothConnection(true);
+
+  // Start counters
+  previousMillisAutomaticTest = millis();
 
   // Servomotor
   servoH.attach(PIN_SERVO_HORIZ);
@@ -172,21 +181,31 @@ void setup() {
 }
 
 void loop() {
+  // Automatic command if IDLE, automatic test active, test not finished and test timer elapsed
+  if (AUTOMATIC_TEST_ACTIVE && testCounter < TESTS_NUMBER && robotState.current == STATE_IDLE && millis() - previousMillisAutomaticTest >= PERIOD_TEST) {
+    stateNewCmd(&robotState, automaticDirection[testCounter % 2]);
+    testCounter++;
+    
+  }
   // Handle IR commands
   if (!robotState.cmd_executed) {
     switch (robotState.command) {
       case IR_BUTTON_OK: {
         runMotors(DIRECTION_STOP, 0);
+        // Stop automatic test
+        testCounter = TESTS_NUMBER;
         // Reset buffer
         bluetoothBufferIndex = 0;
         bluetoothBuffer[bluetoothBufferIndex] = {0, 0, 0, 0, true, 0};
         stopTime = 0;
+        opticalPulses = 0;
         stateChange(&robotState, STATE_IDLE);
         break;
       }
       case IR_BUTTON_UP: {
         if (robotState.current == STATE_IDLE) {
-          runMotors(DIRECTION_FORWARD, 255);
+          runMotors(DIRECTION_FORWARD, SPEED_INPUT);
+          previousMillisMeasure = millis();
           previousMillisSpeed = millis();
           stateChange(&robotState, STATE_INPUT_MAX);
         }
@@ -194,7 +213,8 @@ void loop() {
       }
       case IR_BUTTON_DOWN: {
         if (robotState.current == STATE_IDLE) {
-          runMotors(DIRECTION_BACKWARD, 255);
+          runMotors(DIRECTION_BACKWARD, SPEED_INPUT);
+          previousMillisMeasure = millis();
           previousMillisSpeed = millis();
           stateChange(&robotState, STATE_INPUT_MAX);
         }
@@ -216,7 +236,7 @@ void loop() {
 
   // Check if accelerating and stop if PERIOD_SPEED elapsed and measure just taken
   if (robotState.current == STATE_INPUT_MAX) {
-    if (millis() - previousMillisSpeed >= PERIOD_SPEED && robotParams.recorded) {
+    if (millis() - previousMillisSpeed >= PERIOD_SPEED && !robotParams.recorded) {
       runMotors(DIRECTION_STOP, 0);
       // Begin stop speed timer
       previousMillisStopSpeed = millis();
@@ -225,7 +245,7 @@ void loop() {
   }
 
   // Check if just stopped and measure time until it's effectively stopped
-  if (robotState.current == STATE_INPUT_0) {
+  if (robotState.current == STATE_INPUT_0 && !robotParams.recorded) {
     if (abs(robotParams.velocityOptical) < 0.1) {
       stopTime = robotParams.currentTime + previousMillisSpeed - previousMillisStopSpeed;
       stateChange(&robotState, STATE_STOP);
@@ -240,23 +260,23 @@ void loop() {
     bluetoothBufferIndex++;
     }
 
-  // Send Bluetooth buffer
-  // Check if connected
-  bluetoothConnection(false);
-  if (DEBUG_ACTIVE) bluetoothConnected = true;
-  // If connected and stopped send buffer
-  if (bluetoothConnected && robotState.current == STATE_STOP) {
-    bluetoothSendBuffer();
+  // Send Bluetooth buffer if STATE_STOP
+  // Note that if bluetoothConnected is false and DEBUG_ACTIVE is false, the vehicle will stay in STATE_STOP
+  if (robotState.current == STATE_STOP) {
+    // Check if connected
+    bluetoothConnection(false);
+    if (DEBUG_ACTIVE) bluetoothConnected = true;
+    if (bluetoothConnected) bluetoothSendBuffer();
   } 
 }
 
 // This is the function, which is called if a complete ir command was received
 // It runs in an ISR context with interrupts enabled
-void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
-  if (DEBUG_ACTIVE) printTinyReceiverResultMinimal(&Serial, aAddress, aCommand, aFlags);
+void handleReceivedTinyIRData() {
+  if (DEBUG_ACTIVE) printTinyReceiverResultMinimal(&Serial);
   // Ignore repeat commands
-  if (aFlags != IRDATA_FLAGS_IS_REPEAT) {
-    stateNewCmd(&robotState, aCommand);
+  if (TinyIRReceiverData.Flags != IRDATA_FLAGS_IS_REPEAT) {
+    stateNewCmd(&robotState, TinyIRReceiverData.Command);
   }
 }
 
@@ -422,6 +442,7 @@ void bluetoothSendBuffer() {
   stopTime = 0;
 
   stateChange(&robotState, STATE_IDLE);
+  previousMillisAutomaticTest = millis();
   digitalWrite(LED_BUILTIN, LOW);
 }
 
