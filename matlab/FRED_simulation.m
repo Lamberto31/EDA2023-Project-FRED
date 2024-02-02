@@ -66,9 +66,9 @@ sigma_v = 1/6; %[pulse/round]
 % Distanza desiderata
 obj = 10; %[cm]
 % Input veloce
-C_fast = 255; 
+C_fast = 150; 
 % Input lento
-C_slow = 100;
+C_slow = 70;
 % Tolleranza velocità
 epsilon = 0.01; %[cm/s]
 
