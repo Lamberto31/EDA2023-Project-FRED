@@ -89,33 +89,44 @@ Q = diag([ sigma_qp^2 sigma_qv^2]);
 R = diag([ sigma_p^2 sigma_v^2]);
 
 
-%% STABILITA', OSSERVABILITA' e CONTROLLABILITA'
+%% STABILITA', OSSERVABILITA' e RAGGIUNGIBILITA'
 % Autovalori della matrice F
 F_eig = eig(F);
+stable = false;
 % Rango della matrice di osservabilità
 r_obsv = rank(obsv(F,H));
-% Rango della matrice di controllabilità
+observable = false;
+% Rango della matrice di raggiungibilità
 r_ctrb = rank(ctrb(F,G));
+reachable = false;
 
 % La matrice F è stabile?
 if all(F_eig < 1)
-    disp("Matrice F stabile")
+    disp("F matrix stable")
+    stable = true;
 else
-    disp("Matrice F non stabile")
+    disp("F matrix not stable")
 end
 
 % Il sistema è osservabile?
 if r_obsv == n
-    disp("Sistema osservabile")
+    disp("System observable")
+    observable = true;
 else
-    disp("Sistema non osservabile")
+    disp("System not observable")
 end
 
-% Il sistema è controllabile?
+% Il sistema è raggiungibile?
 if r_ctrb == n
-    disp("Sistema controllabile")
+    disp("System reachable")
+    reachable = true;
 else
-    disp("Sistema non controllabile")
+    disp("System not reachable")
+end
+
+if stable || (observable && reachable)
+    disp(" ");
+    disp("Covariance and gain converge");
 end
 
 %% INIZIALIZZAZIONE MODELLO
@@ -234,11 +245,11 @@ disp(" ");
 if interrupted
     disp("Ultimo passo: " + string(K));
 end
-disp("Covarianza predizione finale:");
+disp("Final prediction covariance");
 disp(P_pred);
-disp("Covarianza stima finale:");
+disp("Final estimation covariance:");
 disp(P);
-disp("Guadagno finale:");
+disp("Final gain:");
 disp(W);
 
 %% GRAFICI
