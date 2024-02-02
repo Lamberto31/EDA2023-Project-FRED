@@ -259,7 +259,7 @@ if multipleObj
     disp("Results:")
     disp(T_disp_decimal);
 else
-    obj = T.field8(end);
+    obj = T.field8(end); %#ok<UNRCH>
     disp("Objective position: " + string(obj));
     disp("Estimated starting position: " + string(T.field4(1)));
     disp("Estimated starting velocity: " + string(T.field5(1)));
