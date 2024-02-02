@@ -89,11 +89,20 @@ Q = diag([ sigma_qp^2 sigma_qv^2]);
 R = diag([ sigma_p^2 sigma_v^2]);
 
 
-%% OSSERVABILITA' e CONTROLLABILITA'
+%% STABILITA', OSSERVABILITA' e CONTROLLABILITA'
+% Autovalori della matrice F
+F_eig = eig(F);
 % Rango della matrice di osservabilità
 r_obsv = rank(obsv(F,H));
 % Rango della matrice di controllabilità
 r_ctrb = rank(ctrb(F,G));
+
+% La matrice F è stabile?
+if all(F_eig < 1)
+    disp("Matrice F stabile")
+else
+    disp("Matrice F non stabile")
+end
 
 % Il sistema è osservabile?
 if r_obsv == n
