@@ -29,6 +29,14 @@ statusToView = Constants.STATUS_ALL;
     % Constants.TIME_DAY: consider data if time difference from previous > 1 day
 maxTimeDiff = Constants.TIME_MINUTE;
 
+% Get multiple experiments (different objective in one explore mode)
+% This change only the textual output
+    % true to show a tabular view with each experiment
+    % false to show just textual results referred to first and last moment
+    % maxObjectiveNumber to limit the table columns if multipleObj true
+multipleObj = true;
+maxObjectiveNumber = 5;
+
 % Name of csv file with extension
 csvName = 'FRED_log_2024-02-01T17_56_52_final_filter.csv';
 %csvName = 'feeds_new_bdt.csv';
@@ -169,6 +177,68 @@ end
 if statusToView ~= Constants.STATUS_ALL
     % Get the rows where status is statusToView
     T = T(T.status == statusToView,:);
+else
+    % Remove rows where status is "Connected" or "Disconnected"
+    T = T(T.status ~= "Connected",:);
+    T = T(T.status ~= "Disconnected",:);
+end
+
+
+%% GET DIFFERENT EXPERIMENTS OBJECTIVES
+if multipleObj
+    % Get last obj value and index for each objective
+    last_index = diff(T.field8) ~= 0;
+    last_index(end+1) = 1;
+    last_index = find(last_index);
+    obj = T.field8(last_index);
+    % Get first index for each objective
+    first_index = [1, ((last_index + 1))']';
+    first_index = first_index(1:end-1);
+
+    % Build table to show
+    % Get only useful rows and sort
+    T_disp = T([first_index last_index],:);
+    T_disp = sortrows(T_disp, "created_at");
+    % Get only useful column
+    T_disp = T_disp(:,[5, 6, 9]);
+    % Add column diff
+    T_disp.diff = abs(T_disp.field8 - T_disp.field4);
+    % Rearrange table rows
+    for i = 1:2:(2*height(obj))
+        last_p(i:i+1) = [T_disp.field4(i+1)];
+        last_v(i:i+1) = [T_disp.field5(i+1)];
+        diff_obj(i:i+1) = [T_disp.diff(i+1)];
+    end
+    T_disp.lastp = (last_p)';
+    T_disp.lastv = (last_v)';
+    T_disp.diff = (diff_obj)';
+    % Drop useless rows
+    T_disp = T_disp(1:2:end,:);
+    % Rearrange table columns
+    T_disp = movevars(T_disp, "field8", "Before", "field4");
+    T_disp = movevars(T_disp, "diff", "After", "lastv");
+    T_disp = renamevars(T_disp, ["field4", "field5", "field8", "diff", "lastp", "lastv"], ...
+                                ["Estimated starting position", "Estimated starting velocity", "Objective position", "Estimated position error (wrt obj)", "Estimated final position", "Estimated final velocity"]);
+    
+    % Transpose for readability
+    T_array = table2array(T_disp);
+    T_disp_transpose = array2table(T_array.');
+    T_disp_transpose.Properties.RowNames = T_disp.Properties.VariableNames;
+    T_disp_transpose.Properties.VariableNames = string(obj);
+    % Redefine table for decimals
+
+    % Set decimal precision
+    n_decimal = 4;
+    % Create a new table
+    T_disp_decimal = varfun(@(x) num2str(x, ['%' sprintf('.%df', n_decimal)]), T_disp_transpose);
+    % Preserve the variable names and the row names in the original table
+    T_disp_decimal.Properties.VariableNames = T_disp_transpose.Properties.VariableNames;
+    T_disp_decimal.Properties.RowNames = T_disp_transpose.Properties.RowNames;
+
+    % Truncate if obj > maxObjectiveNumber
+    if height(obj) > maxObjectiveNumber
+        T_disp_decimal = T_disp_decimal(:,end-(maxObjectiveNumber-1):end);
+    end
 end
 
 
@@ -185,15 +255,18 @@ disp("Last timestamp: " + string(T.created_at(end)));
 
 % Print results
 disp(" ");
-% Nel farlo considera che ci possono essere risultati di più
-% sperimentazioni
-obj = T.field8(end);
-disp("Objective position: " + string(obj));
-disp("Estimated starting position: " + string(T.field4(1)));
-disp("Estimated starting velocity: " + string(T.field5(1)));
-disp("Estimated final position: " + string(T.field4(end)));
-disp("Estimated position error (wrt obj): " + string(abs(obj - T.field4(end))));
-disp("Estimated final velocity: " + string(T.field5(end)));
+if multipleObj
+    disp("Results:")
+    disp(T_disp_decimal);
+else
+    obj = T.field8(end);
+    disp("Objective position: " + string(obj));
+    disp("Estimated starting position: " + string(T.field4(1)));
+    disp("Estimated starting velocity: " + string(T.field5(1)));
+    disp("Estimated final position: " + string(T.field4(end)));
+    disp("Estimated position error (wrt obj): " + string(abs(obj - T.field4(end))));
+    disp("Estimated final velocity: " + string(T.field5(end)));
+end
 
 
 %% GRAPHS
